@@ -10,9 +10,6 @@ data/models.pkl
 data/lstm_model.pt
 
 # Runtime / generated data
-data/*.db
-data/*.db-shm
-data/*.db-wal
 data/pred_log.json
 data/latest_prediction.json
 data/oe_analysis.txt
