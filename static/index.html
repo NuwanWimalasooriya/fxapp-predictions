@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DS3M Predictor</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --card: #1a1d27;
+    --border: #2a2d3a;
+    --text: #e2e8f0;
+    --muted: #8892a4;
+    --accent: #6366f1;
+    --green: #22c55e;
+    --red: #ef4444;
+    --yellow: #eab308;
+    --blue: #3b82f6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 13px; min-height: 100vh; }
+  header { background: var(--card); border-bottom: 1px solid var(--border); padding: 8px 20px; display: flex; align-items: center; justify-content: space-between; }
+  header h1 { font-size: 15px; font-weight: 600; letter-spacing: .02em; }
+  header .meta { color: var(--muted); font-size: 11px; text-align: right; line-height: 1.5; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(264px, 1fr)); gap: 10px; padding: 12px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+  .card h2 { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 10px; }
+  .big { font-size: 30px; font-weight: 700; line-height: 1; }
+  .label { font-size: 10px; color: var(--muted); margin-top: 3px; }
+  .row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid var(--border); }
+  .row:last-child { border-bottom: none; }
+  .row .key { color: var(--muted); }
+  .row .val { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .signal-bar-wrap { margin-top: 4px; }
+  .signal-row { display: grid; grid-template-columns: 72px 1fr 72px; align-items: center; gap: 6px; margin-bottom: 5px; }
+  .signal-name { font-size: 11px; color: var(--muted); }
+  .bar-bg { background: var(--border); border-radius: 3px; height: 6px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; transition: width .4s; }
+  .bar-odd  { background: var(--green); }
+  .bar-even { background: var(--red); }
+  .bar-neu  { background: var(--muted); }
+  .signal-pct { font-size: 11px; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+  /* Disc dots */
+  .discs { display: flex; gap: 6px; align-items: center; }
+  .disc { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+  .disc.R { background: var(--red);   color: #fff; }
+  .disc.W { background: #334155;      color: var(--muted); }
+  .disc.sm { width: 18px; height: 18px; font-size: 9px; }
+  .disc-label { font-size: 9px; color: var(--muted); text-align: center; margin-top: 2px; }
+  .disc-wrap { display: flex; flex-direction: column; align-items: center; }
+  /* Table */
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  thead th { color: var(--muted); font-weight: 500; text-align: left; padding: 5px 6px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  tbody tr:hover { background: rgba(255,255,255,.03); }
+  tbody td { padding: 5px 6px; border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums; vertical-align: middle; }
+  .win   { color: var(--green); font-weight: 600; }
+  .loss  { color: var(--red);   font-weight: 600; }
+  .muted { color: var(--muted); font-size: 11px; }
+  .odd   { color: #a78bfa; }
+  .even  { color: #60a5fa; }
+  /* Action card */
+  .action-card { grid-column: 1 / -1; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .action-big { font-size: 36px; font-weight: 800; min-width: 80px; }
+  .action-big.USE   { color: var(--green); }
+  .action-big.SKIP  { color: var(--yellow); }
+  .action-big.AVOID { color: var(--red); }
+  .conf-detail { line-height: 1.6; }
+  /* Misc */
+  .spinner { display: none; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  button { background: var(--accent); color: #fff; border: none; border-radius: 6px; padding: 6px 14px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+  button:hover { opacity: .85; }
+  .error-msg { color: var(--red); padding: 20px; }
+  .streak-badge { background: rgba(239,68,68,.15); color: var(--red); border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .mode-badge { background: rgba(99,102,241,.15); color: var(--accent); border-radius: 6px; padding: 2px 8px; font-size: 11px; margin-left: 8px; }
+  .divider { width: 1px; background: var(--border); align-self: stretch; }
+  .phase-action { font-size: 15px; font-weight: 700; }
+  .phase-action.USE_STRONG { color: var(--green); }
+  .phase-action.USE        { color: #86efac; }
+  .phase-action.SKIP       { color: var(--yellow); }
+  .phase-action.AVOID      { color: var(--red); }
+  .phase-action.INSUFFICIENT_DATA { color: var(--muted); }
+  /* Bet signal */
+  .bet-banner { grid-column: 1 / -1; border-radius: 8px; padding: 12px 18px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .bet-banner.yes { background: rgba(34,197,94,.12); border: 2px solid var(--green); }
+  .bet-banner.no  { background: rgba(100,116,139,.08); border: 2px solid #334155; }
+  .bet-label { font-size: 40px; font-weight: 900; line-height: 1; letter-spacing: -.02em; }
+  .bet-label.yes { color: var(--green); }
+  .bet-label.no  { color: #475569; }
+  /* Tabs */
+  .tabs { display: flex; gap: 4px; padding: 8px 16px 0; border-bottom: 1px solid var(--border); background: var(--card); }
+  .tab { padding: 6px 16px; border-radius: 6px 6px 0 0; font-size: 12px; font-weight: 500; cursor: pointer; border: 1px solid transparent; border-bottom: none; color: var(--muted); background: transparent; }
+  .tab.active { background: var(--bg); color: var(--text); border-color: var(--border); }
+  .tab:hover:not(.active) { color: var(--text); }
+  /* Data browser */
+  .data-toolbar { display: flex; align-items: center; gap: 10px; padding: 16px 20px; flex-wrap: wrap; }
+  .data-toolbar input { background: var(--card); border: 1px solid var(--border); border-radius: 6px; color: var(--text); padding: 6px 12px; font-size: 13px; width: 240px; outline: none; }
+  .data-toolbar input:focus { border-color: var(--accent); }
+  .data-toolbar select { background: var(--card); border: 1px solid var(--border); border-radius: 6px; color: var(--text); padding: 6px 10px; font-size: 13px; outline: none; }
+  .data-toolbar .info { color: var(--muted); font-size: 12px; margin-left: auto; }
+  .data-table-wrap { overflow-x: auto; padding: 0 20px 20px; }
+  .data-table-wrap table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .data-table-wrap thead th { color: var(--muted); font-weight: 500; text-align: left; padding: 8px 10px; border-bottom: 2px solid var(--border); white-space: nowrap; cursor: pointer; user-select: none; }
+  .data-table-wrap thead th:hover { color: var(--text); }
+  .data-table-wrap thead th .sort-icon { font-size: 10px; margin-left: 4px; }
+  .data-table-wrap tbody tr:hover { background: rgba(255,255,255,.03); }
+  .data-table-wrap tbody td { padding: 7px 10px; border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums; }
+  .pagination { display: flex; align-items: center; gap: 6px; padding: 12px 20px; flex-wrap: wrap; }
+  .pagination button { background: var(--card); color: var(--text); border: 1px solid var(--border); padding: 5px 12px; font-size: 12px; border-radius: 5px; cursor: pointer; }
+  .pagination button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .pagination button:disabled { opacity: .35; cursor: default; }
+  .pagination button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .pagination .pg-info { color: var(--muted); font-size: 12px; margin: 0 8px; }
+  .bet-direction { font-size: 24px; font-weight: 800; }
+  .bet-conf { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .bet-round { font-size: 11px; color: var(--muted); }
+  .bet-tag { font-size: 10px; font-weight: 700; border-radius: 4px; padding: 1px 6px; text-transform: uppercase; letter-spacing: .06em; }
+  .bet-tag.yes { background: rgba(34,197,94,.2); color: var(--green); }
+  .bet-tag.no  { background: rgba(100,116,139,.2); color: #64748b; }
+  .toggle-wrap { display:flex; align-items:center; gap:7px; font-size:12px; color:var(--muted); }
+  .toggle { position:relative; display:inline-block; width:34px; height:18px; }
+  .toggle input { opacity:0; width:0; height:0; }
+  .toggle-slider { position:absolute; inset:0; background:#334155; border-radius:18px; cursor:pointer; transition:.2s; }
+  .toggle-slider:before { content:''; position:absolute; width:12px; height:12px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.2s; }
+  .toggle input:checked + .toggle-slider { background:var(--green); }
+  .toggle input:checked + .toggle-slider:before { transform:translateX(16px); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>DS3M Predictor</h1>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div class="spinner" id="spinner"></div>
+    <div class="toggle-wrap">
+      <label class="toggle"><input type="checkbox" id="trainToggle" onchange="setTraining(this.checked)"><span class="toggle-slider"></span></label>
+      <span id="trainLabel">Training: —</span>
+    </div>
+    <button onclick="refresh()">&#8635; Refresh</button>
+    <a href="/logout" style="background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3);border-radius:5px;padding:5px 12px;font-size:12px;text-decoration:none;font-weight:500;">Sign out</a>
+    <div class="meta" id="meta">Loading…</div>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" id="tab-pred" onclick="switchTab('pred')">Prediction</div>
+  <div class="tab" id="tab-data" onclick="switchTab('data')">Data Browser</div>
+</div>
+
+<div id="root"><p class="error-msg">Loading prediction data…</p></div>
+<div id="data-panel" style="display:none"></div>
+
+<script>
+async function load() {
+  const [predRes, histRes, statsRes, cfgRes] = await Promise.all([
+    fetch('/api/prediction'),
+    fetch('/api/history'),
+    fetch('/api/stats'),
+    fetch('/api/config'),
+  ]);
+  if (!predRes.ok) {
+    const err = await predRes.json().catch(() => ({}));
+    document.getElementById('root').innerHTML = `<p class="error-msg">${err.error || 'No data yet.'}</p>`;
+    return;
+  }
+  const p = await predRes.json();
+  const history = histRes.ok ? await histRes.json().catch(() => []) : [];
+  const stats   = statsRes.ok ? await statsRes.json().catch(() => ({})) : {};
+  const cfg     = cfgRes.ok  ? await cfgRes.json().catch(() => ({}))   : {};
+  render(p, history, stats, cfg);
+  document.getElementById('meta').innerHTML =
+    `Last update: ${p.timestamp}<br>Round ${p.last_id} — ${p.total_rows} rows`;
+}
+
+function refresh() {
+  document.getElementById('spinner').style.display = 'block';
+  fetch('/api/refresh', {method:'POST'})
+    .then(() => setTimeout(() => { load(); document.getElementById('spinner').style.display='none'; }, 3500));
+}
+
+async function loadConfig() {
+  try {
+    const r = await fetch('/api/config');
+    const cfg = await r.json();
+    const enabled = cfg.training_enabled !== false;
+    document.getElementById('trainToggle').checked = enabled;
+    document.getElementById('trainLabel').textContent = 'Training: ' + (enabled ? 'ON' : 'OFF');
+    document.getElementById('trainLabel').style.color = enabled ? 'var(--green)' : 'var(--red)';
+  } catch(e) {}
+}
+
+async function updateBankroll(val) {
+  const br = parseFloat(val);
+  if (isNaN(br) || br <= 0) return;
+  await fetch('/api/config', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({bankroll: br})
+  });
+  load();
+}
+
+async function setTraining(enabled) {
+  document.getElementById('trainLabel').textContent = 'Training: ' + (enabled ? 'ON' : 'OFF');
+  document.getElementById('trainLabel').style.color = enabled ? 'var(--green)' : 'var(--red)';
+  await fetch('/api/config', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({training_enabled: enabled})
+  });
+}
+
+function pct(v)  { return v != null ? (v * 100).toFixed(1) + '%' : '—'; }
+function fmt(v)  { return v != null ? (v * 100).toFixed(1) : '—'; }
+
+// Render 4 disc dots from a 4-char string like "RWRW" or array ['R','W','R','W']
+function discDots(pattern, size = '') {
+  if (!pattern) return '—';
+  const arr = Array.isArray(pattern) ? pattern : pattern.split('');
+  return `<div class="discs">` +
+    arr.map((d, i) =>
+      `<div class="disc-wrap">
+        <div class="disc ${d} ${size}">${d}</div>
+        <div class="disc-label">D${i+1}</div>
+      </div>`
+    ).join('') +
+  `</div>`;
+}
+
+// Mini discs for table rows (no labels)
+function miniDiscs(pattern) {
+  if (!pattern) return '—';
+  const arr = Array.isArray(pattern) ? pattern : pattern.split('');
+  return `<div class="discs">` +
+    arr.map(d => `<div class="disc ${d} sm">${d}</div>`).join('') +
+  `</div>`;
+}
+
+function signalBar(name, value, weight, inverted) {
+  if (value == null) return '';
+  const pctVal = value * 100;
+  const isOdd  = value > 0.5;
+  const fillPct = Math.abs(pctVal - 50) * 2;
+  const cls = Math.abs(pctVal - 50) < 3 ? 'bar-neu' : (isOdd ? 'bar-odd' : 'bar-even');
+  const label = isOdd ? `ODD ${pct(value)}` : `EVEN ${pct(1 - value)}`;
+  const wStr = weight != null ? ` <span style="color:var(--muted);font-size:10px">(w=${weight.toFixed(2)})</span>` : '';
+  const invTag = inverted ? ` <span style="color:var(--yellow);font-size:9px">⚠inv</span>` : '';
+  return `
+  <div class="signal-row">
+    <span class="signal-name">${name}${wStr}${invTag}</span>
+    <div class="bar-bg"><div class="bar-fill ${cls}" style="width:${fillPct}%"></div></div>
+    <span class="signal-pct ${isOdd?'odd':'even'}">${label}</span>
+  </div>`;
+}
+
+function reasonsCard(p) {
+  const s = p.signals || {};
+  const inv = p.inverted_signals || [];
+  const sup = p.suppressed_signals || [];
+  const dirLbl = p.prediction.odd_pct > 0.5 ? 'ODD' : 'EVEN';
+
+  const allSigs = [
+    { name:'disc_seq', value:s.disc_seq?.value,  weight:s.disc_seq?.weight, extra: s.disc_seq?.len > 0 ? `matched last ${s.disc_seq.len} disc patterns — ${s.disc_seq.n} occurrences` : null },
+    { name:'persist',  value:s.persist?.value,   weight:s.persist?.weight   },
+    { name:'period',   value:s.period?.value,    weight:s.period?.weight,   extra: s.period?.lag > 0 ? `autocorrelation at lag=${s.period.lag}` : null },
+    { name:'breakout', value:s.breakout?.value,  weight:s.breakout?.weight  },
+    { name:'lstm',     value:s.lstm?.value,      weight:null                },
+  ].filter(x => x.value != null);
+
+  const sorted = [...allSigs].sort((a,b) => (b.weight||0) - (a.weight||0));
+
+  const rows = sorted.map(sig => {
+    const isInv = inv.includes(sig.name);
+    const isSup = sup.includes(sig.name);
+    const dir = sig.value > 0.5 ? 'ODD' : 'EVEN';
+    const strength = Math.abs(sig.value - 0.5) * 200;
+    const dirColor = dir === 'ODD' ? 'var(--green)' : '#60a5fa';
+    const wPct = sig.weight != null ? `${(sig.weight*100).toFixed(1)}% weight` : 'no weight';
+    const badges = [
+      isInv ? `<span style="color:var(--yellow);font-size:9px;font-weight:700;background:rgba(234,179,8,.15);border-radius:3px;padding:1px 4px">⚠ INVERTED</span>` : '',
+      isSup ? `<span style="color:var(--muted);font-size:9px;background:rgba(100,116,139,.15);border-radius:3px;padding:1px 4px">SUPPRESSED</span>` : '',
+    ].filter(Boolean).join(' ');
+    return `
+    <div style="display:grid;grid-template-columns:100px 1fr 60px;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">
+      <div>
+        <div style="font-size:12px;font-weight:600;margin-bottom:2px">${sig.name} ${badges}</div>
+        <div style="font-size:10px;color:var(--muted)">${wPct}</div>
+      </div>
+      <div>
+        <div class="bar-bg"><div class="bar-fill ${dir==='ODD'?'bar-odd':'bar-even'}" style="width:${strength.toFixed(0)}%"></div></div>
+        ${sig.extra ? `<div style="font-size:10px;color:var(--muted);margin-top:3px">${sig.extra}</div>` : ''}
+      </div>
+      <div style="text-align:right;font-size:12px;font-weight:700;color:${dirColor}">${dir}<br><span style="font-size:10px;color:var(--muted)">${pct(dir==='ODD'?sig.value:1-sig.value)}</span></div>
+    </div>`;
+  }).join('');
+
+  const invNote = inv.length ? `
+    <div style="background:rgba(234,179,8,.08);border:1px solid rgba(234,179,8,.2);border-radius:6px;padding:8px 12px;margin-top:10px;font-size:11px;line-height:1.6">
+      ⚠️ <strong style="color:var(--yellow)">${inv.join(', ')}</strong> ${inv.length===1?'was':'were'} inverted —
+      ${inv.length===1?'this signal was':'these signals were'} wrong >50% of the time recently, so the direction was flipped before combining.
+    </div>` : '';
+
+  const streakNote = p.streak >= 3 ? `
+    <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:6px;padding:8px 12px;margin-top:8px;font-size:11px">
+      🔴 <strong>${p.streak} consecutive losses</strong> — signals adjusted via streak correction.
+    </div>` : '';
+
+  return `
+  <div class="card">
+    <h2>Why ${dirLbl}? <span style="font-size:10px;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0">agree=${pct(p.agreement)} · amp=${p.amplifier}×</span></h2>
+    ${rows}
+    ${invNote}
+    ${streakNote}
+  </div>`;
+}
+
+
+function phaseCard(pa) {
+  if (!pa) return '';
+  const c = pa.components || {};
+  const k = pa.kelly;
+  const wrStr  = pa.win_rate != null
+    ? `<strong style="color:var(--green)">${pct(pa.win_rate)}</strong> over ${pa.n_rounds} rounds`
+    : `<span style="color:var(--muted)">only ${pa.n_rounds} rounds — building history</span>`;
+  const kellyStr = k ? `
+    <div class="row"><span class="key">Bet size (half-Kelly)</span><span class="val">${k.bet_pct}% of bankroll</span></div>
+    <div class="row"><span class="key">P(ruin)</span><span class="val">${pct(k.p_ruin)}</span></div>
+    <div class="row"><span class="key">Break-even period</span><span class="val">${k.breakeven} rounds</span></div>
+    <div class="row"><span class="key">E[return] per round</span><span class="val">${k.e_per_round_pct}% of bankroll</span></div>
+  ` : '';
+  return `
+  <div class="card">
+    <h2>Phase Analysis</h2>
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px;flex-wrap:wrap">
+      <div>
+        <div class="phase-action ${pa.action}">${pa.action.replace('_', ' ')}</div>
+        <div class="label" style="margin-top:4px">phase recommendation</div>
+      </div>
+      <div style="font-size:12px;background:rgba(255,255,255,.04);border-radius:6px;padding:6px 10px;font-family:monospace">
+        ${pa.label}
+      </div>
+    </div>
+    <div class="row"><span class="key">Phase win rate</span><span class="val">${wrStr}</span></div>
+    <div class="row"><span class="key">Run type / value</span><span class="val">${c.run_type} ${c.run_val} (len=${c.run_len})</span></div>
+    <div class="row"><span class="key">Balance (last 20)</span><span class="val">${c.balance} — ODD ${pct(c.odd_frac)}</span></div>
+    <div class="row"><span class="key">Volatility (last 10)</span><span class="val">${c.volatility} — ${c.switches} switches</span></div>
+    ${kellyStr}
+  </div>`;
+}
+
+function render(p, history, stats = {}, cfg = {}) {
+  const s    = p.signals;
+  const pred = p.prediction;
+  const conf = p.confidence;
+  const actionCls = conf.action;
+
+  const modeTag = p.mode === 'streak'
+    ? `<span class="streak-badge">STREAK-${p.streak}</span>`
+    : (p.mode === 'adaptive' ? `<span class="mode-badge">adaptive</span>` : '');
+
+  const BET_THRESH = conf.threshold || 0.70;
+  const isBet = conf.bet === true;
+  const directionPct = pred.odd_pct > 0.5 ? pred.odd_pct : pred.even_pct;
+  const directionLbl = pred.odd_pct > 0.5 ? 'ODD' : 'EVEN';
+
+  // Kelly bet sizing
+  const bankroll     = cfg.bankroll      || 5.0;
+  const kellyBase    = cfg.kelly_fraction || 0.03;
+  const confVal      = conf.value || 0;
+  const kellyMult    = confVal >= 0.65 ? 1.5 : confVal >= 0.56 ? 1.0 : 0.5;
+  const betSize      = +(bankroll * kellyBase * kellyMult).toFixed(2);
+  const betSizeStr   = betSize.toFixed(2);
+
+  // Sort newest first regardless of API ordering
+  const sortedHistory = [...history].sort((a, b) => parseInt(b.round_id) - parseInt(a.round_id));
+
+
+  const histRows = sortedHistory.map(e => {
+    const actualStr = e.actual || '';
+    const actualOe  = e.oe || (actualStr ? (actualStr.split('').filter(c=>c==='R').length % 2 ? 'ODD' : 'EVEN') : '—');
+    const predOe    = e.pred_oe || '—';
+    const predConf  = e.confidence != null ? e.confidence
+                    : e.p_oe_odd  != null  ? Math.max(e.p_oe_odd, 1 - e.p_oe_odd) : null;
+    const ePctStr = e.pat_even_pct != null ? (e.pat_even_pct*100).toFixed(1)+'%' : '—';
+    const oPctStr = e.pat_odd_pct  != null ? (e.pat_odd_pct *100).toFixed(1)+'%' : '—';
+    const patSub  = (e.pat_even_lbl || e.pat_odd_lbl)
+      ? ` <span style="color:#60a5fa;font-size:10px">${e.pat_even_lbl||'—'}</span><span style="color:var(--muted);font-size:10px"> ${ePctStr}</span>` +
+        ` <span style="color:#a78bfa;font-size:10px">${e.pat_odd_lbl||'—'}</span><span style="color:var(--muted);font-size:10px"> ${oPctStr}</span>`
+      : '';
+    const predLabel = predOe !== '—'
+      ? `<span style="white-space:nowrap"><span class="${predOe==='ODD'?'odd':'even'}" style="font-weight:600">${predOe}</span>` +
+        (predConf != null ? ` <span style="color:var(--muted);font-size:11px">(${pct(predConf)})</span>` : '') +
+        patSub + `</span>`
+      : predOe;
+
+    // Win Rate: empirical band_wr only — no confidence fallback
+    const hasWR   = e.band_wr != null && e.band_n >= 20;
+    const wrColor = hasWR
+      ? (e.band_wr >= 0.55 ? 'var(--green)' : e.band_wr >= 0.45 ? 'var(--yellow)' : 'var(--red)')
+      : 'var(--muted)';
+    const wrLabel = hasWR
+      ? `<span style="color:${wrColor}">${pct(e.band_wr)}</span><span style="color:var(--muted);font-size:10px"> (n=${e.band_n})</span>`
+      : '—';
+
+    const isBetEntry = e.bet_label === 1 || e.bet_label === true || e.bet_label === 'BET';
+    const betRec   = isBetEntry ? 'BET' : '—';
+    const betColor = isBetEntry ? 'var(--green)' : 'var(--muted)';
+
+    const result  = (e.result && e.result !== 'Not Predicted') ? e.result : '—';
+    const resCls  = result === 'WIN' ? 'win' : result === 'LOSS' ? 'loss' : 'muted';
+    const isPredicted = e.pred_oe && e.pred_oe !== '';
+    const isFlag = actualStr === 'WWWW' || actualStr === 'RRRR';
+    const flagStyle = isFlag ? 'background:rgba(249,115,22,.15);border-left:3px solid #f97316;' : '';
+    const flagBadge = isFlag ? `<span style="color:#f97316;font-weight:700;font-size:10px;margin-left:4px">${actualStr}</span>` : '';
+    return `<tr style="${flagStyle}">
+      <td>${e.round_id}${flagBadge}</td>
+      <td style="min-width:140px">${predLabel}</td>
+      <td>${wrLabel}</td>
+      <td style="color:${betColor};font-weight:600">${betRec}</td>
+      <td>${miniDiscs(actualStr)}</td>
+      <td class="${actualOe === 'ODD' ? 'odd' : 'even'}">${actualOe}</td>
+      <td class="${resCls}">${result}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('root').innerHTML = `
+  <div class="grid">
+
+    <!-- BET BANNER -->
+    <div class="bet-banner ${isBet ? 'yes' : 'no'}">
+      <div>
+        <div class="bet-label ${isBet ? 'yes' : 'no'}">${isBet ? 'BET' : 'NO BET'}</div>
+        <div class="bet-conf" style="margin-top:3px">
+          ${conf.band_n >= 20
+            ? (isBet
+                ? `Win rate <strong style="color:var(--green)">${pct(conf.band_wr)}</strong> (n=${conf.band_n}) · model conf ${pct(conf.value)}`
+                : `Win rate <strong style="color:#64748b">${pct(conf.band_wr)}</strong> (n=${conf.band_n}) · model conf ${pct(conf.value)} — skip this round`)
+            : (isBet
+                ? `Model conf <strong style="color:var(--green)">${pct(conf.value)}</strong> ≥ ${(BET_THRESH*100).toFixed(0)}% · only ${conf.band_n} rounds in band`
+                : `Model conf <strong style="color:#64748b">${pct(conf.value)}</strong> below ${(BET_THRESH*100).toFixed(0)}% — skip this round`)}
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div>
+        <div class="bet-direction ${isBet ? (directionLbl === 'ODD' ? 'odd' : 'even') : ''}"
+             style="${isBet ? '' : 'color:#475569'}">
+          ${directionLbl} ${pct(directionPct)}
+        </div>
+        <div class="bet-round" style="margin-top:6px">Round ${p.next_round}${modeTag}</div>
+        <div class="bet-conf" style="margin-top:4px">band: ${conf.band} · ${conf.band_n >= 20 ? `${pct(conf.band_wr)} actual WR (n=${conf.band_n})` : `only ${conf.band_n} rounds`}</div>
+      </div>
+      <div class="divider"></div>
+      ${(() => {
+        const ea = p.even_analysis || {};
+        const oa = p.odd_analysis  || {};
+        const wwPct = ea.wwww_next5_pct ?? 0;
+        const rrPct = ea.rrrr_next5_pct ?? 0;
+        const evenBestLbl = wwPct >= rrPct ? 'WWWW' : 'RRRR';
+        const evenBestPct = Math.max(wwPct, rrPct);
+        const swProb = oa.switch_prob ?? 0;
+        const curLbl = oa.cur_run_lbl;
+        const wwwrPct = curLbl === 'RRRW' ? swProb : (1 - swProb);
+        const rrrwPct = curLbl === 'WWWR' ? swProb : (1 - swProb);
+        const oddBestLbl = wwwrPct >= rrrwPct ? 'WWWR' : 'RRRW';
+        const oddBestPct = Math.max(wwwrPct, rrrwPct);
+        return `<div>
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Pattern</div>
+          <div style="font-size:13px;font-weight:700;color:#60a5fa;margin-bottom:4px">${evenBestLbl} <span style="font-size:11px;font-weight:400">${evenBestPct > 0 ? (evenBestPct*100).toFixed(1)+'%' : '—'}</span></div>
+          <div style="font-size:13px;font-weight:700;color:#a78bfa">${oddBestLbl} <span style="font-size:11px;font-weight:400">${oddBestPct > 0 ? (oddBestPct*100).toFixed(1)+'%' : '—'}</span></div>
+        </div>`;
+      })()}
+      <div class="divider"></div>
+      <div>
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Bet size</div>
+        <div style="font-size:22px;font-weight:800;color:${isBet ? 'var(--green)' : '#475569'}">${isBet ? betSizeStr : '—'} <span style="font-size:11px;font-weight:400;color:var(--muted)">USDT</span></div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px">${isBet ? `${(kellyMult*kellyBase*100).toFixed(1)}% of ${bankroll} USDT` : 'skip round'}</div>
+        <div style="margin-top:8px;display:flex;align-items:center;gap:6px">
+          <span style="font-size:10px;color:var(--muted)">Bankroll:</span>
+          <input id="bankroll-input" type="number" min="1" step="0.5" value="${bankroll}"
+            style="width:70px;background:#0f172a;border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px;padding:3px 6px;outline:none"
+            onchange="updateBankroll(this.value)">
+          <span style="font-size:10px;color:var(--muted)">USDT</span>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Last round ${p.last_id}</div>
+        ${discDots(p.last_discs)}
+        <div style="margin-top:6px;color:var(--muted);font-size:12px">${p.last_oe}</div>
+      </div>
+    </div>
+
+    <!-- ODD/EVEN -->
+    <div class="card">
+      <h2>ODD / EVEN</h2>
+      <div style="display:flex;gap:24px;margin-bottom:12px">
+        <div>
+          <div class="big odd">${fmt(pred.odd_pct)}<span style="font-size:20px">%</span></div>
+          <div class="label">ODD</div>
+        </div>
+        <div>
+          <div class="big even">${fmt(pred.even_pct)}<span style="font-size:20px">%</span></div>
+          <div class="label">EVEN</div>
+        </div>
+      </div>
+      ${(() => {
+        const oa = p.odd_analysis  || {};
+        const ea = p.even_analysis || {};
+        const v  = (val, fb) => val != null ? (val*100).toFixed(1)+'%' : (fb != null ? (fb*100).toFixed(1)+'%' : '—');
+
+        // ODD: P(WWWR next) = switch_prob if cur is RRRW, else 1-switch_prob
+        const curOdd   = oa.cur_run_lbl;
+        const swProb   = oa.switch_prob;
+        const pWwwr    = curOdd === 'RRRW' ? swProb : (swProb != null ? 1 - swProb : null);
+        const pRrrw    = curOdd === 'WWWR' ? swProb : (swProb != null ? 1 - swProb : null);
+
+        // EVEN: P(occurs within next 5 EVEN rounds | gap so far)
+        const wwpct  = ea.wwww_next5_pct;
+        const rrpct  = ea.rrrr_next5_pct;
+
+        return `
+        <div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Pattern analysis</div>
+          <div class="row"><span class="key">WWWR (ODD)</span><span class="val">${v(pWwwr, null)}</span></div>
+          <div class="row"><span class="key">RRRW (ODD)</span><span class="val">${v(pRrrw, null)}</span></div>
+          <div class="row"><span class="key">WWWW in next 5</span><span class="val">${v(wwpct, null)}</span></div>
+          <div class="row"><span class="key">RRRR in next 5</span><span class="val">${v(rrpct, null)}</span></div>
+        </div>`;
+      })()}
+    </div>
+
+    <!-- SIGNALS -->
+    <div class="card">
+      <h2>Signals ${modeTag}</h2>
+      <div class="signal-bar-wrap">
+        ${signalBar('run',      s.run.value,           s.run.weight,      p.inverted_signals?.includes('run'))}
+        ${signalBar('momentum', s.momentum.value,      s.momentum.weight, p.inverted_signals?.includes('momentum'))}
+        ${signalBar('seq',      s.seq.value,           s.seq.weight,      p.inverted_signals?.includes('seq'))}
+        ${signalBar('disc_seq', s.disc_seq.value,      s.disc_seq.weight, p.inverted_signals?.includes('disc_seq'))}
+        ${signalBar('persist',  s.persist.value,       s.persist.weight,  p.inverted_signals?.includes('persist'))}
+        ${signalBar('recent',   s.recent?.value,       s.recent?.weight,  p.inverted_signals?.includes('recent'))}
+        ${signalBar('period',   s.period?.value,       s.period?.weight,  p.inverted_signals?.includes('period'))}
+        ${signalBar('reversal', s.reversal?.value,     s.reversal?.weight,p.inverted_signals?.includes('reversal'))}
+        ${signalBar('breakout', s.breakout?.value,     s.breakout?.weight,p.inverted_signals?.includes('breakout'))}
+        ${signalBar('ml',       s.ml.value,            null,              p.inverted_signals?.includes('ml'))}
+        ${signalBar('lstm',     s.lstm.value,          null,              p.inverted_signals?.includes('lstm'))}
+      </div>
+      <div style="margin-top:10px;color:var(--muted);font-size:11px">
+        agree=${pct(p.agreement)}&nbsp;&nbsp;amp=${p.amplifier.toFixed(2)}&nbsp;&nbsp;deficit=${p.deficit > 0 ? '+' : ''}${p.deficit.toFixed(1)}
+        &nbsp;&nbsp;run=${s.run.run_len}&nbsp;&nbsp;seq=${s.seq.len}×${s.seq.n}&nbsp;&nbsp;dseq=${s.disc_seq.len}×${s.disc_seq.n}
+      </div>
+    </div>
+
+    <!-- ACCURACY -->
+    <div class="card">
+      <h2>Accuracy</h2>
+      ${conf.band_n >= 20
+        ? `<div class="row" style="margin-bottom:8px;border-bottom:1px solid var(--border);padding-bottom:8px">
+             <span class="key" style="font-weight:600">Actual win rate (band ${conf.band})</span>
+             <span class="val" style="font-size:18px;font-weight:700;color:${conf.band_wr >= 0.55 ? 'var(--green)' : conf.band_wr >= 0.45 ? 'var(--yellow)' : 'var(--red)'}">${pct(conf.band_wr)}</span>
+           </div>`
+        : ''}
+      <div class="row"><span class="key">ODD/EVEN (model)</span><span class="val">${pct(p.accuracy.oe)}</span></div>
+      <div class="row"><span class="key">R-count (model)</span><span class="val">${pct(p.accuracy.r_count)}</span></div>
+      <div class="row"><span class="key">Pattern (model)</span><span class="val">${pct(p.accuracy.pattern)}</span></div>
+      ${p.realtime.n > 0 ? `
+      <div class="row" style="margin-top:8px"><span class="key">ODD/EVEN (live, n=${p.realtime.n})</span><span class="val">${pct(p.realtime.oe)}</span></div>
+      <div class="row"><span class="key">R-count (live)</span><span class="val">${pct(p.realtime.r_count)}</span></div>
+      ` : '<div class="row" style="margin-top:8px"><span class="key" style="color:var(--muted)">No live scored rounds yet</span></div>'}
+    </div>
+
+    <!-- PREDICTION REASONS -->
+    ${reasonsCard(p)}
+
+    <!-- PHASE ANALYSIS -->
+    ${phaseCard(p.phase_analysis)}
+
+
+    <!-- HISTORY -->
+    <div class="card" style="grid-column: 1 / -1; overflow-x: auto;">
+      <h2>Recent rounds (last 30)</h2>
+      ${(() => {
+        const s1 = stats.last100  || {};
+        const s2 = stats.last200  || {};
+        const sb = stats.bet_only || {};
+        const wrColor = wr => wr == null ? 'var(--muted)' : wr >= 0.53 ? 'var(--green)' : wr >= 0.47 ? 'var(--yellow)' : 'var(--red)';
+        const cell = (label, wr, n, extra) => `
+          <div style="text-align:center;padding:5px 12px;border-right:1px solid var(--border)">
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px">${label}</div>
+            <div style="font-size:15px;font-weight:700;color:${wrColor(wr)}">${wr != null ? (wr*100).toFixed(1)+'%' : '—'}</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:1px">${n != null ? `${extra||''}n=${n}` : 'no data'}</div>
+          </div>`;
+        return `<div style="display:flex;background:rgba(255,255,255,.03);border-radius:8px;margin-bottom:14px;overflow:hidden">
+          ${cell('Last 100', s1.wr, s1.n, s1.win != null ? `${s1.win}W · ` : '')}
+          ${cell('Last 200', s2.wr, s2.n, s2.win != null ? `${s2.win}W · ` : '')}
+          ${cell('BET-only', sb.wr, sb.n, sb.win != null ? `${sb.win}W · ` : '')}
+          <div style="text-align:center;padding:8px 16px">
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Total Predicted</div>
+            <div style="font-size:20px;font-weight:700">${stats.total_predicted ?? '—'}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">rounds scored</div>
+          </div>
+        </div>`;
+      })()}
+      <table>
+        <thead>
+          <tr>
+            <th>Round</th>
+            <th style="min-width:140px">Pred OE</th>
+            <th>Win Rate</th>
+            <th>Bet</th>
+            <th>Actual discs</th>
+            <th>Actual OE</th>
+            <th>Result</th>
+          </tr>
+        </thead>
+        <tbody>${histRows || '<tr><td colspan="7" style="color:var(--muted);padding:12px">No history yet</td></tr>'}</tbody>
+      </table>
+    </div>
+
+  </div>`;
+}
+
+// Poll /api/status every 5 s; reload full data only when prediction file changes.
+let _lastMtime = 0;
+async function pollStatus() {
+  try {
+    const res = await fetch('/api/status');
+    if (!res.ok) return;
+    const { mtime } = await res.json();
+    if (mtime !== _lastMtime) {
+      _lastMtime = mtime;
+      load();
+      if (document.getElementById('data-panel').style.display !== 'none') {
+        loadData();
+      }
+    }
+  } catch {}
+}
+
+load();
+loadConfig();
+setInterval(pollStatus, 5000);
+
+// ── Tab switching ─────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.getElementById('tab-pred').classList.toggle('active', tab === 'pred');
+  document.getElementById('tab-data').classList.toggle('active', tab === 'data');
+  document.getElementById('root').style.display       = tab === 'pred' ? '' : 'none';
+  document.getElementById('data-panel').style.display = tab === 'data' ? '' : 'none';
+  if (tab === 'data') loadData();
+}
+
+// ── Data Browser ──────────────────────────────────────────────────────────────
+let _db = { page: 1, size: 50, search: '', sort: 'id', dir: 'desc' };
+let _searchTimer = null;
+
+async function loadData() {
+  const { page, size, search, sort, dir } = _db;
+  const url = `/api/data?page=${page}&size=${size}&search=${encodeURIComponent(search)}&sort=${sort}&dir=${dir}`;
+  const res = await fetch(url);
+  if (!res.ok) return;
+  const data = await res.json();
+  renderData(data);
+}
+
+function sortBy(col) {
+  if (col === 'id') { _db.sort = 'id'; _db.dir = 'desc'; }
+  else if (_db.sort === col) _db.dir = _db.dir === 'asc' ? 'desc' : 'asc';
+  else { _db.sort = col; _db.dir = 'asc'; }
+  _db.page = 1;
+  loadData();
+}
+
+function sortIcon(col) {
+  if (_db.sort !== col) return '<span class="sort-icon">⇅</span>';
+  return `<span class="sort-icon">${_db.dir === 'asc' ? '▲' : '▼'}</span>`;
+}
+
+function renderData(data) {
+  const { total, page, pages, rows } = data;
+  const start = (page - 1) * _db.size + 1;
+  const end   = Math.min(page * _db.size, total);
+
+  const discDot = (d) => `<span class="disc sm ${d}">${d}</span>`;
+
+  const tableRows = rows.map(r => {
+    const isRRRR  = r.pattern === 'RRRR';
+    const isWWWW  = r.pattern === 'WWWW';
+    const isFlag  = isRRRR || isWWWW;
+    const oeCls   = r.oe === 'ODD' ? 'odd' : 'even';
+    const predOeCls = r.pred_oe === 'ODD' ? 'odd' : r.pred_oe === 'EVEN' ? 'even' : 'muted';
+    const resCls  = r.result === 'WIN' ? 'win' : r.result === 'LOSS' ? 'loss' : r.result ? 'muted' : '';
+    const rowStyle = isFlag ? 'background:rgba(249,115,22,.12);border-left:3px solid rgba(249,115,22,.6);' : '';
+    const flagCell = isRRRR ? `<span style="color:#f97316;font-weight:700;font-size:11px">RRRR</span>`
+                   : isWWWW ? `<span style="color:#f97316;font-weight:700;font-size:11px">WWWW</span>`
+                   : '';
+    const isBetRow = r.bet === 1 || r.bet === true || r.bet === 'BET';
+    const betColor = isBetRow ? 'var(--green)' : 'var(--muted)';
+    const betLabel = isBetRow ? 'BET' : '—';
+    const confStr  = r.confidence ? pct(r.confidence) : '—';
+    return `<tr style="${rowStyle}">
+      <td>${r.id}</td>
+      <td><div class="discs">${[r.disc1,r.disc2,r.disc3,r.disc4].map(discDot).join('')}</div></td>
+      <td>${flagCell}</td>
+      <td class="${oeCls}">${r.oe}</td>
+      <td class="${predOeCls}">${r.pred_oe || '—'}</td>
+      <td style="color:${betColor}">${confStr}</td>
+      <td style="color:${betColor};font-weight:${isBetRow?'600':'400'}">${betLabel}</td>
+      <td class="${resCls}">${r.result || '—'}</td>
+    </tr>`;
+  }).join('');
+
+  // Pagination buttons — show up to 7 page numbers
+  const pageButtons = () => {
+    let btns = '';
+    const lo = Math.max(1, page - 3), hi = Math.min(pages, page + 3);
+    if (lo > 1)     btns += `<button onclick="goPage(1)">1</button>${lo > 2 ? '<span class="pg-info">…</span>' : ''}`;
+    for (let p = lo; p <= hi; p++)
+      btns += `<button class="${p === page ? 'active' : ''}" onclick="goPage(${p})">${p}</button>`;
+    if (hi < pages) btns += `${hi < pages - 1 ? '<span class="pg-info">…</span>' : ''}<button onclick="goPage(${pages})">${pages}</button>`;
+    return btns;
+  };
+
+  document.getElementById('data-panel').innerHTML = `
+    <div class="data-toolbar">
+      <input id="db-search" type="text" placeholder="Search ID, pattern, ODD/EVEN, WIN/LOSS…"
+             value="${_db.search}" oninput="onSearch(this.value)">
+      <select onchange="onSizeChange(this.value)">
+        ${[25,50,100,200].map(n=>`<option value="${n}" ${n===_db.size?'selected':''}>${n} / page</option>`).join('')}
+      </select>
+      <div class="info">${total.toLocaleString()} records — showing ${start}–${end}</div>
+    </div>
+    <div class="data-table-wrap">
+      <table>
+        <thead><tr>
+          <th onclick="sortBy('id')">ID ${sortIcon('id')}</th>
+          <th>Discs</th>
+          <th onclick="sortBy('flag')">Flag ${sortIcon('flag')}</th>
+          <th onclick="sortBy('oe')">Actual OE ${sortIcon('oe')}</th>
+          <th onclick="sortBy('pred_oe')">Pred OE ${sortIcon('pred_oe')}</th>
+          <th onclick="sortBy('confidence')">Conf ${sortIcon('confidence')}</th>
+          <th onclick="sortBy('bet')">Bet ${sortIcon('bet')}</th>
+          <th onclick="sortBy('result')">Result ${sortIcon('result')}</th>
+        </tr></thead>
+        <tbody>${tableRows || '<tr><td colspan="8" style="color:var(--muted);padding:16px">No records found</td></tr>'}</tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <button onclick="goPage(${page-1})" ${page<=1?'disabled':''}>&#8592; Prev</button>
+      ${pageButtons()}
+      <button onclick="goPage(${page+1})" ${page>=pages?'disabled':''}>Next &#8594;</button>
+      <span class="pg-info">Page ${page} of ${pages}</span>
+    </div>`;
+}
+
+function goPage(p) { _db.page = p; loadData(); }
+function onSizeChange(v) { _db.size = parseInt(v); _db.page = 1; loadData(); }
+function onSearch(v) {
+  clearTimeout(_searchTimer);
+  _searchTimer = setTimeout(() => { _db.search = v; _db.page = 1; loadData(); }, 300);
+}
+</script>
+</body>
+</html>
