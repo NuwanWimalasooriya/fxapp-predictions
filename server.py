@@ -2,7 +2,7 @@
 DS3M Web Dashboard — Flask backend.
 Run: python server.py
 """
-import os, json, sqlite3, subprocess, sys, threading, secrets
+import os, json, sqlite3, subprocess, sys, threading, secrets, hashlib
 from flask import (Flask, jsonify, send_from_directory, request,
                    session, redirect, url_for, render_template_string)
 from werkzeug.security import check_password_hash
@@ -48,11 +48,27 @@ def _no_cache(response):
     response.headers['Pragma'] = 'no-cache'
     return response
 
+def _cipher_key():
+    secret = _env.get('SECRET_KEY', 'ds3m-default-key')
+    return hashlib.sha256(secret.encode()).digest()
+
+def _decrypt(hex_text):
+    key = _cipher_key()
+    data = bytes.fromhex(hex_text)
+    key_stream = (key * (len(data) // len(key) + 1))[:len(data)]
+    return bytes(a ^ b for a, b in zip(data, key_stream)).decode('utf-8')
+
 def _load_credentials():
     creds = _load_json(CREDS_PATH)
     if not creds or 'username' not in creds or 'password_hash' not in creds:
         return None
-    return creds
+    try:
+        return {
+            'username':      _decrypt(creds['username']),
+            'password_hash': creds['password_hash'],
+        }
+    except Exception:
+        return None
 
 _predict_lock = threading.Lock()
 

@@ -577,6 +577,40 @@ def rhythm_breakout_signal(oe_arr, idx, look_back_runs=5, normal_max=4, breakout
     return 0.5 + (p_odd - 0.5) * 0.85
 
 
+# ── Signal: Post-WWWW/RRRR offset effect ──────────────────────────────────────
+def post_special_pattern_signal(pat_arr, idx):
+    """
+    Empirical offset effects (n=690/761, statistically robust):
+      - 5 rounds after WWWW  → ODD  53.8%  (p_odd=0.538)
+      - 4 rounds after RRRR  → EVEN 53.6%  (p_odd=0.464)
+      - consecutive WWWW×2   → EVEN 52.5%  (p_odd=0.475)
+      - consecutive RRRR×2   → EVEN 52.1%  (p_odd=0.479)
+    Returns p_odd float or None.
+    """
+    if idx < 5:
+        return None
+    last_ww = last_rr = None
+    for i in range(idx - 1, max(0, idx - 25), -1):
+        if pat_arr[i] == 'WWWW' and last_ww is None:
+            last_ww = i
+        if pat_arr[i] == 'RRRR' and last_rr is None:
+            last_rr = i
+        if last_ww is not None and last_rr is not None:
+            break
+    since_ww = (idx - last_ww) if last_ww is not None else 999
+    since_rr = (idx - last_rr) if last_rr is not None else 999
+    signals = []
+    if since_ww == 5:
+        signals.append(0.538)
+    if since_rr == 4:
+        signals.append(0.464)
+    if since_ww == 1 and last_ww is not None and last_ww > 0 and pat_arr[last_ww - 1] == 'WWWW':
+        signals.append(0.475)
+    if since_rr == 1 and last_rr is not None and last_rr > 0 and pat_arr[last_rr - 1] == 'RRRR':
+        signals.append(0.479)
+    return sum(signals) / len(signals) if signals else None
+
+
 # ── Signal: Persistent run continuation ───────────────────────────────────────
 def persistent_run_signal(oe_arr, idx, min_run=6):
     """
@@ -1040,18 +1074,21 @@ def update_csv_results():
             json.dump(log, f, indent=2)
         os.replace(_log_tmp2, LOG_PATH)
 
-    # Ensure pat_even/pat_odd columns exist
+    # Ensure pat_even/pat_odd/breakdown columns exist
     import sqlite3 as _sq, csv as _csv
     conn = _sq.connect(DB_PATH, timeout=10)
     conn.execute('PRAGMA journal_mode=WAL')
     _cols = {r[1] for r in conn.execute('PRAGMA table_info(rounds)').fetchall()}
-    for _col, _type in [('pat_even', 'TEXT'), ('pat_odd', 'TEXT')]:
-        if _col not in _cols:
-            conn.execute(f'ALTER TABLE rounds ADD COLUMN {_col} TEXT DEFAULT ""')
+    for _col, _type in [('pat_even', 'TEXT DEFAULT ""'), ('pat_odd', 'TEXT DEFAULT ""'),
+                         ('wwww_pct', 'REAL DEFAULT 0'), ('wwww_gap', 'INTEGER DEFAULT 0'),
+                         ('rrrr_pct', 'REAL DEFAULT 0'), ('rrrr_gap', 'INTEGER DEFAULT 0'),
+                         ('w3r1_pct', 'REAL DEFAULT 0'), ('r3w1_pct', 'REAL DEFAULT 0')]:
+        if _col.split()[0] not in _cols:
+            conn.execute(f'ALTER TABLE rounds ADD COLUMN {_col.split()[0]} {" ".join(_col.split()[1:])}')
     conn.commit()
     conn.close()
 
-    # 1. Update pred_oe/confidence/bet/pat_even/pat_odd for all rounds with predictions
+    # 1. Update pred_oe/confidence/bet/pat_even/pat_odd/breakdown for all rounds with predictions
     pred_updates = []
     for rid, entry in log.items():
         if not entry.get('pred_oe'):
@@ -1063,14 +1100,22 @@ def update_csv_results():
         op       = entry.get('pat_odd_pct')
         pat_even = f"{entry['pat_even_lbl']}({ep*100:.1f}%)" if entry.get('pat_even_lbl') and ep is not None else ''
         pat_odd  = f"{entry['pat_odd_lbl']}({op*100:.1f}%)"  if entry.get('pat_odd_lbl')  and op is not None else ''
-        pred_updates.append((pred_oe_fmt, conf, bet_int, pat_even, pat_odd, int(rid)))
+        wwww_pct = float(entry.get('wwww_pct') or 0)
+        wwww_gap = int(entry.get('wwww_gap') or 0)
+        rrrr_pct = float(entry.get('rrrr_pct') or 0)
+        rrrr_gap = int(entry.get('rrrr_gap') or 0)
+        w3r1_pct = float(entry.get('w3r1_pct') or 0)
+        r3w1_pct = float(entry.get('r3w1_pct') or 0)
+        pred_updates.append((pred_oe_fmt, conf, bet_int, pat_even, pat_odd,
+                             wwww_pct, wwww_gap, rrrr_pct, rrrr_gap, w3r1_pct, r3w1_pct, int(rid)))
 
     conn = _sq.connect(DB_PATH, timeout=10)
     conn.execute('PRAGMA journal_mode=WAL')
     try:
         if pred_updates:
             conn.executemany(
-                "UPDATE rounds SET pred_oe=?, confidence=?, bet=?, pat_even=?, pat_odd=? WHERE id=?",
+                "UPDATE rounds SET pred_oe=?, confidence=?, bet=?, pat_even=?, pat_odd=?, "
+                "wwww_pct=?, wwww_gap=?, rrrr_pct=?, rrrr_gap=?, w3r1_pct=?, r3w1_pct=? WHERE id=?",
                 pred_updates
             )
         # Compute WIN/LOSS directly from DB: find all rows with pred_oe set but result still
@@ -1094,7 +1139,8 @@ def update_csv_results():
             conn.commit()
         # Always sync CSV so it reflects the latest DB state
         rows = conn.execute(
-            'SELECT id,disc1,disc2,disc3,disc4,pattern,flag,oe,result,pred_oe,bet,pat_even,pat_odd '
+            'SELECT id,disc1,disc2,disc3,disc4,pattern,flag,oe,result,pred_oe,bet,pat_even,pat_odd,'
+            'wwww_pct,wwww_gap,rrrr_pct,rrrr_gap,w3r1_pct,r3w1_pct '
             'FROM rounds ORDER BY id'
         ).fetchall()
     finally:
@@ -1103,7 +1149,8 @@ def update_csv_results():
     with open(_tmp, 'w', newline='', encoding='utf-8') as _f:
         _w = _csv.writer(_f)
         _w.writerow(['id','disc1','disc2','disc3','disc4','pattern','flag','oe',
-                     'result','pred_oe','bet','pat_even','pat_odd'])
+                     'result','pred_oe','bet','pat_even','pat_odd',
+                     'wwww_pct','wwww_gap','rrrr_pct','rrrr_gap','w3r1_pct','r3w1_pct'])
         _w.writerows(rows)
     import os as _os; _os.replace(_tmp, CSV_PATH)
 
@@ -1319,6 +1366,42 @@ def _anti_streak_signal(log, streak=4):
     return None
 
 
+def _loss_streak_autopsy(log, min_streak=5):
+    """
+    When loss streak >= min_streak, find signals that were wrong on every loss
+    in that streak. Returns set of signal names to hard-suppress this round.
+    Only fires when ALL recent min_streak predictions were losses.
+    """
+    scored = sorted(
+        [e for e in log.values() if e.get('pred_oe') and e.get('actual')],
+        key=lambda e: int(e.get('round_id', 0))
+    )
+    if len(scored) < min_streak:
+        return set()
+    last = scored[-min_streak:]
+    all_losses = not any(
+        e['pred_oe'] == ('ODD' if e['actual'].count('R') % 2 else 'EVEN')
+        for e in last
+    )
+    if not all_losses:
+        return set()
+    bad = set()
+    for name in ('run', 'momentum', 'seq', 'disc_seq', 'recent', 'ml', 'lstm', 'period'):
+        wrong = total = 0
+        for entry in last:
+            eff = entry.get('effective_signals')
+            p = (eff.get(name) if eff else None) or entry.get('signals', {}).get(name)
+            if p is None or abs(p - 0.5) < 0.02:
+                continue
+            actual_oe = 'ODD' if entry['actual'].count('R') % 2 else 'EVEN'
+            if ('ODD' if p > 0.5 else 'EVEN') != actual_oe:
+                wrong += 1
+            total += 1
+        if total >= 3 and wrong / total >= 0.80:
+            bad.add(name)
+    return bad
+
+
 def _realtime_accuracy_signal(log, n=15):
     """
     For each direction, compute recent win rate.
@@ -1437,7 +1520,8 @@ _anti_streak_p         = _anti_streak_signal(_log_for_corrections)
 _rt_acc_signal         = _realtime_accuracy_signal(_log_for_corrections)
 _sig_acc               = _recent_signal_accuracy(_log_for_corrections)
 _short_streak_inverts, _short_streak_suppress = _per_signal_short_streak(_log_for_corrections)
-_cur_loss_streak = _consecutive_loss_streak(_log_for_corrections)
+_cur_loss_streak  = _consecutive_loss_streak(_log_for_corrections)
+_streak_autopsy   = _loss_streak_autopsy(_log_for_corrections, min_streak=5)
 
 # ── Predict ────────────────────────────────────────────────────────────────────
 ALL_PATTERNS = [a+b+c+d for a in 'WR' for b in 'WR' for c in 'WR' for d in 'WR']
@@ -1485,6 +1569,9 @@ def predict_round(df_src, runs_src, full_oe_arr, full_pat_arr, lstm_src=None):
     # ── Signal B: rhythm breakout (short bursts → long flow) ──────────────
     p_breakout = rhythm_breakout_signal(full_oe_arr, sig_idx)
 
+    # ── Signal SP: post-WWWW/RRRR offset effect ──────────────────────────
+    p_special = post_special_pattern_signal(full_pat_arr, sig_idx)
+
     # ── Signal 3: OE sequence matcher (window 5-20) ───────────────────────
     p_seq, pat_votes_seq, matched_len, n_matches = \
         sequence_signal(full_oe_arr, full_pat_arr, sig_idx)
@@ -1525,6 +1612,7 @@ def predict_round(df_src, runs_src, full_oe_arr, full_pat_arr, lstm_src=None):
     p_period_val   = p_period   if p_period   is not None else 0.5
     p_reversal_val = p_reversal if p_reversal is not None else 0.5
     p_breakout_val = p_breakout if p_breakout is not None else 0.5
+    p_special_val  = p_special  if p_special  is not None else 0.5
 
     # ── Anti-predictive signal gate ───────────────────────────────────────
     # If a signal's recent accuracy (from pred_log) is below 50% with enough
@@ -1569,8 +1657,10 @@ def predict_round(df_src, runs_src, full_oe_arr, full_pat_arr, lstm_src=None):
         if lstm_p_odd  is not None: lstm_p_odd = _streak_flip(lstm_p_odd, 'lstm')
 
     # Suppress (zero-weight) signals that are >70% wrong in the last 5 rounds — clearly anti-predictive
+    # Also applies autopsy suppression when 5+ consecutive losses occur
+    _all_suppress = _short_streak_suppress | _streak_autopsy
     def _suppress_sig(val, name):
-        return 0.5 if name in _short_streak_suppress else val
+        return 0.5 if name in _all_suppress else val
     p_run          = _suppress_sig(p_run,          'run')
     p_momentum     = _suppress_sig(p_momentum,     'momentum')
     p_seq_val      = _suppress_sig(p_seq_val,      'seq')
@@ -1609,15 +1699,22 @@ def predict_round(df_src, runs_src, full_oe_arr, full_pat_arr, lstm_src=None):
     else:
         w_breakout_raw = 0.0
 
-    # Combined priority weight (period + reversal + recent + breakout), capped at 55%
-    priority_total = min(0.55, w_period_raw + w_reversal_raw + w_recent_raw + w_breakout_raw)
-    raw_sum = w_period_raw + w_reversal_raw + w_recent_raw + w_breakout_raw
+    # Special pattern signal weight: fixed small weight when active (3.5% edge → 0.12 weight)
+    if p_special is not None:
+        w_special_raw = min(0.12, abs(p_special_val - 0.5) * 3.0)
+    else:
+        w_special_raw = 0.0
+
+    # Combined priority weight (period + reversal + recent + breakout + special), capped at 55%
+    priority_total = min(0.55, w_period_raw + w_reversal_raw + w_recent_raw + w_breakout_raw + w_special_raw)
+    raw_sum = w_period_raw + w_reversal_raw + w_recent_raw + w_breakout_raw + w_special_raw
     if raw_sum > 0:
         ratio = priority_total / raw_sum
         w_period_raw   *= ratio
         w_reversal_raw *= ratio
         w_recent_raw   *= ratio
         w_breakout_raw *= ratio
+        w_special_raw  *= ratio
 
     if _aw is not None:
         w_run      = _aw.get('run',       0.0)
@@ -1664,6 +1761,7 @@ def predict_round(df_src, runs_src, full_oe_arr, full_pat_arr, lstm_src=None):
         'period':   round(p_period_val, 3)  if p_period  is not None else None,
         'reversal': round(p_reversal_val, 3) if p_reversal is not None else None,
         'breakout': round(p_breakout_val, 3) if p_breakout is not None else None,
+        'special':  round(p_special_val, 3) if p_special  is not None else None,
         'ml':       round(ml_p_odd, 3)      if ml_p_odd  is not None else None,
         'lstm':     round(lstm_p_odd, 3)    if lstm_p_odd is not None else None,
     }
@@ -1761,10 +1859,9 @@ def predict_round(df_src, runs_src, full_oe_arr, full_pat_arr, lstm_src=None):
                  (p_persist_val, w_persist), (ml_p_odd, w_ml),
                  (p_recent_val, w_recent), (p_period_val, w_period),
                  (p_reversal_val, w_reversal), (p_breakout_val, w_breakout)]
-    if lstm_p_odd is not None:
-        signals_w.append((lstm_p_odd, w_lstm))
-    if p_clarity is not None:
-        signals_w.append((p_clarity, w_clarity))
+    if p_special  is not None: signals_w.append((p_special_val, w_special_raw))
+    if lstm_p_odd is not None: signals_w.append((lstm_p_odd, w_lstm))
+    if p_clarity  is not None: signals_w.append((p_clarity, w_clarity))
     p_base = sum(v * w for v, w in signals_w)
 
     # Step 2: consensus amplification
@@ -1774,6 +1871,7 @@ def predict_round(df_src, runs_src, full_oe_arr, full_pat_arr, lstm_src=None):
     if p_reversal is not None: active_signals.append(p_reversal_val)
     if p_breakout is not None: active_signals.append(p_breakout_val)
     if p_persist  is not None: active_signals.append(p_persist_val)
+    if p_special  is not None: active_signals.append(p_special_val)
     if lstm_p_odd is not None: active_signals.append(lstm_p_odd)
 
     # Count how many agree with the majority direction
@@ -1834,6 +1932,7 @@ def predict_round(df_src, runs_src, full_oe_arr, full_pat_arr, lstm_src=None):
         'clarity':    round(p_clarity, 3)      if p_clarity  is not None else None,
         'reversal':   round(p_reversal_val, 3) if p_reversal is not None else None,
         'breakout':   round(p_breakout_val, 3) if p_breakout is not None else None,
+        'special':    round(p_special_val, 3)  if p_special  is not None else None,
         'deficit':    round(deficit, 3),
         'run_len':    cur_run_len,
         'persist_len':persist_run_len,
@@ -1857,6 +1956,7 @@ def predict_round(df_src, runs_src, full_oe_arr, full_pat_arr, lstm_src=None):
         'w_period':     round(w_period, 3),
         'w_reversal':   round(w_reversal, 3),
         'w_breakout':   round(w_breakout, 3),
+        'w_special':    round(w_special_raw, 3),
         'p_base':       round(p_base, 3),
         'dir_corr':        round(_dir_correction, 3),
         'anti_streak':     round(_anti_streak_p, 3) if _anti_streak_p is not None else None,
@@ -2561,6 +2661,18 @@ if results:
     ww_pct = f"{ww_gap_p:.1%} (gap={since_ww}, n={ww_n})" if ww_gap_p is not None else "n/a"
     rr_pct = f"{rr_gap_p:.1%} (gap={since_rr}, n={rr_n})" if rr_gap_p is not None else "n/a"
 
+    if _next_key in log:
+        log[_next_key]['wwww_pct'] = round(float(ww_gap_p), 4) if ww_gap_p is not None else None
+        log[_next_key]['wwww_gap'] = int(since_ww)
+        log[_next_key]['rrrr_pct'] = round(float(rr_gap_p), 4) if rr_gap_p is not None else None
+        log[_next_key]['rrrr_gap'] = int(since_rr)
+        log[_next_key]['w3r1_pct'] = round(float(rc0.get(1, 0)), 4)
+        log[_next_key]['r3w1_pct'] = round(float(rc0.get(3, 0)), 4)
+        _log_tmp3 = LOG_PATH + '.tmp'
+        with open(_log_tmp3, 'w') as f:
+            json.dump(log, f, indent=2)
+        os.replace(_log_tmp3, LOG_PATH)
+
     p_odd_cur   = oe0.get('ODD', 0.5)
     # If signals were systematically wrong every round during streak, invert the prediction
     band_lbl    = current_band_label(p_odd_cur)
@@ -2669,6 +2781,7 @@ if results:
         'streak':             int(si.get('streak', 0)),
         'suppressed_signals':       suppressed,
         'suppressed_short_signals': suppressed_short,
+        'suppressed_autopsy':       sorted(_streak_autopsy),
         'inverted_signals':         inverted,
         'loss_streak':              int(_cur_loss_streak),
         'agreement':          round(float(si['agreement']), 3),

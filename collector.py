@@ -32,8 +32,30 @@ def _load_env():
     return env
 
 _env       = _load_env()
-USERNAME   = _env.get('USERNAME', '')
-PASSWORD   = _env.get('PASSWORD', '')
+
+def _cipher_key():
+    import hashlib
+    secret = _env.get('SECRET_KEY', 'ds3m-default-key')
+    return hashlib.sha256(secret.encode()).digest()
+
+def _decrypt(hex_text):
+    key = _cipher_key()
+    data = bytes.fromhex(hex_text)
+    key_stream = (key * (len(data) // len(key) + 1))[:len(data)]
+    return bytes(a ^ b for a, b in zip(data, key_stream)).decode('utf-8')
+
+def _load_credentials():
+    creds_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'credentials.json')
+    if os.path.exists(creds_path):
+        try:
+            with open(creds_path) as f:
+                c = json.load(f)
+            return _decrypt(c['username']), _decrypt(c['password'])
+        except Exception:
+            pass
+    return _env.get('USERNAME', ''), _env.get('PASSWORD', '')
+
+USERNAME, PASSWORD = _load_credentials()
 BASE_URL   = _env.get('BASE_URL',  'https://m.fxpro1.net')
 GAME_NAME  = _env.get('GAME_NAME', 'DS3M')
 GAME_URL   = _env.get('GAME_URL',  f'{BASE_URL}/openHistory?gameName={GAME_NAME}')
@@ -74,9 +96,17 @@ def ensure_table():
         ''')
         # Migration: add columns if upgrading from older schema
         existing = {row[1] for row in conn.execute('PRAGMA table_info(rounds)')}
-        for col, defn in [('pred_oe', 'TEXT DEFAULT ""'),
-                          ('confidence', 'REAL DEFAULT 0'),
-                          ('bet', 'TEXT DEFAULT ""')]:
+        for col, defn in [('pred_oe',   'TEXT DEFAULT ""'),
+                          ('confidence','REAL DEFAULT 0'),
+                          ('bet',       'TEXT DEFAULT ""'),
+                          ('pat_even',  'TEXT DEFAULT ""'),
+                          ('pat_odd',   'TEXT DEFAULT ""'),
+                          ('wwww_pct',  'REAL DEFAULT 0'),
+                          ('wwww_gap',  'INTEGER DEFAULT 0'),
+                          ('rrrr_pct',  'REAL DEFAULT 0'),
+                          ('rrrr_gap',  'INTEGER DEFAULT 0'),
+                          ('w3r1_pct',  'REAL DEFAULT 0'),
+                          ('r3w1_pct',  'REAL DEFAULT 0')]:
             if col not in existing:
                 conn.execute(f'ALTER TABLE rounds ADD COLUMN {col} {defn}')
         conn.commit()
@@ -210,7 +240,8 @@ def sync_csv_backup():
         conn = get_conn()
         try:
             rows = conn.execute(
-                'SELECT id,disc1,disc2,disc3,disc4,pattern,flag,oe,result,pred_oe,confidence,bet '
+                'SELECT id,disc1,disc2,disc3,disc4,pattern,flag,oe,result,pred_oe,confidence,bet,'
+                'pat_even,pat_odd,wwww_pct,wwww_gap,rrrr_pct,rrrr_gap,w3r1_pct,r3w1_pct '
                 'FROM rounds ORDER BY id'
             ).fetchall()
         finally:
@@ -219,7 +250,8 @@ def sync_csv_backup():
         with open(tmp, 'w', newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
             writer.writerow(['id','disc1','disc2','disc3','disc4','pattern','flag','oe',
-                             'result','pred_oe','confidence','bet'])
+                             'result','pred_oe','confidence','bet',
+                             'pat_even','pat_odd','wwww_pct','wwww_gap','rrrr_pct','rrrr_gap','w3r1_pct','r3w1_pct'])
             writer.writerows(rows)
         os.replace(tmp, CSV_PATH)
     except Exception as e:
@@ -315,14 +347,26 @@ def save_records(new_items):
         pred_oe    = entry.get('pred_oe', '')
         confidence = float(entry.get('confidence', 0) or 0)
         bet        = _bet_label(confidence) if pred_oe else ''
+        ep         = entry.get('pat_even_pct')
+        op         = entry.get('pat_odd_pct')
+        pat_even   = f"{entry['pat_even_lbl']}({ep*100:.1f}%)" if entry.get('pat_even_lbl') and ep is not None else ''
+        pat_odd    = f"{entry['pat_odd_lbl']}({op*100:.1f}%)"  if entry.get('pat_odd_lbl')  and op is not None else ''
+        wwww_pct   = float(entry.get('wwww_pct') or 0)
+        wwww_gap   = int(entry.get('wwww_gap') or 0)
+        rrrr_pct   = float(entry.get('rrrr_pct') or 0)
+        rrrr_gap   = int(entry.get('rrrr_gap') or 0)
+        w3r1_pct   = float(entry.get('w3r1_pct') or 0)
+        r3w1_pct   = float(entry.get('r3w1_pct') or 0)
         rows.append((issue, discs[0], discs[1], discs[2], discs[3],
-                     pattern, flag, oe, result, pred_oe, confidence, bet))
+                     pattern, flag, oe, result, pred_oe, confidence, bet,
+                     pat_even, pat_odd, wwww_pct, wwww_gap, rrrr_pct, rrrr_gap, w3r1_pct, r3w1_pct))
     conn = get_conn()
     try:
         conn.executemany('''
             INSERT OR IGNORE INTO rounds
-                (id,disc1,disc2,disc3,disc4,pattern,flag,oe,result,pred_oe,confidence,bet)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+                (id,disc1,disc2,disc3,disc4,pattern,flag,oe,result,pred_oe,confidence,bet,
+                 pat_even,pat_odd,wwww_pct,wwww_gap,rrrr_pct,rrrr_gap,w3r1_pct,r3w1_pct)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         ''', rows)
         conn.commit()
     finally:
