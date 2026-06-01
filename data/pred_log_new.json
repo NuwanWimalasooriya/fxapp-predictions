@@ -18339,7 +18339,7 @@
     "pred_oe": "EVEN",
     "p_oe_odd": 0.18,
     "confidence": 0.82,
-    "actual": null,
+    "actual": "RRWR",
     "signals": {
       "xgb": 0.546,
       "cur_run": 4,
@@ -18370,6 +18370,51 @@
           "ODD",
           "ODD",
           "EVEN",
+          "ODD",
+          "ODD",
+          "ODD"
+        ],
+        "tile_pos": 0,
+        "is_transition": false
+      },
+      "sym_info": null,
+      "known_tile_info": null
+    }
+  },
+  "2060500099": {
+    "round_id": "2060500099",
+    "pred_oe": "EVEN",
+    "p_oe_odd": 0.35,
+    "confidence": 0.65,
+    "actual": null,
+    "signals": {
+      "xgb": 0.47,
+      "cur_run": 1,
+      "cur_val": "ODD",
+      "prev_run": 4,
+      "alt_run": 2,
+      "alt_confirmed": false,
+      "dom_o8": 0.25,
+      "rule": "rule6_eoe_return",
+      "loss_streak": 1,
+      "cycle_detected": true,
+      "cycle_pattern": "cycle_p4",
+      "cycle_period": 4,
+      "cycle_cycles": 2,
+      "cycle_pred_val": "EVEN",
+      "cycle_conf": 0.67,
+      "cycle_transition": true,
+      "cycle_exp_len": 1,
+      "mirror_info": {
+        "pred_val": "EVEN",
+        "conf": 0.65,
+        "cycles": 2,
+        "tile_size": 6,
+        "pattern_name": "mirror_t6_in",
+        "next_tile": [
+          "ODD",
+          "EVEN",
+          "ODD",
           "ODD",
           "ODD",
           "ODD"
