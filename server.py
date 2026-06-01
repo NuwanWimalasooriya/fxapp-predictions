@@ -22,12 +22,16 @@ def _load_env():
 _env      = _load_env()
 _BASE     = os.path.dirname(os.path.abspath(__file__))
 _DATA_DIR = os.path.join(_BASE, 'data')
-SNAP_PATH   = os.path.join(_DATA_DIR, 'latest_prediction.json')
-LOG_PATH    = os.path.join(_DATA_DIR, 'pred_log.json')
-DB_PATH     = os.path.join(_DATA_DIR, _env.get('DB_FILE', 'ds3m.db'))
-CONFIG_PATH = os.path.join(_DATA_DIR, 'config.json')
-CREDS_PATH  = os.path.join(_DATA_DIR, 'credentials.json')
-PORT        = int(_env.get('PORT', 5050))
+SNAP_PATH      = os.path.join(_DATA_DIR, 'latest_prediction.json')
+LOG_PATH       = os.path.join(_DATA_DIR, 'pred_log.json')
+DB_PATH        = os.path.join(_DATA_DIR, _env.get('DB_FILE', 'ds3m.db'))
+CONFIG_PATH    = os.path.join(_DATA_DIR, 'config.json')
+CREDS_PATH     = os.path.join(_DATA_DIR, 'credentials.json')
+PORT           = int(_env.get('PORT', 5050))
+# New model paths
+SNAP_NEW_PATH  = os.path.join(_DATA_DIR, 'latest_prediction_new.json')
+LOG_NEW_PATH   = os.path.join(_DATA_DIR, 'pred_log_new.json')
+DB_NEW_PATH    = os.path.join(_DATA_DIR, 'ds3m_new.db')
 
 app = Flask(__name__, static_folder=os.path.join(_BASE, 'static'))
 app.secret_key = _env.get('SECRET_KEY') or secrets.token_hex(32)
@@ -70,7 +74,8 @@ def _load_credentials():
     except Exception:
         return None
 
-_predict_lock = threading.Lock()
+_predict_lock     = threading.Lock()
+_predict_new_lock = threading.Lock()
 
 def _run_predict():
     predict_py = os.path.join(_BASE, 'predict.py')
@@ -79,6 +84,14 @@ def _run_predict():
             subprocess.run([sys.executable, predict_py], capture_output=True)
         finally:
             _predict_lock.release()
+
+def _run_predict_new():
+    predict_new_py = os.path.join(_BASE, 'predict_new.py')
+    if _predict_new_lock.acquire(blocking=False):
+        try:
+            subprocess.run([sys.executable, predict_new_py], capture_output=True)
+        finally:
+            _predict_new_lock.release()
 
 # ── auth guard ─────────────────────────────────────────────────────────────────
 
@@ -159,7 +172,10 @@ def logout():
 
 @app.route('/')
 def index():
-    return send_from_directory(os.path.join(_BASE, 'static'), 'index.html')
+    resp = send_from_directory(os.path.join(_BASE, 'static'), 'index.html')
+    resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate'
+    resp.headers['Pragma'] = 'no-cache'
+    return resp
 
 @app.route('/api/prediction')
 def api_prediction():
@@ -215,9 +231,14 @@ def api_history():
 
 @app.route('/api/status')
 def api_status():
-    """Lightweight endpoint — returns mtime of latest_prediction.json so the UI can detect updates."""
-    mtime = os.path.getmtime(SNAP_PATH) if os.path.exists(SNAP_PATH) else 0
-    return _no_cache(jsonify({'mtime': mtime}))
+    mtime     = os.path.getmtime(SNAP_PATH)     if os.path.exists(SNAP_PATH)     else 0
+    mtime_new = os.path.getmtime(SNAP_NEW_PATH) if os.path.exists(SNAP_NEW_PATH) else 0
+    # Use last_id from new model snapshot as the trigger — only refresh UI when a new round arrives
+    last_id_new = 0
+    snap_new = _load_json(SNAP_NEW_PATH)
+    if snap_new:
+        last_id_new = snap_new.get('last_id', 0) or 0
+    return _no_cache(jsonify({'mtime': mtime, 'mtime_new': mtime_new, 'last_id_new': last_id_new}))
 
 @app.route('/api/data')
 def api_data():
@@ -334,18 +355,163 @@ def api_config_set():
 
 @app.route('/api/refresh', methods=['POST'])
 def api_refresh():
-    t = threading.Thread(target=_run_predict, daemon=True)
-    t.start()
+    threading.Thread(target=_run_predict,     daemon=True).start()
+    threading.Thread(target=_run_predict_new, daemon=True).start()
     return jsonify({'status': 'running'})
+
+@app.route('/api/new/prediction')
+def api_new_prediction():
+    snap = _load_json(SNAP_NEW_PATH)
+    if snap is None:
+        return jsonify({'error': 'No new model data yet. Run predict_new.py first.'}), 404
+    return _no_cache(jsonify(snap))
+
+@app.route('/api/new/history')
+def api_new_history():
+    entries = []
+    if os.path.exists(DB_NEW_PATH):
+        try:
+            conn = sqlite3.connect(DB_NEW_PATH, timeout=5)
+            conn.execute('PRAGMA journal_mode=WAL')
+            rows = conn.execute(
+                "SELECT id, pred_oe, confidence, "
+                "disc1||disc2||disc3||disc4 AS actual, oe, result "
+                "FROM rounds WHERE pred_oe != '' ORDER BY id DESC LIMIT 30"
+            ).fetchall()
+            conn.close()
+            for r in rows:
+                entries.append({
+                    'round_id':   str(r[0]),
+                    'pred_oe':    r[1],
+                    'confidence': r[2],
+                    'actual':     r[3],
+                    'oe':         r[4],
+                    'result':     r[5],
+                })
+        except Exception:
+            pass
+    log = _load_json(LOG_NEW_PATH)
+    if log:
+        for e in entries:
+            le = log.get(e['round_id'])
+            if le:
+                e['signals'] = le.get('signals', {})
+    return _no_cache(jsonify(entries[:30]))
+
+@app.route('/api/new/data')
+def api_new_data():
+    page      = max(1, int(request.args.get('page', 1)))
+    page_size = min(200, max(10, int(request.args.get('size', 50))))
+    search    = request.args.get('search', '').strip()
+    if not os.path.exists(DB_NEW_PATH):
+        return _no_cache(jsonify({'total': 0, 'page': 1, 'pages': 1, 'rows': []}))
+    try:
+        conn = sqlite3.connect(DB_NEW_PATH, timeout=5)
+        conn.execute('PRAGMA journal_mode=WAL')
+        base   = "pred_oe != ''"
+        params = []
+        if search:
+            s_up = search.upper()
+            if s_up == 'BET':
+                base += " AND confidence >= 0.65"
+            elif s_up == 'SKIP':
+                base += " AND confidence >= 0.60 AND confidence < 0.65"
+            elif s_up == 'AVOID':
+                base += " AND confidence > 0 AND confidence < 0.60"
+            else:
+                base += (" AND (CAST(id AS TEXT) LIKE ? OR pred_oe LIKE ?"
+                         " OR oe LIKE ? OR result LIKE ?)")
+                params = [f'%{search}%'] * 4
+        total  = conn.execute(f"SELECT COUNT(*) FROM rounds WHERE {base}", params).fetchone()[0]
+        offset = (page - 1) * page_size
+        rows   = conn.execute(
+            f"SELECT id, pred_oe, confidence, disc1||disc2||disc3||disc4, oe, result "
+            f"FROM rounds WHERE {base} ORDER BY id DESC LIMIT ? OFFSET ?",
+            params + [page_size, offset]
+        ).fetchall()
+        conn.close()
+    except Exception as e:
+        return _no_cache(jsonify({'error': str(e)})), 500
+    pages   = max(1, (total + page_size - 1) // page_size)
+    log     = _load_json(LOG_NEW_PATH) or {}
+    entries = []
+    for r in rows:
+        e = {'round_id': str(r[0]), 'pred_oe': r[1], 'confidence': r[2],
+             'actual': r[3], 'oe': r[4], 'result': r[5]}
+        le = log.get(str(r[0]))
+        if le:
+            e['signals'] = le.get('signals', {})
+        entries.append(e)
+    return _no_cache(jsonify({'total': total, 'page': page, 'pages': pages, 'rows': entries}))
+
+@app.route('/api/new/stats')
+def api_new_stats():
+    if not os.path.exists(DB_NEW_PATH):
+        return _no_cache(jsonify({}))
+    try:
+        conn = sqlite3.connect(DB_NEW_PATH, timeout=5)
+        conn.execute('PRAGMA journal_mode=WAL')
+
+        total_pred = conn.execute(
+            "SELECT COUNT(*) FROM rounds WHERE pred_oe != '' AND result IN ('WIN','LOSS')"
+        ).fetchone()[0]
+
+        last100 = conn.execute(
+            "SELECT result FROM rounds WHERE pred_oe != '' AND result IN ('WIN','LOSS') "
+            "ORDER BY id DESC LIMIT 100"
+        ).fetchall()
+        w100 = sum(1 for r in last100 if r[0] == 'WIN')
+        n100 = len(last100)
+
+        last200 = conn.execute(
+            "SELECT result FROM rounds WHERE pred_oe != '' AND result IN ('WIN','LOSS') "
+            "ORDER BY id DESC LIMIT 200"
+        ).fetchall()
+        w200 = sum(1 for r in last200 if r[0] == 'WIN')
+        n200 = len(last200)
+
+        conn.close()
+    except Exception as e:
+        return _no_cache(jsonify({'error': str(e)})), 500
+
+    return _no_cache(jsonify({
+        'total_predicted': total_pred,
+        'last100': {'win': w100, 'n': n100, 'wr': round(w100 / n100, 4) if n100 else None},
+        'last200': {'win': w200, 'n': n200, 'wr': round(w200 / n200, 4) if n200 else None},
+        'bet_only': {'win': 0, 'n': 0, 'wr': None},
+    }))
 
 def _ensure_config():
     if not os.path.exists(CONFIG_PATH):
         with open(CONFIG_PATH, 'w') as f:
             json.dump({'training_enabled': True}, f)
 
+
+def _db_watcher():
+    """Background thread: runs predict_new.py whenever DB is newer than its snapshot."""
+    import time
+    predict_new_py = os.path.join(_BASE, 'predict_new.py')
+    while True:
+        try:
+            time.sleep(30)
+            if not os.path.exists(DB_PATH):
+                continue
+            db_mtime   = os.path.getmtime(DB_PATH)
+            snap_mtime = os.path.getmtime(SNAP_NEW_PATH) if os.path.exists(SNAP_NEW_PATH) else 0
+            if db_mtime > snap_mtime:
+                if _predict_new_lock.acquire(blocking=False):
+                    try:
+                        subprocess.run([sys.executable, predict_new_py], capture_output=True)
+                    finally:
+                        _predict_new_lock.release()
+        except Exception:
+            pass
+
+
 if __name__ == '__main__':
     _ensure_config()
     if not _load_credentials():
         print("  ⚠  No credentials found. Run: python create_credentials.py")
+    threading.Thread(target=_db_watcher, daemon=True).start()
     print(f"  Starting DS3M dashboard on http://0.0.0.0:{PORT}")
     app.run(host='0.0.0.0', port=PORT, debug=False)

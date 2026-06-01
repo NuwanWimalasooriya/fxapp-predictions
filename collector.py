@@ -64,8 +64,9 @@ CHROME     = _env.get('CHROME',    '')
 
 DB_PATH    = os.path.join(_DATA_DIR, _env.get('DB_FILE', 'ds3m.db'))
 CSV_PATH   = os.path.join(_DATA_DIR, _env.get('DATA_FILE', '3min-discs.csv'))
-LOG_PATH   = os.path.join(_DATA_DIR, 'pred_log.json')
-PREDICT_PY = os.path.join(_BASE, 'predict.py')
+LOG_PATH       = os.path.join(_DATA_DIR, 'pred_log.json')
+PREDICT_PY     = os.path.join(_BASE, 'predict.py')
+PREDICT_NEW_PY = os.path.join(_BASE, 'predict_new.py')
 
 # ── SQLite helpers ─────────────────────────────────────────────────────────────
 
@@ -322,11 +323,23 @@ def _bet_label(confidence):
         return 'SKIP'
     return 'AVOID'
 
+_LOG_NEW_PATH  = os.path.join(_DATA_DIR, 'pred_log_new.json')
+_DB_NEW_PATH   = os.path.join(_DATA_DIR, 'ds3m_new.db')
+
 def _load_pred_log():
     if not os.path.exists(LOG_PATH):
         return {}
     with open(LOG_PATH, encoding='utf-8-sig') as f:
         return json.load(f)
+
+def _load_pred_log_new():
+    if not os.path.exists(_LOG_NEW_PATH):
+        return {}
+    try:
+        with open(_LOG_NEW_PATH, encoding='utf-8-sig') as f:
+            return json.load(f)
+    except Exception:
+        return {}
 
 def _win_loss(issue, pattern, pred_log):
     entry = pred_log.get(str(issue))
@@ -336,7 +349,8 @@ def _win_loss(issue, pattern, pred_log):
     return 'WIN' if entry['pred_oe'] == actual_oe else 'LOSS'
 
 def save_records(new_items):
-    pred_log = _load_pred_log()
+    pred_log     = _load_pred_log()
+    pred_log_new = _load_pred_log_new()
     rows = []
     for issue, discs in new_items:
         pattern    = ''.join(discs)
@@ -373,6 +387,35 @@ def save_records(new_items):
         conn.close()
     sync_csv_backup()
 
+    # ── Mirror the same save into ds3m_new.db using pred_log_new ──────────────
+    if os.path.exists(_DB_NEW_PATH):
+        try:
+            conn_new = sqlite3.connect(_DB_NEW_PATH, timeout=10)
+            conn_new.execute('PRAGMA journal_mode=WAL')
+            for issue, discs in new_items:
+                pattern   = ''.join(discs)
+                oe        = 'ODD' if pattern.count('R') % 2 else 'EVEN'
+                entry_new = pred_log_new.get(str(issue), {})
+                pred_oe_n = entry_new.get('pred_oe', '')
+                conf_n    = float(entry_new.get('confidence', 0) or 0)
+                result_n  = _win_loss(issue, pattern, pred_log_new)
+                conn_new.execute(
+                    'INSERT OR IGNORE INTO rounds(id,disc1,disc2,disc3,disc4,pattern,oe,result,pred_oe,confidence) '
+                    'VALUES(?,?,?,?,?,?,?,?,?,?)',
+                    (issue, discs[0], discs[1], discs[2], discs[3],
+                     pattern, oe, result_n, pred_oe_n, conf_n)
+                )
+                if pred_oe_n:
+                    conn_new.execute(
+                        'UPDATE rounds SET pred_oe=?, confidence=?, result=? WHERE id=?',
+                        (pred_oe_n, conf_n, result_n, issue)
+                    )
+            conn_new.commit()
+            conn_new.close()
+        except Exception as _e:
+            print(f'  [new-db save] {_e}')
+
+
 def backfill_results():
     """After predict.py runs, fix any rows that have pred_oe set but result still 'Not Predicted'."""
     conn = get_conn()
@@ -396,6 +439,28 @@ def backfill_results():
     if updates:
         sync_csv_backup()
 
+    # ── Same backfill for ds3m_new.db ─────────────────────────────────────────
+    if os.path.exists(_DB_NEW_PATH):
+        try:
+            conn_new = sqlite3.connect(_DB_NEW_PATH, timeout=10)
+            conn_new.execute('PRAGMA journal_mode=WAL')
+            pending = conn_new.execute(
+                "SELECT id, disc1||disc2||disc3||disc4, pred_oe "
+                "FROM rounds WHERE pred_oe != '' AND result='Not Predicted'"
+            ).fetchall()
+            new_updates = []
+            for rid, pattern, p_oe in pending:
+                if not pattern or len(pattern) != 4:
+                    continue
+                actual_oe = 'ODD' if pattern.count('R') % 2 else 'EVEN'
+                new_updates.append(('WIN' if p_oe == actual_oe else 'LOSS', rid))
+            if new_updates:
+                conn_new.executemany('UPDATE rounds SET result=? WHERE id=?', new_updates)
+                conn_new.commit()
+            conn_new.close()
+        except Exception as _e:
+            print(f'  [new-db backfill] {_e}')
+
 # ── Prediction ─────────────────────────────────────────────────────────────────
 
 def run_prediction():
@@ -403,6 +468,7 @@ def run_prediction():
     print("  PREDICTION")
     print(f"{'='*55}\n")
     subprocess.run([sys.executable, PREDICT_PY])
+    subprocess.run([sys.executable, PREDICT_NEW_PY])
     backfill_results()
 
 # ── Main loop ──────────────────────────────────────────────────────────────────

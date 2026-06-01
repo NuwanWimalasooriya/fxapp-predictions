@@ -56,7 +56,9 @@
       "Bash(python -c \"import json; d=json.load\\(open\\('c:/Projects/docs/pocs/predictions/fxproapp3mindiscs/data/latest_prediction.json'\\)\\); oa=d.get\\('odd_analysis'\\); print\\('odd_analysis:', json.dumps\\(oa, indent=2\\)\\)\")",
       "Bash(python -c \"import ast; ast.parse\\(open\\('predict.py'\\).read\\(\\)\\); print\\('syntax OK'\\)\")",
       "Bash(dir /b)",
-      "PowerShell(Get-ChildItem \"c:\\\\Projects\\\\docs\\\\pocs\\\\predictions\\\\fxproapp3mindiscs\\\\data\" -Force | ForEach-Object { \"$\\($_.Name\\) - $\\([math]::Round\\($_.Length/1KB,1\\)\\) KB\" })"
+      "PowerShell(Get-ChildItem \"c:\\\\Projects\\\\docs\\\\pocs\\\\predictions\\\\fxproapp3mindiscs\\\\data\" -Force | ForEach-Object { \"$\\($_.Name\\) - $\\([math]::Round\\($_.Length/1KB,1\\)\\) KB\" })",
+      "Bash(python predict_new.py)",
+      "Bash(python -c *)"
     ]
   }
 }

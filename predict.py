@@ -577,6 +577,247 @@ def rhythm_breakout_signal(oe_arr, idx, look_back_runs=5, normal_max=4, breakout
     return 0.5 + (p_odd - 0.5) * 0.85
 
 
+# ── Signal: OE Macro-Phase (alternating / block / transition) ─────────────────
+def _build_oe_phase_lookup(oe_arr, key_len=4, min_n=20):
+    """
+    Build a lookup table: OE key (tuple of last key_len OE values) → P(next=ODD).
+    Only returns entries with >= min_n historical samples.
+    Handles both OE and EO starting directions naturally.
+    """
+    lookup = {}
+    counts = {}
+    for i in range(key_len, len(oe_arr) - 1):
+        key = tuple(oe_arr[i - key_len:i])
+        nxt = oe_arr[i]
+        if key not in counts:
+            counts[key] = [0, 0]  # [odd_count, total]
+        counts[key][1] += 1
+        if nxt == 'ODD':
+            counts[key][0] += 1
+    for key, (odd_n, total) in counts.items():
+        if total >= min_n:
+            lookup[key] = (odd_n / total, total)
+    return lookup
+
+# Pre-build lookup tables at startup (key lengths 5-8, min 50 samples for reliability)
+_oe_phase_lookup = {
+    kl: _build_oe_phase_lookup(df['odd'].tolist(), key_len=kl, min_n=50)
+    for kl in [5, 6, 7, 8]
+}
+
+def oe_macro_phase_signal(oe_arr, idx, threshold=0.55, min_n=50):
+    """
+    Looks up the current OE sequence in historical data.
+    Returns (p_odd, confidence, phase_label, n_samples) or (None, 0, None, 0).
+
+    Priority: longer key wins if it meets the threshold (more specific = more reliable).
+    Both OEOE and EOEO starting directions are handled naturally.
+
+    phase_label: 'alternating', 'block', 'transition', or 'mixed'
+    """
+    best_p, best_conf, best_label, best_n = None, 0.0, None, 0
+
+    for kl in [8, 7, 6, 5]:
+        if idx < kl:
+            continue
+        key = tuple(oe_arr[idx - kl + 1: idx + 1])
+        entry = _oe_phase_lookup.get(kl, {}).get(key)
+        if entry is None:
+            continue
+        p_odd, n = entry
+        if n < min_n:
+            continue
+        conf = abs(p_odd - 0.5)
+        if conf < (threshold - 0.50):
+            continue
+        # Classify phase type based on key pattern
+        switches = sum(1 for i in range(len(key) - 1) if key[i] != key[i + 1])
+        alt_rate = switches / (len(key) - 1)
+        if alt_rate >= 0.8:
+            label = 'alternating'
+        elif alt_rate <= 0.2:
+            label = 'block'
+        else:
+            label = 'mixed'
+        # Check for block transition: first half same, second half different
+        half = len(key) // 2
+        if (len(set(key[:half])) == 1 and len(set(key[half:])) == 1
+                and key[0] != key[half]):
+            label = 'transition'
+
+        if conf > best_conf:
+            best_p, best_conf, best_label, best_n = p_odd, conf, label, n
+
+    if best_p is None or best_conf < (threshold - 0.50):
+        return None, 0.0, None, 0
+    return best_p, best_conf, best_label, best_n
+
+
+# ── Signal: OE/EO alternating pattern continuation ────────────────────────────
+def oe_alternating_signal(oe_arr, idx, min_alt_len=3, dom_window=8):
+    """
+    User domain rule:
+      1. Count unbroken alternating run ending at idx.
+      2. If run >= min_alt_len (confirmed OE/EO pattern):
+           count O and E in the run — if E > O predict E, else predict O.
+           Returns is_confirmed=True so the caller can hard-lock the prediction.
+      3. If no confirmed pattern (block / short run):
+           predict DOMINANT direction in last dom_window rounds.
+           e.g. OOOOE → O=4 E=1 → predict O (E is a blip).
+           If tied, follow last round.
+    Returns (p_odd, strength, is_confirmed_alt).
+    """
+    if idx < 1:
+        return None, 0.0, False
+    last = oe_arr[idx]
+    # Count unbroken alternating run ending at idx
+    run_len = 1
+    for i in range(idx - 1, max(-1, idx - 30), -1):
+        if oe_arr[i] != oe_arr[i + 1]:
+            run_len += 1
+        else:
+            break
+    if run_len >= min_alt_len:
+        # Confirmed OE/EO pattern — STAY on the starting direction of the run.
+        # Guarantees max 1 consecutive loss (win on every other round).
+        # Flip approach risks all-loss if phase is wrong.
+        run_start = list(oe_arr)[idx - run_len + 1]
+        pred_odd  = (run_start == 'ODD')
+        return (0.72 if pred_odd else 0.28), 1.0, True   # hard lock
+    else:
+        # No confirmed pattern — predict dominant direction in recent window
+        start   = max(0, idx - dom_window + 1)
+        window  = list(oe_arr[start: idx + 1])
+        e_count = window.count('EVEN')
+        o_count = window.count('ODD')
+        if o_count > e_count:
+            pred_odd = True
+        elif e_count > o_count:
+            pred_odd = False
+        else:
+            pred_odd = (last == 'ODD')   # tie → follow last (continuation)
+        return (0.72 if pred_odd else 0.28), 0.30, False
+
+
+# ── Signal: Long block continuation + transition prediction ───────────────────
+def _build_block_sequence(oe_arr):
+    """Build list of (value, length, start_idx) from OE array."""
+    blocks = []
+    i = 0
+    arr = list(oe_arr)
+    while i < len(arr):
+        val = arr[i]
+        length = 1
+        while i + length < len(arr) and arr[i + length] == val:
+            length += 1
+        blocks.append((val, length, i))
+        i += length
+    return blocks
+
+def long_block_signal(oe_arr, idx, long_thresh=4, context_len=6):
+    """
+    Two-phase rule for long blocks:
+
+    Phase 1 — DURING long block (run >= long_thresh):
+      Predict continuation of current block direction.
+
+    Phase 2 — AT TRANSITION (first opposite value after long block):
+      Look at pre-block context (what was before the long block):
+        - OEO/EOE type  → alternating regime was active → predict pre-context dominant
+        - OEEO/EOOE     → block-pair regime → predict same structure continues
+        - Flat (all O/E)→ use historical: after long block, next is usually brief (snap back)
+      Also checks historical block-transition behavior for this specific block length.
+
+    Returns (p_odd, strength) or (None, 0).
+    """
+    if idx < long_thresh:
+        return None, 0.0
+
+    arr = list(oe_arr)
+    cur = arr[idx]
+
+    # Count current run length
+    run_len = 1
+    for i in range(idx - 1, max(-1, idx - 60), -1):
+        if arr[i] == cur:
+            run_len += 1
+        else:
+            break
+
+    # ── Phase 1: inside a long block ──────────────────────────────────────────
+    if run_len >= long_thresh:
+        strength = min(0.45, 0.25 + 0.04 * (run_len - long_thresh))
+        return (0.72 if cur == 'ODD' else 0.28), strength
+
+    # ── Phase 2: just switched from a long block ───────────────────────────────
+    # Only fire within first 2 rounds of the switch
+    if run_len > 2:
+        return None, 0.0
+
+    # Measure previous block length
+    prev_val = arr[idx - run_len] if idx >= run_len else None
+    if prev_val is None or prev_val == cur:
+        return None, 0.0
+
+    prev_run = 0
+    switch_idx = idx - run_len
+    for i in range(switch_idx, max(-1, switch_idx - 60), -1):
+        if arr[i] == prev_val:
+            prev_run += 1
+        else:
+            break
+
+    if prev_run < long_thresh:
+        return None, 0.0   # previous block was not long — don't fire
+
+    # Get pre-block context (what was before the long block)
+    pre_end  = switch_idx - prev_run
+    pre_start = max(0, pre_end - context_len + 1)
+    pre_ctx  = arr[pre_start: pre_end + 1]
+
+    if len(pre_ctx) < 2:
+        # No context — default: snap back to original block
+        return (0.72 if prev_val == 'ODD' else 0.28), 0.20
+
+    # Analyse pre-block context
+    pre_o = pre_ctx.count('ODD')
+    pre_e = pre_ctx.count('EVEN')
+    switches = sum(1 for i in range(len(pre_ctx) - 1) if pre_ctx[i] != pre_ctx[i + 1])
+    alt_rate = switches / (len(pre_ctx) - 1)
+
+    # Historical: find all past transitions of similar prev_run length
+    blocks = _build_block_sequence(arr[:idx])
+    snap_back = long_mirror = alt_phase = 0
+    for bi in range(len(blocks) - 2):
+        bval, blen, bstart = blocks[bi]
+        if bval != prev_val or abs(blen - prev_run) > 2:
+            continue
+        next_val, next_len, _ = blocks[bi + 1]
+        if next_len <= 2:
+            snap_back += 1
+        elif next_len >= long_thresh:
+            long_mirror += 1
+        else:
+            # Check if it went alternating (next block short + alternating follows)
+            alt_phase += 1
+
+    total = snap_back + long_mirror + alt_phase or 1
+
+    if alt_rate >= 0.6:
+        # Pre-context was alternating — after long block expect return to alternating
+        # Dominant in pre-context decides direction
+        pred_odd = pre_o >= pre_e
+        return (0.72 if pred_odd else 0.28), 0.30
+
+    elif long_mirror > snap_back and long_mirror / total >= 0.35:
+        # History says mirror long block is likely — predict current value continues
+        return (0.72 if cur == 'ODD' else 0.28), 0.30
+
+    else:
+        # Default: snap back to original block direction
+        return (0.72 if prev_val == 'ODD' else 0.28), 0.25
+
+
 # ── Signal: Post-WWWW/RRRR offset effect ──────────────────────────────────────
 def post_special_pattern_signal(pat_arr, idx):
     """
@@ -1152,7 +1393,18 @@ def update_csv_results():
                      'result','pred_oe','bet','pat_even','pat_odd',
                      'wwww_pct','wwww_gap','rrrr_pct','rrrr_gap','w3r1_pct','r3w1_pct'])
         _w.writerows(rows)
-    import os as _os; _os.replace(_tmp, CSV_PATH)
+    import os as _os
+    try:
+        _os.replace(_tmp, CSV_PATH)
+    except PermissionError:
+        # Windows: destination locked (e.g. open in editor) — write in-place instead
+        with open(CSV_PATH, 'w', newline='', encoding='utf-8') as _f2:
+            with open(_tmp, 'r', newline='', encoding='utf-8') as _f3:
+                _f2.write(_f3.read())
+        try:
+            _os.remove(_tmp)
+        except OSError:
+            pass
 
 real_oe, real_rc, real_pat, n_scored = check_pred_log()
 update_csv_results()
@@ -1402,6 +1654,24 @@ def _loss_streak_autopsy(log, min_streak=5):
     return bad
 
 
+def _global_inversion_check(log, n=50, threshold=0.47):
+    """
+    If the model has been anti-predictive over the last n rounds (win rate < threshold),
+    return True to flip the final prediction globally.
+    Only triggers when we have enough samples and the inversion would clearly help.
+    """
+    scored = sorted(
+        [e for e in log.values() if e.get('pred_oe') and e.get('actual')],
+        key=lambda e: int(e.get('round_id', 0))
+    )[-n:]
+    if len(scored) < 20:
+        return False
+    wins = sum(1 for e in scored
+               if e['pred_oe'] == ('ODD' if e['actual'].count('R') % 2 else 'EVEN'))
+    wr = wins / len(scored)
+    return wr < threshold
+
+
 def _realtime_accuracy_signal(log, n=15):
     """
     For each direction, compute recent win rate.
@@ -1507,6 +1777,40 @@ def _consecutive_loss_streak(log):
     return streak
 
 
+def _last_actual_fallback(log, streak_threshold=3):
+    """
+    After streak_threshold consecutive losses, fall back to last-actual strategy:
+    - If last 2 actuals are same OE → predict that direction (stronger signal, 0.58/0.42)
+    - If only last 1 → predict that direction (weak signal, 0.53/0.47)
+    Returns p_odd override or None if streak not reached.
+    """
+    scored = sorted(
+        [e for e in log.values() if e.get('actual') and e.get('pred_oe')],
+        key=lambda e: int(e.get('round_id', 0))
+    )
+    if len(scored) < streak_threshold:
+        return None
+    # Check current streak
+    streak = 0
+    for e in reversed(scored):
+        actual_oe = 'ODD' if e['actual'].count('R') % 2 else 'EVEN'
+        if e['pred_oe'] != actual_oe:
+            streak += 1
+        else:
+            break
+    if streak < streak_threshold:
+        return None
+    # Get last 2 actual OEs
+    last_oe  = 'ODD' if scored[-1]['actual'].count('R') % 2 else 'EVEN'
+    prev_oe  = 'ODD' if scored[-2]['actual'].count('R') % 2 else 'EVEN' if len(scored) >= 2 else None
+    if prev_oe and last_oe == prev_oe:
+        # Same trend twice → stronger signal
+        return 0.58 if last_oe == 'ODD' else 0.42
+    else:
+        # Just last actual
+        return 0.53 if last_oe == 'ODD' else 0.47
+
+
 _log_for_corrections = {}
 if os.path.exists(LOG_PATH):
     try:
@@ -1522,6 +1826,8 @@ _sig_acc               = _recent_signal_accuracy(_log_for_corrections)
 _short_streak_inverts, _short_streak_suppress = _per_signal_short_streak(_log_for_corrections)
 _cur_loss_streak  = _consecutive_loss_streak(_log_for_corrections)
 _streak_autopsy   = _loss_streak_autopsy(_log_for_corrections, min_streak=5)
+_fallback_p_odd   = _last_actual_fallback(_log_for_corrections, streak_threshold=3)
+_global_invert    = _global_inversion_check(_log_for_corrections, n=50, threshold=0.47)
 
 # ── Predict ────────────────────────────────────────────────────────────────────
 ALL_PATTERNS = [a+b+c+d for a in 'WR' for b in 'WR' for c in 'WR' for d in 'WR']
@@ -1572,6 +1878,16 @@ def predict_round(df_src, runs_src, full_oe_arr, full_pat_arr, lstm_src=None):
     # ── Signal SP: post-WWWW/RRRR offset effect ──────────────────────────
     p_special = post_special_pattern_signal(full_pat_arr, sig_idx)
 
+    # ── Signal LB: long block continuation + transition ───────────────────
+    p_longblock, w_longblock = long_block_signal(full_oe_arr, sig_idx)
+
+    # ── Signal ALT: OE/EO alternating pattern continuation (domain rule) ─
+    p_alt, w_alt_strength, alt_confirmed = oe_alternating_signal(full_oe_arr, sig_idx, min_alt_len=3)
+
+    # ── Signal OE: OE macro-phase (alternating / block / transition) ─────
+    p_oe_phase, oe_phase_conf, oe_phase_label, oe_phase_n = \
+        oe_macro_phase_signal(full_oe_arr, sig_idx, threshold=0.55, min_n=50)
+
     # ── Signal 3: OE sequence matcher (window 5-20) ───────────────────────
     p_seq, pat_votes_seq, matched_len, n_matches = \
         sequence_signal(full_oe_arr, full_pat_arr, sig_idx)
@@ -1613,6 +1929,9 @@ def predict_round(df_src, runs_src, full_oe_arr, full_pat_arr, lstm_src=None):
     p_reversal_val = p_reversal if p_reversal is not None else 0.5
     p_breakout_val = p_breakout if p_breakout is not None else 0.5
     p_special_val  = p_special  if p_special  is not None else 0.5
+    p_oe_phase_val  = p_oe_phase  if p_oe_phase  is not None else 0.5
+    p_alt_val       = p_alt       if p_alt       is not None else 0.5
+    p_longblock_val = p_longblock if p_longblock is not None else 0.5
 
     # ── Anti-predictive signal gate ───────────────────────────────────────
     # If a signal's recent accuracy (from pred_log) is below 50% with enough
@@ -1705,16 +2024,29 @@ def predict_round(df_src, runs_src, full_oe_arr, full_pat_arr, lstm_src=None):
     else:
         w_special_raw = 0.0
 
-    # Combined priority weight (period + reversal + recent + breakout + special), capped at 55%
-    priority_total = min(0.55, w_period_raw + w_reversal_raw + w_recent_raw + w_breakout_raw + w_special_raw)
-    raw_sum = w_period_raw + w_reversal_raw + w_recent_raw + w_breakout_raw + w_special_raw
+    # OE macro-phase signal weight: scales with confidence and sample count
+    # Higher weight than other priority signals — this directly encodes phase patterns
+    if p_oe_phase is not None:
+        # Scale by confidence strength; bonus for large sample counts
+        n_bonus = min(0.05, (oe_phase_n - 20) / 1000)
+        w_oe_phase_raw = min(0.45, oe_phase_conf * 3.0 + n_bonus)
+    else:
+        w_oe_phase_raw = 0.0
+
+    # ALT signal: domain rule — weight scales with pattern purity
+    w_alt_raw = w_alt_strength if p_alt is not None else 0.0
+
+    # Combined priority weight (period + reversal + recent + breakout + special + oe_phase + alt), capped at 70%
+    priority_total = min(0.70, w_period_raw + w_reversal_raw + w_recent_raw + w_breakout_raw + w_special_raw + w_oe_phase_raw + w_alt_raw)
+    raw_sum = w_period_raw + w_reversal_raw + w_recent_raw + w_breakout_raw + w_special_raw + w_oe_phase_raw + w_alt_raw
     if raw_sum > 0:
         ratio = priority_total / raw_sum
-        w_period_raw   *= ratio
-        w_reversal_raw *= ratio
-        w_recent_raw   *= ratio
-        w_breakout_raw *= ratio
-        w_special_raw  *= ratio
+        w_period_raw    *= ratio
+        w_reversal_raw  *= ratio
+        w_recent_raw    *= ratio
+        w_breakout_raw  *= ratio
+        w_special_raw   *= ratio
+        w_oe_phase_raw  *= ratio
 
     if _aw is not None:
         w_run      = _aw.get('run',       0.0)
@@ -1761,9 +2093,10 @@ def predict_round(df_src, runs_src, full_oe_arr, full_pat_arr, lstm_src=None):
         'period':   round(p_period_val, 3)  if p_period  is not None else None,
         'reversal': round(p_reversal_val, 3) if p_reversal is not None else None,
         'breakout': round(p_breakout_val, 3) if p_breakout is not None else None,
-        'special':  round(p_special_val, 3) if p_special  is not None else None,
-        'ml':       round(ml_p_odd, 3)      if ml_p_odd  is not None else None,
-        'lstm':     round(lstm_p_odd, 3)    if lstm_p_odd is not None else None,
+        'special':   round(p_special_val, 3)  if p_special  is not None else None,
+        'oe_phase':  round(p_oe_phase_val, 3) if p_oe_phase is not None else None,
+        'ml':        round(ml_p_odd, 3)       if ml_p_odd  is not None else None,
+        'lstm':      round(lstm_p_odd, 3)     if lstm_p_odd is not None else None,
     }
 
     # Apply streak-correction multipliers
@@ -1859,9 +2192,12 @@ def predict_round(df_src, runs_src, full_oe_arr, full_pat_arr, lstm_src=None):
                  (p_persist_val, w_persist), (ml_p_odd, w_ml),
                  (p_recent_val, w_recent), (p_period_val, w_period),
                  (p_reversal_val, w_reversal), (p_breakout_val, w_breakout)]
-    if p_special  is not None: signals_w.append((p_special_val, w_special_raw))
-    if lstm_p_odd is not None: signals_w.append((lstm_p_odd, w_lstm))
-    if p_clarity  is not None: signals_w.append((p_clarity, w_clarity))
+    if p_special    is not None: signals_w.append((p_special_val,    w_special_raw))
+    if p_oe_phase   is not None: signals_w.append((p_oe_phase_val,  w_oe_phase_raw))
+    if p_alt        is not None: signals_w.append((p_alt_val,       w_alt_raw))
+    if p_longblock  is not None: signals_w.append((p_longblock_val, w_longblock))
+    if lstm_p_odd   is not None: signals_w.append((lstm_p_odd,      w_lstm))
+    if p_clarity   is not None: signals_w.append((p_clarity,       w_clarity))
     p_base = sum(v * w for v, w in signals_w)
 
     # Step 2: consensus amplification
@@ -1872,6 +2208,8 @@ def predict_round(df_src, runs_src, full_oe_arr, full_pat_arr, lstm_src=None):
     if p_breakout is not None: active_signals.append(p_breakout_val)
     if p_persist  is not None: active_signals.append(p_persist_val)
     if p_special  is not None: active_signals.append(p_special_val)
+    if p_oe_phase is not None: active_signals.append(p_oe_phase_val)
+    if p_alt      is not None: active_signals.append(p_alt_val)
     if lstm_p_odd is not None: active_signals.append(lstm_p_odd)
 
     # Count how many agree with the majority direction
@@ -1900,6 +2238,73 @@ def predict_round(df_src, runs_src, full_oe_arr, full_pat_arr, lstm_src=None):
     else:
         # Blend direction correction and real-time accuracy signal
         p_odd += _dir_correction * 0.5 + _rt_acc_signal * 0.5
+
+    p_odd = max(0.05, min(0.95, p_odd))
+
+    # ── PRIMARY DOMAIN RULES ─────────────────────────────────────────────────────
+    # Priority: long block hard lock > confirmed alt hard lock > soft blend
+
+    # 1. Long block hard lock (run >= 4): stay on block direction, ignore everything
+    _lb_arr = list(full_oe_arr)
+    _lb_cur = _lb_arr[sig_idx] if sig_idx < len(_lb_arr) else None
+    _lb_run = 0
+    if _lb_cur:
+        for _i in range(sig_idx, max(-1, sig_idx - 60), -1):
+            if _lb_arr[_i] == _lb_cur:
+                _lb_run += 1
+            else:
+                break
+    # Check if previous block was long (snap-back failed check)
+    _prev_run = 0
+    _prev_val = None
+    if _lb_cur and _lb_run < 4:
+        _switch_idx = sig_idx - _lb_run
+        if _switch_idx >= 0:
+            _prev_val = _lb_arr[_switch_idx]
+            for _i in range(_switch_idx, max(-1, _switch_idx - 60), -1):
+                if _lb_arr[_i] == _prev_val:
+                    _prev_run += 1
+                else:
+                    break
+    if _lb_run >= 4:
+        # Inside long block — hard lock
+        p_odd = 0.82 if _lb_cur == 'ODD' else 0.18
+    elif _lb_run >= 2 and _prev_run >= 4:
+        # 2nd+ value after a long block — snap back failed, mirror block forming — lock new direction
+        p_odd = 0.78 if _lb_cur == 'ODD' else 0.22
+
+    # 2. Confirmed alternating (3+ unbroken): stay on start direction
+    elif p_alt is not None and alt_confirmed:
+        p_odd = p_alt_val
+
+    # 3. No confirmed pattern: soft blend with dominant direction
+    elif p_alt is not None:
+        p_odd = p_alt_val * 0.70 + p_odd * 0.30
+
+    p_odd = max(0.05, min(0.95, p_odd))
+
+    # ── HARD STREAK BREAKER: force-flip at 5+ consecutive losses ─────────────────
+    # After 5 losses in a row the model is clearly wrong — hard invert the direction.
+    # This is the hard cap: consecutive losses must not exceed 5.
+    if _cur_loss_streak >= 5:
+        p_odd = 1.0 - p_odd
+
+    # Last-actual fallback: after 3+ losses with no strong model signal.
+    # Skip entirely if OE phase signal is confident — it already knows the phase.
+    _oe_phase_confident = p_oe_phase is not None and oe_phase_conf >= 0.05  # >= 55% historical
+    if _fallback_p_odd is not None and not _oe_phase_confident:
+        model_conf = abs(p_odd - 0.5)
+        if model_conf < 0.10:
+            p_odd = _fallback_p_odd
+        elif model_conf < 0.20:
+            p_odd = 0.6 * _fallback_p_odd + 0.4 * p_odd
+
+    p_odd = max(0.05, min(0.95, p_odd))
+
+    # Global inversion: if model has been anti-predictive over last 50 rounds
+    # (win rate < 47%), flip the prediction — the signals are systematically wrong
+    if _global_invert:
+        p_odd = 1.0 - p_odd
 
     p_odd = max(0.05, min(0.95, p_odd))
 
@@ -1932,7 +2337,10 @@ def predict_round(df_src, runs_src, full_oe_arr, full_pat_arr, lstm_src=None):
         'clarity':    round(p_clarity, 3)      if p_clarity  is not None else None,
         'reversal':   round(p_reversal_val, 3) if p_reversal is not None else None,
         'breakout':   round(p_breakout_val, 3) if p_breakout is not None else None,
-        'special':    round(p_special_val, 3)  if p_special  is not None else None,
+        'special':    round(p_special_val, 3)   if p_special  is not None else None,
+        'oe_phase':   round(p_oe_phase_val, 3)  if p_oe_phase is not None else None,
+        'oe_phase_label': oe_phase_label,
+        'oe_phase_n': oe_phase_n,
         'deficit':    round(deficit, 3),
         'run_len':    cur_run_len,
         'persist_len':persist_run_len,
@@ -1957,6 +2365,7 @@ def predict_round(df_src, runs_src, full_oe_arr, full_pat_arr, lstm_src=None):
         'w_reversal':   round(w_reversal, 3),
         'w_breakout':   round(w_breakout, 3),
         'w_special':    round(w_special_raw, 3),
+        'w_oe_phase':   round(w_oe_phase_raw, 3),
         'p_base':       round(p_base, 3),
         'dir_corr':        round(_dir_correction, 3),
         'anti_streak':     round(_anti_streak_p, 3) if _anti_streak_p is not None else None,
@@ -2217,6 +2626,42 @@ for r in results:
         },
         'effective_signals': si.get('effective_signals', {}),
     }
+# ── Gap-fill: ensure recent rounds have predictions in pred_log ─────────────────
+_GF_WIN  = 50
+_gf_from = max(0, n_rows - _GF_WIN)
+_gf_miss = [
+    i for i in range(_gf_from, n_rows - 1)
+    if str(int(df.iloc[i]['id'])) not in log
+       or not log[str(int(df.iloc[i]['id']))].get('pred_oe')
+]
+if _gf_miss:
+    print(f'  predict.py gap-fill: {len(_gf_miss)} missing rounds…', flush=True)
+    for _gi in _gf_miss:
+        _rid_g   = str(int(df.iloc[_gi]['id']))
+        _df_g    = df.iloc[:_gi + 1]
+        _rn_g    = encode_runs(_df_g['odd'].tolist())
+        _oe_g    = full_oe_arr[:_gi + 1]
+        _pa_g    = full_pat_arr[:_gi + 1]
+        _out_g   = predict_round(_df_g, _rn_g, _oe_g, _pa_g, lstm_src=_df_g)
+        if _out_g is None:
+            continue
+        _pred_g, _conf_g, _by_rc_g, _by_oe_g, _si_g = _out_g
+        _p_odd_g   = float(_by_oe_g.get('ODD', 0.5))
+        _cv_g      = max(_p_odd_g, 1.0 - _p_odd_g)
+        _pred_oe_g = 'ODD' if _p_odd_g > 0.5 else 'EVEN'
+        _actual_g  = str(df.iloc[_gi]['pattern']) if not pd.isna(df.iloc[_gi]['pattern']) else None
+        log[_rid_g] = {
+            'round_id':   _rid_g,
+            'predicted':  _pred_g,
+            'pred_oe':    _pred_oe_g,
+            'p_oe_odd':   round(_p_odd_g, 4),
+            'confidence': round(float(_cv_g), 4),
+            'actual':     _actual_g,
+            'bet':        False,
+            'signals':    {k: _si_g.get(k) for k in ('run','momentum','seq','disc_seq','persist','recent','period','reversal','breakout','ml','lstm')},
+        }
+    print(f'  predict.py gap-fill done — {len(_gf_miss)} rounds added.', flush=True)
+
 _log_tmp = LOG_PATH + '.tmp'
 with open(_log_tmp, 'w') as f:
     json.dump(log, f, indent=2)
@@ -2648,11 +3093,13 @@ if results:
                      if si['reversal'] is not None else "")
     breakout_str  = (f"  breakout={si['breakout']:.2f}(w={si['w_breakout']:.2f})"
                      if si['breakout'] is not None else "")
+    oe_phase_str  = (f"  oe_phase={si['oe_phase']:.2f}(w={si.get('w_oe_phase',0):.2f},{si.get('oe_phase_label','?')},n={si.get('oe_phase_n',0)})"
+                     if si.get('oe_phase') is not None else "")
     print(f"\n  Signals  run={si['run']:.2f}(w={si['w_run']:.2f})  "
           f"mom={si['momentum']:.2f}(w={si['w_momentum']:.2f})  "
           f"seq={si['seq']:.2f}(w={si['w_seq']:.2f},{si['seq_len']}x{si['seq_n']})  "
           f"dseq={si['disc_seq']:.2f}(w={si['w_disc_seq']:.2f},{si['disc_len']}x{si['disc_n']})"
-          f"{recent_str}{period_str}{reversal_str}{breakout_str}{persist_str}{lstm_str}  ml={si['ml']:.2f}  "
+          f"{recent_str}{period_str}{reversal_str}{breakout_str}{persist_str}{lstm_str}{oe_phase_str}  ml={si['ml']:.2f}  "
           f"(base={si['p_base']:.2f}  deficit={si['deficit']:+.2f}  cur_run={si['run_len']}  "
           f"agree={si['agreement']:.0%}  amp={si['amplifier']:.2f}{anti_str}{corr_str}{mode_str})")
 
@@ -2700,7 +3147,8 @@ if results:
     print(f"  3R1W : {rc0.get(3,0):.1%}")
     print(f"  ODD  : {p_odd_cur:.1%}")
     print(f"  EVEN : {oe0.get('EVEN',0):.1%}")
-    print(f"\n  Confidence  : {max(p_odd_cur, 1-p_odd_cur):.1%}  band={band_lbl}  {band_str}")
+    _invert_str = "  ⚠ GLOBAL INVERT ACTIVE (model was anti-predictive)" if _global_invert else ""
+    print(f"\n  Confidence  : {max(p_odd_cur, 1-p_odd_cur):.1%}  band={band_lbl}  {band_str}{_invert_str}")
     print(f"  Action      : {use_flag}")
     _ph_wr_str = f"{_ph_wr:.1%} over {_ph_n} rounds" if _ph_wr is not None else f"only {_ph_n} rounds"
     _kelly_str = f"  half-Kelly={_kelly['bet_pct']}%  p_ruin={_kelly['p_ruin']:.1%}  break-even={_kelly['breakeven']}r" if _kelly else ""
@@ -2776,6 +3224,9 @@ if results:
                          'weight': round(float(si['w_breakout']), 3)},
             'ml':       {'value': round(float(si['ml']), 3)},
             'lstm':     {'value': round(float(si['lstm']), 3) if si['lstm'] is not None else None},
+            'oe_phase': {'value': round(float(si['oe_phase']), 3) if si.get('oe_phase') is not None else None,
+                         'label': si.get('oe_phase_label'),
+                         'n':     si.get('oe_phase_n', 0)},
         },
         'mode':               'streak' if si.get('streak', 0) >= 3 else ('adaptive' if si.get('adaptive') else 'equal'),
         'streak':             int(si.get('streak', 0)),
@@ -2784,6 +3235,8 @@ if results:
         'suppressed_autopsy':       sorted(_streak_autopsy),
         'inverted_signals':         inverted,
         'loss_streak':              int(_cur_loss_streak),
+        'fallback_active':          _fallback_p_odd is not None,
+        'global_invert':            bool(_global_invert),
         'agreement':          round(float(si['agreement']), 3),
         'amplifier':          round(float(si['amplifier']), 3),
         'deficit':            round(float(si['deficit']), 3),

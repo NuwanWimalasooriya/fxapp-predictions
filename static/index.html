@@ -18,12 +18,12 @@
     --blue: #3b82f6;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 13px; min-height: 100vh; }
-  header { background: var(--card); border-bottom: 1px solid var(--border); padding: 8px 20px; display: flex; align-items: center; justify-content: space-between; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 13px; min-height: 100vh; overflow-x: hidden; width: 100%; }
+  header { background: var(--card); border-bottom: 1px solid var(--border); padding: 8px 20px; display: flex; align-items: center; justify-content: space-between; max-width: 100%; }
   header h1 { font-size: 15px; font-weight: 600; letter-spacing: .02em; }
   header .meta { color: var(--muted); font-size: 11px; text-align: right; line-height: 1.5; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(264px, 1fr)); gap: 10px; padding: 12px; }
-  .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; padding: 12px; width: 100%; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; min-width: 0; max-width: 100%; overflow-x: hidden; }
   .card h2 { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 10px; }
   .big { font-size: 30px; font-weight: 700; line-height: 1; }
   .label { font-size: 10px; color: var(--muted); margin-top: 3px; }
@@ -41,18 +41,19 @@
   .bar-neu  { background: var(--muted); }
   .signal-pct { font-size: 11px; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
   /* Disc dots */
-  .discs { display: flex; gap: 6px; align-items: center; }
+  .discs { display: flex; gap: 6px; align-items: center; flex-wrap: nowrap; }
   .disc { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
   .disc.R { background: var(--red);   color: #fff; }
   .disc.W { background: #334155;      color: var(--muted); }
   .disc.sm { width: 18px; height: 18px; font-size: 9px; }
+  .disc.xs { width: 13px; height: 13px; font-size: 8px; }
   .disc-label { font-size: 9px; color: var(--muted); text-align: center; margin-top: 2px; }
   .disc-wrap { display: flex; flex-direction: column; align-items: center; }
   /* Table */
-  table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  thead th { color: var(--muted); font-weight: 500; text-align: left; padding: 5px 6px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+  thead th { color: var(--muted); font-weight: 500; text-align: left; padding: 5px 4px; border-bottom: 1px solid var(--border); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  tbody td { padding: 5px 4px; border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums; vertical-align: middle; overflow: hidden; }
   tbody tr:hover { background: rgba(255,255,255,.03); }
-  tbody td { padding: 5px 6px; border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums; vertical-align: middle; }
   .win   { color: var(--green); font-weight: 600; }
   .loss  { color: var(--red);   font-weight: 600; }
   .muted { color: var(--muted); font-size: 11px; }
@@ -81,7 +82,8 @@
   .phase-action.AVOID      { color: var(--red); }
   .phase-action.INSUFFICIENT_DATA { color: var(--muted); }
   /* Bet signal */
-  .bet-banner { grid-column: 1 / -1; border-radius: 8px; padding: 12px 18px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .bet-banner { grid-column: 1 / -1; border-radius: 8px; padding: 12px 18px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; width: 100%; max-width: 100%; overflow-x: hidden; }
+  .bet-banner > div { min-width: 0; flex-shrink: 1; }
   .bet-banner.yes { background: rgba(34,197,94,.12); border: 2px solid var(--green); }
   .bet-banner.no  { background: rgba(100,116,139,.08); border: 2px solid #334155; }
   .bet-label { font-size: 40px; font-weight: 900; line-height: 1; letter-spacing: -.02em; }
@@ -92,19 +94,12 @@
   .tab { padding: 6px 16px; border-radius: 6px 6px 0 0; font-size: 12px; font-weight: 500; cursor: pointer; border: 1px solid transparent; border-bottom: none; color: var(--muted); background: transparent; }
   .tab.active { background: var(--bg); color: var(--text); border-color: var(--border); }
   .tab:hover:not(.active) { color: var(--text); }
-  /* Data browser */
-  .data-toolbar { display: flex; align-items: center; gap: 10px; padding: 16px 20px; flex-wrap: wrap; }
-  .data-toolbar input { background: var(--card); border: 1px solid var(--border); border-radius: 6px; color: var(--text); padding: 6px 12px; font-size: 13px; width: 240px; outline: none; }
+  /* History toolbar */
+  .data-toolbar { display: flex; align-items: center; gap: 10px; padding: 8px 0 10px; flex-wrap: wrap; }
+  .data-toolbar input { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); padding: 6px 12px; font-size: 12px; width: 220px; outline: none; }
   .data-toolbar input:focus { border-color: var(--accent); }
-  .data-toolbar select { background: var(--card); border: 1px solid var(--border); border-radius: 6px; color: var(--text); padding: 6px 10px; font-size: 13px; outline: none; }
-  .data-toolbar .info { color: var(--muted); font-size: 12px; margin-left: auto; }
-  .data-table-wrap { overflow-x: auto; padding: 0 20px 20px; }
-  .data-table-wrap table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  .data-table-wrap thead th { color: var(--muted); font-weight: 500; text-align: left; padding: 8px 10px; border-bottom: 2px solid var(--border); white-space: nowrap; cursor: pointer; user-select: none; }
-  .data-table-wrap thead th:hover { color: var(--text); }
-  .data-table-wrap thead th .sort-icon { font-size: 10px; margin-left: 4px; }
-  .data-table-wrap tbody tr:hover { background: rgba(255,255,255,.03); }
-  .data-table-wrap tbody td { padding: 7px 10px; border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums; }
+  .data-toolbar select { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); padding: 5px 8px; font-size: 12px; outline: none; }
+  .data-toolbar .info { color: var(--muted); font-size: 11px; margin-left: auto; }
   .pagination { display: flex; align-items: center; gap: 6px; padding: 12px 20px; flex-wrap: wrap; }
   .pagination button { background: var(--card); color: var(--text); border: 1px solid var(--border); padding: 5px 12px; font-size: 12px; border-radius: 5px; cursor: pointer; }
   .pagination button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
@@ -144,17 +139,16 @@
 
 <div class="tabs">
   <div class="tab active" id="tab-pred" onclick="switchTab('pred')">Prediction</div>
-  <div class="tab" id="tab-data" onclick="switchTab('data')">Data Browser</div>
+  <div class="tab" id="tab-new"  onclick="switchTab('new')">New Model (XGB)</div>
 </div>
 
 <div id="root"><p class="error-msg">Loading prediction data…</p></div>
-<div id="data-panel" style="display:none"></div>
+<div id="new-panel" style="display:none"></div>
 
 <script>
 async function load() {
-  const [predRes, histRes, statsRes, cfgRes] = await Promise.all([
+  const [predRes, statsRes, cfgRes] = await Promise.all([
     fetch('/api/prediction'),
-    fetch('/api/history'),
     fetch('/api/stats'),
     fetch('/api/config'),
   ]);
@@ -163,11 +157,11 @@ async function load() {
     document.getElementById('root').innerHTML = `<p class="error-msg">${err.error || 'No data yet.'}</p>`;
     return;
   }
-  const p = await predRes.json();
-  const history = histRes.ok ? await histRes.json().catch(() => []) : [];
-  const stats   = statsRes.ok ? await statsRes.json().catch(() => ({})) : {};
-  const cfg     = cfgRes.ok  ? await cfgRes.json().catch(() => ({}))   : {};
-  render(p, history, stats, cfg);
+  const p     = await predRes.json();
+  const stats = statsRes.ok ? await statsRes.json().catch(() => ({})) : {};
+  const cfg   = cfgRes.ok  ? await cfgRes.json().catch(() => ({}))   : {};
+  _pred.page  = 1;
+  render(p, stats, cfg);
   document.getElementById('meta').innerHTML =
     `Last update: ${p.timestamp}<br>Round ${p.last_id} — ${p.total_rows} rows`;
 }
@@ -227,12 +221,12 @@ function discDots(pattern, size = '') {
   `</div>`;
 }
 
-// Mini discs for table rows (no labels)
+// Mini discs for table rows (no labels) — xs size, tight gap
 function miniDiscs(pattern) {
-  if (!pattern) return '—';
+  if (!pattern) return '<span class="muted">—</span>';
   const arr = Array.isArray(pattern) ? pattern : pattern.split('');
-  return `<div class="discs">` +
-    arr.map(d => `<div class="disc ${d} sm">${d}</div>`).join('') +
+  return `<div class="discs" style="gap:3px">` +
+    arr.map(d => `<div class="disc ${d} xs">${d}</div>`).join('') +
   `</div>`;
 }
 
@@ -348,7 +342,7 @@ function phaseCard(pa) {
   </div>`;
 }
 
-function render(p, history, stats = {}, cfg = {}) {
+function render(p, stats = {}, cfg = {}) {
   const s    = p.signals;
   const pred = p.prediction;
   const conf = p.confidence;
@@ -371,57 +365,6 @@ function render(p, history, stats = {}, cfg = {}) {
   const betSize      = +(bankroll * kellyBase * kellyMult).toFixed(2);
   const betSizeStr   = betSize.toFixed(2);
 
-  // Sort newest first regardless of API ordering
-  const sortedHistory = [...history].sort((a, b) => parseInt(b.round_id) - parseInt(a.round_id));
-
-
-  const histRows = sortedHistory.map(e => {
-    const actualStr = e.actual || '';
-    const actualOe  = e.oe || (actualStr ? (actualStr.split('').filter(c=>c==='R').length % 2 ? 'ODD' : 'EVEN') : '—');
-    const predOe    = e.pred_oe || '—';
-    const predConf  = e.confidence != null ? e.confidence
-                    : e.p_oe_odd  != null  ? Math.max(e.p_oe_odd, 1 - e.p_oe_odd) : null;
-    const ePctStr = e.pat_even_pct != null ? (e.pat_even_pct*100).toFixed(1)+'%' : '—';
-    const oPctStr = e.pat_odd_pct  != null ? (e.pat_odd_pct *100).toFixed(1)+'%' : '—';
-    const patSub  = (e.pat_even_lbl || e.pat_odd_lbl)
-      ? ` <span style="color:#60a5fa;font-size:10px">${e.pat_even_lbl||'—'}</span><span style="color:var(--muted);font-size:10px"> ${ePctStr}</span>` +
-        ` <span style="color:#a78bfa;font-size:10px">${e.pat_odd_lbl||'—'}</span><span style="color:var(--muted);font-size:10px"> ${oPctStr}</span>`
-      : '';
-    const predLabel = predOe !== '—'
-      ? `<span style="white-space:nowrap"><span class="${predOe==='ODD'?'odd':'even'}" style="font-weight:600">${predOe}</span>` +
-        (predConf != null ? ` <span style="color:var(--muted);font-size:11px">(${pct(predConf)})</span>` : '') +
-        patSub + `</span>`
-      : predOe;
-
-    // Win Rate: empirical band_wr only — no confidence fallback
-    const hasWR   = e.band_wr != null && e.band_n >= 20;
-    const wrColor = hasWR
-      ? (e.band_wr >= 0.55 ? 'var(--green)' : e.band_wr >= 0.45 ? 'var(--yellow)' : 'var(--red)')
-      : 'var(--muted)';
-    const wrLabel = hasWR
-      ? `<span style="color:${wrColor}">${pct(e.band_wr)}</span><span style="color:var(--muted);font-size:10px"> (n=${e.band_n})</span>`
-      : '—';
-
-    const isBetEntry = e.bet_label === 1 || e.bet_label === true || e.bet_label === 'BET';
-    const betRec   = isBetEntry ? 'BET' : '—';
-    const betColor = isBetEntry ? 'var(--green)' : 'var(--muted)';
-
-    const result  = (e.result && e.result !== 'Not Predicted') ? e.result : '—';
-    const resCls  = result === 'WIN' ? 'win' : result === 'LOSS' ? 'loss' : 'muted';
-    const isPredicted = e.pred_oe && e.pred_oe !== '';
-    const isFlag = actualStr === 'WWWW' || actualStr === 'RRRR';
-    const flagStyle = isFlag ? 'background:rgba(249,115,22,.15);border-left:3px solid #f97316;' : '';
-    const flagBadge = isFlag ? `<span style="color:#f97316;font-weight:700;font-size:10px;margin-left:4px">${actualStr}</span>` : '';
-    return `<tr style="${flagStyle}">
-      <td>${e.round_id}${flagBadge}</td>
-      <td style="min-width:140px">${predLabel}</td>
-      <td>${wrLabel}</td>
-      <td style="color:${betColor};font-weight:600">${betRec}</td>
-      <td>${miniDiscs(actualStr)}</td>
-      <td class="${actualOe === 'ODD' ? 'odd' : 'even'}">${actualOe}</td>
-      <td class="${resCls}">${result}</td>
-    </tr>`;
-  }).join('');
 
   document.getElementById('root').innerHTML = `
   <div class="grid">
@@ -576,9 +519,9 @@ function render(p, history, stats = {}, cfg = {}) {
     ${phaseCard(p.phase_analysis)}
 
 
-    <!-- HISTORY -->
-    <div class="card" style="grid-column: 1 / -1; overflow-x: auto;">
-      <h2>Recent rounds (last 30)</h2>
+    <!-- HISTORY with pagination + search -->
+    <div class="card" style="grid-column: 1 / -1;">
+      <h2>All rounds</h2>
       ${(() => {
         const s1 = stats.last100  || {};
         const s2 = stats.last200  || {};
@@ -590,7 +533,7 @@ function render(p, history, stats = {}, cfg = {}) {
             <div style="font-size:15px;font-weight:700;color:${wrColor(wr)}">${wr != null ? (wr*100).toFixed(1)+'%' : '—'}</div>
             <div style="font-size:10px;color:var(--muted);margin-top:1px">${n != null ? `${extra||''}n=${n}` : 'no data'}</div>
           </div>`;
-        return `<div style="display:flex;background:rgba(255,255,255,.03);border-radius:8px;margin-bottom:14px;overflow:hidden">
+        return `<div style="display:flex;background:rgba(255,255,255,.03);border-radius:8px;margin-bottom:10px;overflow:hidden">
           ${cell('Last 100', s1.wr, s1.n, s1.win != null ? `${s1.win}W · ` : '')}
           ${cell('Last 200', s2.wr, s2.n, s2.win != null ? `${s2.win}W · ` : '')}
           ${cell('BET-only', sb.wr, sb.n, sb.win != null ? `${sb.win}W · ` : '')}
@@ -601,163 +544,487 @@ function render(p, history, stats = {}, cfg = {}) {
           </div>
         </div>`;
       })()}
+      <div class="data-toolbar">
+        <input id="pred-search" type="text" placeholder="Search ID, pattern, ODD/EVEN, WIN/LOSS…"
+               value="${_pred.search}" oninput="onPredSearch(this.value)">
+        <select onchange="onPredSizeChange(this.value)">
+          ${[25,50,100,200].map(n=>`<option value="${n}" ${n===_pred.size?'selected':''}>${n} / page</option>`).join('')}
+        </select>
+        <div id="pred-hist-info" class="info"></div>
+      </div>
       <table>
-        <thead>
-          <tr>
-            <th>Round</th>
-            <th style="min-width:140px">Pred OE</th>
-            <th>Win Rate</th>
-            <th>Bet</th>
-            <th>Actual discs</th>
-            <th>Actual OE</th>
-            <th>Result</th>
-          </tr>
-        </thead>
-        <tbody>${histRows || '<tr><td colspan="7" style="color:var(--muted);padding:12px">No history yet</td></tr>'}</tbody>
+        <colgroup>
+          <col style="width:20%"><col style="width:11%"><col style="width:9%">
+          <col style="width:20%"><col style="width:16%"><col style="width:13%"><col style="width:11%">
+        </colgroup>
+        <thead><tr>
+          <th onclick="sortPred('id')">Round ${sortPredIcon('id')}</th>
+          <th>Win Rate</th>
+          <th onclick="sortPred('bet')">Bet ${sortPredIcon('bet')}</th>
+          <th>Actual discs</th>
+          <th onclick="sortPred('pred_oe')">Pred OE ${sortPredIcon('pred_oe')}</th>
+          <th onclick="sortPred('oe')">Actual OE ${sortPredIcon('oe')}</th>
+          <th onclick="sortPred('result')">Result ${sortPredIcon('result')}</th>
+        </tr></thead>
+        <tbody id="pred-hist-body"><tr><td colspan="7" style="color:var(--muted);padding:12px">Loading…</td></tr></tbody>
       </table>
+      <div class="pagination" id="pred-hist-pager"></div>
     </div>
 
   </div>`;
+  loadPredData();
 }
 
-// Poll /api/status every 5 s; reload full data only when prediction file changes.
-let _lastMtime = 0;
+// Poll /api/status every 10 s.
+// Old model: refresh when snapshot mtime changes (new prediction written).
+// New model: refresh only when last_id_new changes (new round actually arrived, ~3 min cycle).
+let _lastMtime = 0, _lastIdNew = 0;
 async function pollStatus() {
   try {
     const res = await fetch('/api/status');
     if (!res.ok) return;
-    const { mtime } = await res.json();
+    const data = await res.json();
+    const mtime   = data.mtime      ?? 0;
+    const idNew   = data.last_id_new ?? 0;
     if (mtime !== _lastMtime) {
       _lastMtime = mtime;
       load();
-      if (document.getElementById('data-panel').style.display !== 'none') {
-        loadData();
-      }
     }
-  } catch {}
+    if (idNew !== 0 && idNew !== _lastIdNew) {
+      _lastIdNew = idNew;
+      if (document.getElementById('new-panel').style.display !== 'none') { _newDb.page = 1; loadNewModel(); }
+    }
+  } catch(e) {}
 }
 
 load();
 loadConfig();
-setInterval(pollStatus, 5000);
+setInterval(pollStatus, 10000);
 
 // ── Tab switching ─────────────────────────────────────────────────────────────
 function switchTab(tab) {
   document.getElementById('tab-pred').classList.toggle('active', tab === 'pred');
-  document.getElementById('tab-data').classList.toggle('active', tab === 'data');
-  document.getElementById('root').style.display       = tab === 'pred' ? '' : 'none';
-  document.getElementById('data-panel').style.display = tab === 'data' ? '' : 'none';
-  if (tab === 'data') loadData();
+  document.getElementById('tab-new').classList.toggle('active',  tab === 'new');
+  document.getElementById('root').style.display      = tab === 'pred' ? '' : 'none';
+  document.getElementById('new-panel').style.display = tab === 'new'  ? '' : 'none';
+  if (tab === 'new') loadNewModel();
 }
 
-// ── Data Browser ──────────────────────────────────────────────────────────────
-let _db = { page: 1, size: 50, search: '', sort: 'id', dir: 'desc' };
-let _searchTimer = null;
+// ── New model pagination state ─────────────────────────────────────────────────
+let _newDb = { page: 1, size: 50, search: '' };
+let _newSearchTimer = null;
+let _newFirstPredId = null;
 
-async function loadData() {
-  const { page, size, search, sort, dir } = _db;
+function goNewPage(p)       { _newDb.page = p; loadNewModelData(); }
+function onNewSizeChange(v) { _newDb.size = parseInt(v); _newDb.page = 1; loadNewModelData(); }
+function onNewSearch(v) {
+  clearTimeout(_newSearchTimer);
+  _newSearchTimer = setTimeout(() => { _newDb.search = v; _newDb.page = 1; loadNewModelData(); }, 300);
+}
+
+async function loadNewModelData() {
+  const { page, size, search } = _newDb;
+  const res = await fetch(`/api/new/data?page=${page}&size=${size}&search=${encodeURIComponent(search)}`);
+  if (!res.ok) return;
+  renderNewModelData(await res.json());
+}
+
+function renderNewModelData(paged) {
+  const body  = document.getElementById('new-hist-body');
+  const info  = document.getElementById('new-hist-info');
+  const pager = document.getElementById('new-hist-pager');
+  if (!body) return;
+
+  const { total, page, pages, rows } = paged;
+  const start = (page - 1) * _newDb.size + 1;
+  const end   = Math.min(page * _newDb.size, total);
+
+  // Build rolling WR (trailing 20) from ascending rows
+  const _ascRows = [...rows].sort((a,b) => parseInt(a.round_id) - parseInt(b.round_id));
+  const _wrWin = [], _wrMap = {};
+  for (const r of _ascRows) {
+    if (r.result === 'WIN' || r.result === 'LOSS') {
+      _wrWin.push(r.result === 'WIN' ? 1 : 0);
+      if (_wrWin.length > 20) _wrWin.shift();
+      if (_wrWin.length >= 5)
+        _wrMap[r.round_id] = _wrWin.reduce((a,b)=>a+b,0) / _wrWin.length;
+    }
+  }
+
+  const sortedRows = [...rows].sort((a,b) => parseInt(b.round_id) - parseInt(a.round_id));
+  body.innerHTML = sortedRows.map(r => {
+    const actualStr = r.actual || '';
+    const actualOe  = r.oe || (actualStr ? (actualStr.split('').filter(c=>c==='R').length%2?'ODD':'EVEN') : '—');
+    const predOe    = r.pred_oe || '—';
+    const conf      = r.confidence ?? 0;
+    const result    = (r.result && r.result !== 'Not Predicted') ? r.result : '—';
+    const resCls    = result==='WIN'?'win':result==='LOSS'?'loss':'muted';
+    const oeColor   = result==='WIN'?'var(--green)':result==='LOSS'?'var(--red)':null;
+    const predClr   = oeColor||(predOe==='ODD'?'var(--yellow)':'var(--accent)');
+    const actClr    = oeColor||(actualOe==='ODD'?'var(--yellow)':'var(--accent)');
+    const confStr   = conf ? `<span style="color:#3b82f6;font-size:11px"> (${pct(conf)})</span>` : '';
+    const isFlag    = actualStr==='WWWW'||actualStr==='RRRR';
+    const isStart   = _newFirstPredId!==null && parseInt(r.round_id)===_newFirstPredId;
+    const rowStyle  = isStart ? 'background:rgba(99,102,241,.18);border-left:3px solid var(--accent);'
+                    : isFlag  ? 'background:rgba(249,115,22,.15);border-left:3px solid #f97316;' : '';
+    const idBadge   = isStart ? `<span style="background:var(--accent);color:#fff;font-size:9px;font-weight:700;border-radius:3px;padding:1px 5px;margin-left:5px">START</span>`
+                    : isFlag  ? `<span style="color:#f97316;font-weight:700;font-size:10px;margin-left:4px">${actualStr}</span>` : '';
+    const rowWr     = _wrMap[r.round_id] ?? null;
+    const wrStr     = rowWr!=null ? (rowWr*100).toFixed(0)+'%' : '—';
+    const wrClr     = rowWr==null?'var(--muted)':rowWr>=0.65?'#22c55e':rowWr>=0.50?'var(--yellow)':'var(--red)';
+    const betLabel  = conf>=0.65?'BET':conf>=0.60?'SKIP':conf>0?'AVOID':'—';
+    const betClr    = conf>=0.65?'#22c55e':conf>=0.60?'var(--yellow)':'#ef4444';
+    return `<tr style="${rowStyle}">
+      <td style="font-size:11px;${oeColor?`color:${oeColor};font-weight:600`:''}">${r.round_id}${idBadge}</td>
+      <td style="font-size:11px;color:${wrClr};font-weight:600">${wrStr}</td>
+      <td><span style="font-size:10px;font-weight:700;color:${betClr}">${betLabel}</span></td>
+      <td>${miniDiscs(actualStr)}</td>
+      <td><span style="font-weight:600;color:${predClr}">${predOe}</span>${confStr}</td>
+      <td><span style="font-weight:600;color:${actClr}">${actualOe}</span></td>
+      <td class="${resCls}">${result}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="7" style="color:var(--muted);padding:12px">No records found</td></tr>';
+
+  if (info) info.textContent = `${total} total · showing ${start}–${end}`;
+  if (pager) {
+    const lo = Math.max(1, page-3), hi = Math.min(pages, page+3);
+    let btns = '';
+    if (lo>1) btns += `<button onclick="goNewPage(1)">1</button>${lo>2?'<span class="pg-info">…</span>':''}`;
+    for (let pg=lo; pg<=hi; pg++) btns += `<button class="${pg===page?'active':''}" onclick="goNewPage(${pg})">${pg}</button>`;
+    if (hi<pages) btns += `${hi<pages-1?'<span class="pg-info">…</span>':''}<button onclick="goNewPage(${pages})">${pages}</button>`;
+    pager.innerHTML = `<button onclick="goNewPage(${page-1})" ${page<=1?'disabled':''}>&#8592; Prev</button>
+      ${btns}
+      <button onclick="goNewPage(${page+1})" ${page>=pages?'disabled':''}>Next &#8594;</button>
+      <span class="pg-info">Page ${page} of ${pages}</span>`;
+  }
+}
+
+// ── Prediction tab history (paginated) ────────────────────────────────────────
+let _pred = { page: 1, size: 50, search: '', sort: 'id', dir: 'desc' };
+let _predSearchTimer = null;
+
+async function loadPredData() {
+  const { page, size, search, sort, dir } = _pred;
   const url = `/api/data?page=${page}&size=${size}&search=${encodeURIComponent(search)}&sort=${sort}&dir=${dir}`;
   const res = await fetch(url);
   if (!res.ok) return;
-  const data = await res.json();
-  renderData(data);
+  renderPredData(await res.json());
 }
 
-function sortBy(col) {
-  if (col === 'id') { _db.sort = 'id'; _db.dir = 'desc'; }
-  else if (_db.sort === col) _db.dir = _db.dir === 'asc' ? 'desc' : 'asc';
-  else { _db.sort = col; _db.dir = 'asc'; }
-  _db.page = 1;
-  loadData();
+function sortPred(col) {
+  if (col === 'id') { _pred.sort = 'id'; _pred.dir = 'desc'; }
+  else if (_pred.sort === col) _pred.dir = _pred.dir === 'asc' ? 'desc' : 'asc';
+  else { _pred.sort = col; _pred.dir = 'asc'; }
+  _pred.page = 1;
+  loadPredData();
 }
 
-function sortIcon(col) {
-  if (_db.sort !== col) return '<span class="sort-icon">⇅</span>';
-  return `<span class="sort-icon">${_db.dir === 'asc' ? '▲' : '▼'}</span>`;
+function sortPredIcon(col) {
+  if (_pred.sort !== col) return '<span class="sort-icon">&#8645;</span>';
+  return `<span class="sort-icon">${_pred.dir === 'asc' ? '&#9650;' : '&#9660;'}</span>`;
 }
 
-function renderData(data) {
+function renderPredData(data) {
   const { total, page, pages, rows } = data;
-  const start = (page - 1) * _db.size + 1;
-  const end   = Math.min(page * _db.size, total);
-
-  const discDot = (d) => `<span class="disc sm ${d}">${d}</span>`;
+  const start = (page - 1) * _pred.size + 1;
+  const end   = Math.min(page * _pred.size, total);
+  const discDot = d => `<span class="disc xs ${d}">${d}</span>`;
 
   const tableRows = rows.map(r => {
-    const isRRRR  = r.pattern === 'RRRR';
-    const isWWWW  = r.pattern === 'WWWW';
-    const isFlag  = isRRRR || isWWWW;
-    const oeCls   = r.oe === 'ODD' ? 'odd' : 'even';
-    const predOeCls = r.pred_oe === 'ODD' ? 'odd' : r.pred_oe === 'EVEN' ? 'even' : 'muted';
-    const resCls  = r.result === 'WIN' ? 'win' : r.result === 'LOSS' ? 'loss' : r.result ? 'muted' : '';
+    const isFlag  = r.pattern === 'RRRR' || r.pattern === 'WWWW';
+    const resCls  = r.result === 'WIN' ? 'win' : r.result === 'LOSS' ? 'loss' : 'muted';
+    const oeColor = r.result === 'WIN' ? 'var(--green)' : r.result === 'LOSS' ? 'var(--red)' : null;
+    const predClr = oeColor || (r.pred_oe === 'ODD' ? 'var(--yellow)' : r.pred_oe === 'EVEN' ? 'var(--accent)' : 'var(--muted)');
+    const actClr  = oeColor || (r.oe === 'ODD' ? 'var(--yellow)' : 'var(--accent)');
     const rowStyle = isFlag ? 'background:rgba(249,115,22,.12);border-left:3px solid rgba(249,115,22,.6);' : '';
-    const flagCell = isRRRR ? `<span style="color:#f97316;font-weight:700;font-size:11px">RRRR</span>`
-                   : isWWWW ? `<span style="color:#f97316;font-weight:700;font-size:11px">WWWW</span>`
-                   : '';
-    const isBetRow = r.bet === 1 || r.bet === true || r.bet === 'BET';
-    const betColor = isBetRow ? 'var(--green)' : 'var(--muted)';
-    const betLabel = isBetRow ? 'BET' : '—';
-    const confStr  = r.confidence ? pct(r.confidence) : '—';
+    const flagBadge = isFlag ? `<span style="color:#f97316;font-weight:700;font-size:10px;margin-left:4px">${r.pattern}</span>` : '';
+    const isBet   = r.bet === 1 || r.bet === true || r.bet === 'BET';
+    const betClr  = isBet ? 'var(--green)' : 'var(--muted)';
+    const confStr = r.confidence ? `<span style="color:#3b82f6;font-size:11px"> (${pct(r.confidence)})</span>` : '';
+    const wrStr   = r.band_wr != null && r.band_n >= 20
+      ? `<span style="color:${r.band_wr>=0.55?'var(--green)':r.band_wr>=0.45?'var(--yellow)':'var(--red)'}">${pct(r.band_wr)}</span>`
+      : '—';
     return `<tr style="${rowStyle}">
-      <td>${r.id}</td>
-      <td><div class="discs">${[r.disc1,r.disc2,r.disc3,r.disc4].map(discDot).join('')}</div></td>
-      <td>${flagCell}</td>
-      <td class="${oeCls}">${r.oe}</td>
-      <td class="${predOeCls}">${r.pred_oe || '—'}</td>
-      <td style="color:${betColor}">${confStr}</td>
-      <td style="color:${betColor};font-weight:${isBetRow?'600':'400'}">${betLabel}</td>
-      <td class="${resCls}">${r.result || '—'}</td>
+      <td style="font-size:11px;${oeColor?`color:${oeColor};font-weight:600`:''}">${r.id}${flagBadge}</td>
+      <td>${wrStr}</td>
+      <td style="color:${betClr};font-weight:600">${isBet?'BET':'—'}</td>
+      <td><div style="display:flex;gap:2px">${[r.disc1,r.disc2,r.disc3,r.disc4].map(discDot).join('')}</div></td>
+      <td style="font-weight:600;color:${predClr}">${r.pred_oe||'—'}${confStr}</td>
+      <td style="font-weight:600;color:${actClr}">${r.oe||'—'}</td>
+      <td class="${resCls}">${r.result||'—'}</td>
     </tr>`;
   }).join('');
 
-  // Pagination buttons — show up to 7 page numbers
-  const pageButtons = () => {
-    let btns = '';
-    const lo = Math.max(1, page - 3), hi = Math.min(pages, page + 3);
-    if (lo > 1)     btns += `<button onclick="goPage(1)">1</button>${lo > 2 ? '<span class="pg-info">…</span>' : ''}`;
-    for (let p = lo; p <= hi; p++)
-      btns += `<button class="${p === page ? 'active' : ''}" onclick="goPage(${p})">${p}</button>`;
-    if (hi < pages) btns += `${hi < pages - 1 ? '<span class="pg-info">…</span>' : ''}<button onclick="goPage(${pages})">${pages}</button>`;
-    return btns;
+  const pgBtns = () => {
+    let b = '';
+    const lo = Math.max(1, page-3), hi = Math.min(pages, page+3);
+    if (lo > 1) b += `<button onclick="goPredPage(1)">1</button>${lo>2?'<span class="pg-info">…</span>':''}`;
+    for (let pg=lo; pg<=hi; pg++) b += `<button class="${pg===page?'active':''}" onclick="goPredPage(${pg})">${pg}</button>`;
+    if (hi < pages) b += `${hi<pages-1?'<span class="pg-info">…</span>':''}<button onclick="goPredPage(${pages})">${pages}</button>`;
+    return b;
   };
 
-  document.getElementById('data-panel').innerHTML = `
-    <div class="data-toolbar">
-      <input id="db-search" type="text" placeholder="Search ID, pattern, ODD/EVEN, WIN/LOSS…"
-             value="${_db.search}" oninput="onSearch(this.value)">
-      <select onchange="onSizeChange(this.value)">
-        ${[25,50,100,200].map(n=>`<option value="${n}" ${n===_db.size?'selected':''}>${n} / page</option>`).join('')}
-      </select>
-      <div class="info">${total.toLocaleString()} records — showing ${start}–${end}</div>
-    </div>
-    <div class="data-table-wrap">
-      <table>
-        <thead><tr>
-          <th onclick="sortBy('id')">ID ${sortIcon('id')}</th>
-          <th>Discs</th>
-          <th onclick="sortBy('flag')">Flag ${sortIcon('flag')}</th>
-          <th onclick="sortBy('oe')">Actual OE ${sortIcon('oe')}</th>
-          <th onclick="sortBy('pred_oe')">Pred OE ${sortIcon('pred_oe')}</th>
-          <th onclick="sortBy('confidence')">Conf ${sortIcon('confidence')}</th>
-          <th onclick="sortBy('bet')">Bet ${sortIcon('bet')}</th>
-          <th onclick="sortBy('result')">Result ${sortIcon('result')}</th>
-        </tr></thead>
-        <tbody>${tableRows || '<tr><td colspan="8" style="color:var(--muted);padding:16px">No records found</td></tr>'}</tbody>
-      </table>
-    </div>
-    <div class="pagination">
-      <button onclick="goPage(${page-1})" ${page<=1?'disabled':''}>&#8592; Prev</button>
-      ${pageButtons()}
-      <button onclick="goPage(${page+1})" ${page>=pages?'disabled':''}>Next &#8594;</button>
-      <span class="pg-info">Page ${page} of ${pages}</span>
-    </div>`;
+  const body = document.getElementById('pred-hist-body');
+  const info = document.getElementById('pred-hist-info');
+  const pager = document.getElementById('pred-hist-pager');
+  if (!body) return;
+  body.innerHTML  = tableRows || '<tr><td colspan="7" style="color:var(--muted);padding:12px">No records found</td></tr>';
+  if (info)  info.textContent = `${total.toLocaleString()} records · showing ${start}–${end}`;
+  if (pager) pager.innerHTML  =
+    `<button onclick="goPredPage(${page-1})" ${page<=1?'disabled':''}>&#8592; Prev</button>
+     ${pgBtns()}
+     <button onclick="goPredPage(${page+1})" ${page>=pages?'disabled':''}>Next &#8594;</button>
+     <span class="pg-info">Page ${page} of ${pages}</span>`;
 }
 
-function goPage(p) { _db.page = p; loadData(); }
-function onSizeChange(v) { _db.size = parseInt(v); _db.page = 1; loadData(); }
-function onSearch(v) {
-  clearTimeout(_searchTimer);
-  _searchTimer = setTimeout(() => { _db.search = v; _db.page = 1; loadData(); }, 300);
+function goPredPage(p)       { _pred.page = p; loadPredData(); }
+function onPredSizeChange(v) { _pred.size = parseInt(v); _pred.page = 1; loadPredData(); }
+function onPredSearch(v) {
+  clearTimeout(_predSearchTimer);
+  _predSearchTimer = setTimeout(() => { _pred.search = v; _pred.page = 1; loadPredData(); }, 300);
+}
+
+// ── New Model (XGBoost) tab ───────────────────────────────────────────────────
+async function loadNewModel() {
+  const panel = document.getElementById('new-panel');
+  panel.innerHTML = '<p style="padding:20px;color:var(--muted)">Loading new model data…</p>';
+  try {
+    const [predRes, dataRes, statsRes] = await Promise.all([
+      fetch('/api/new/prediction'),
+      fetch(`/api/new/data?page=1&size=${_newDb.size}&search=`),
+      fetch('/api/new/stats'),
+    ]);
+    if (!predRes.ok) {
+      const err = await predRes.json().catch(() => ({}));
+      panel.innerHTML = `<p class="error-msg" style="padding:20px">${err.error || 'No new model data yet. Refresh to run predict_new.py.'}</p>`;
+      return;
+    }
+    const p     = await predRes.json();
+    const paged = dataRes.ok  ? await dataRes.json().catch(()=>({rows:[],total:0,page:1,pages:1})) : {rows:[],total:0,page:1,pages:1};
+    const stats = statsRes.ok ? await statsRes.json().catch(()=>({})) : {};
+    renderNewModel(p, paged, stats);
+  } catch(e) {
+    panel.innerHTML = `<p class="error-msg" style="padding:20px">Error loading new model: ${e.message}</p>`;
+  }
+}
+
+function renderNewModel(p, paged, stats) {
+  _newFirstPredId = p.first_pred_id ?? null;
+  const sigs     = p.signals || {};
+  const isOdd    = p.pred_oe === 'ODD';
+  const conf     = p.confidence ?? 0;
+  const p_odd    = p.p_oe_odd ?? (isOdd ? conf : 1 - conf);
+  const p_even   = 1 - p_odd;
+  const streak   = p.loss_streak ?? 0;
+  const isBet    = conf >= 0.65;
+  const s1       = stats.last100  || {};
+  const s2       = stats.last200  || {};
+
+  const wrColor = wr => wr == null ? 'var(--muted)' : wr >= 0.65 ? '#22c55e' : wr >= 0.53 ? 'var(--green)' : wr >= 0.47 ? 'var(--yellow)' : 'var(--red)';
+  const dirLbl  = isOdd ? 'ODD' : 'EVEN';
+
+  const streakBadge = streak >= 3
+    ? `<span class="streak-badge">STREAK-${streak}</span>` : '';
+
+  // Rule tag displayed as mode badge
+  const ruleDisplay = sigs.rule && sigs.rule.startsWith('rule7_')
+    ? `${sigs.cycle_pattern ?? sigs.rule} p${sigs.cycle_period}×${sigs.cycle_cycles}`
+    : (sigs.rule || '');
+  const ruleBadge = ruleDisplay
+    ? `<span class="mode-badge" style="font-size:10px;${sigs.cycle_detected?'background:rgba(99,102,241,.3);color:var(--accent)':''}">${ruleDisplay}</span>`
+    : '';
+
+
+  document.getElementById('new-panel').innerHTML = `
+  <div class="grid">
+
+    <!-- BET BANNER -->
+    <div class="bet-banner ${isBet ? 'yes' : 'no'}">
+      <div>
+        <div class="bet-label ${isBet ? 'yes' : 'no'}">${isBet ? 'BET' : 'NO BET'}</div>
+        <div class="bet-conf" style="margin-top:3px">
+          ${isBet
+            ? `Model conf <strong style="color:var(--green)">${pct(conf)}</strong> ≥ 65% threshold`
+            : `Model conf <strong style="color:#64748b">${pct(conf)}</strong> below 65% — skip this round`}
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div>
+        <div class="bet-direction ${isBet ? (dirLbl==='ODD'?'odd':'even') : ''}"
+             style="${isBet ? '' : 'color:#475569'}">
+          ${dirLbl} ${pct(isOdd ? p_odd : p_even)}
+        </div>
+        <div class="bet-round" style="margin-top:6px">Round ${p.next_round_id}${streakBadge}${ruleBadge}</div>
+      </div>
+      <div class="divider"></div>
+      <div>
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">XGBoost signal</div>
+        <div style="font-size:18px;font-weight:700;color:${sigs.xgb > 0.5 ? '#a78bfa' : '#60a5fa'}">${sigs.xgb != null ? (sigs.xgb > 0.5 ? 'ODD ' + pct(sigs.xgb) : 'EVEN ' + pct(1-sigs.xgb)) : '—'}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">raw ML signal</div>
+      </div>
+      <div class="divider"></div>
+      <div>
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Run state</div>
+        <div style="font-size:16px;font-weight:700">${sigs.cur_val || '—'} × ${sigs.cur_run ?? '—'}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">prev: ${sigs.prev_run ?? '—'} · alt: ${sigs.alt_run ?? '—'}</div>
+      </div>
+      <div class="divider"></div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Last round ${p.last_id}</div>
+        ${discDots(p.last_discs)}
+        <div style="margin-top:6px;color:var(--muted);font-size:12px">${p.last_oe}</div>
+      </div>
+    </div>
+
+    <!-- ODD / EVEN -->
+    <div class="card">
+      <h2>ODD / EVEN</h2>
+      <div style="display:flex;gap:24px;margin-bottom:12px">
+        <div>
+          <div class="big odd">${fmt(p_odd)}<span style="font-size:20px">%</span></div>
+          <div class="label">ODD</div>
+        </div>
+        <div>
+          <div class="big even">${fmt(p_even)}<span style="font-size:20px">%</span></div>
+          <div class="label">EVEN</div>
+        </div>
+      </div>
+      <div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Pattern state</div>
+        <div class="row"><span class="key">Current run</span><span class="val">${sigs.cur_val || '—'} × ${sigs.cur_run ?? '—'}</span></div>
+        <div class="row"><span class="key">Previous run</span><span class="val">${sigs.prev_run ?? '—'} rounds</span></div>
+        <div class="row"><span class="key">Alt run length</span><span class="val">${sigs.alt_run ?? '—'} ${sigs.alt_confirmed ? '<span style="color:var(--green);font-size:10px">✓ confirmed</span>' : ''}</span></div>
+        <div class="row"><span class="key">Dom direction (8r)</span><span class="val">${sigs.dom_o8 != null ? (sigs.dom_o8 >= 0.5 ? 'ODD ' + pct(sigs.dom_o8) : 'EVEN ' + pct(1-sigs.dom_o8)) : '—'}</span></div>
+        <div class="row"><span class="key">Applied rule</span><span class="val" style="font-size:11px;color:var(--muted)">${sigs.rule || '—'}</span></div>
+        ${sigs.mirror_info ? (() => {
+          const m = sigs.mirror_info;
+          const tileStr = (m.next_tile||[]).map(v=>v==='ODD'?'O':'E').join('');
+          const inProg  = m.pattern_name && m.pattern_name.includes('_in');
+          return `
+          <div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px">
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Mirror tile pattern</div>
+            <div class="row"><span class="key">Pattern</span>
+              <span class="val"><span style="background:rgba(234,179,8,.15);color:var(--yellow);font-size:11px;font-weight:700;padding:1px 6px;border-radius:3px">${m.pattern_name || '—'}</span></span></div>
+            <div class="row"><span class="key">Tile size / count</span><span class="val">${m.tile_size || '?'} rounds · ${m.cycles} tiles seen</span></div>
+            <div class="row"><span class="key">Next tile</span>
+              <span class="val" style="font-family:monospace;letter-spacing:2px;color:var(--yellow)">${tileStr}</span></div>
+            ${inProg ? `<div class="row"><span class="key">Position in tile</span><span class="val">${(m.tile_pos??0)+1} / ${m.tile_size}</span></div>` : ''}
+          </div>`;
+        })() : ''}
+        ${sigs.cycle_detected ? `
+        <div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Cycle pattern</div>
+          <div class="row"><span class="key">Pattern</span>
+            <span class="val"><span style="background:rgba(99,102,241,.2);color:var(--accent);font-size:11px;font-weight:700;padding:1px 6px;border-radius:3px">${sigs.cycle_pattern || '—'}</span></span></div>
+          <div class="row"><span class="key">Period / Cycles</span><span class="val">p${sigs.cycle_period} · ${sigs.cycle_cycles} confirmed</span></div>
+          <div class="row"><span class="key">Cycle predicts</span>
+            <span class="val" style="font-weight:700;color:${sigs.cycle_pred_val==='ODD'?'var(--yellow)':'var(--accent)'}">${sigs.cycle_pred_val || '—'} (${pct(sigs.cycle_conf ?? 0)})</span></div>
+          <div class="row"><span class="key">Block state</span>
+            <span class="val" style="color:${sigs.cycle_transition?'#f97316':'var(--green)'}">
+              ${sigs.cycle_transition
+                ? `switching → ${sigs.cycle_pred_val}`
+                : `staying (${sigs.cur_run}/${sigs.cycle_exp_len} rounds)`}
+            </span></div>
+        </div>` : ''}
+      </div>
+    </div>
+
+    <!-- SIGNALS -->
+    <div class="card">
+      <h2>Signals ${streakBadge}</h2>
+      <div class="signal-bar-wrap">
+        ${signalBar('xgboost',  sigs.xgb,    null, false)}
+        ${signalBar('dom_o8',   sigs.dom_o8,  null, false)}
+        ${sigs.cycle_detected ? signalBar('cycle', sigs.cycle_pred_val === 'ODD' ? sigs.cycle_conf : 1 - (sigs.cycle_conf ?? 0.5), null, false) : ''}
+      </div>
+      <div style="margin-top:10px;color:var(--muted);font-size:11px">
+        cur_run=${sigs.cur_run ?? '?'}&nbsp;&nbsp;prev_run=${sigs.prev_run ?? '?'}&nbsp;&nbsp;alt_run=${sigs.alt_run ?? '?'}&nbsp;&nbsp;alt=${sigs.alt_confirmed ? 'YES' : 'no'}&nbsp;&nbsp;streak=${streak}
+      </div>
+      ${sigs.cycle_detected ? `
+      <div style="margin-top:8px;padding:6px 8px;background:rgba(99,102,241,.1);border-radius:6px;border-left:3px solid var(--accent)">
+        <span style="font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.07em">Cycle</span>
+        <span style="font-size:11px;color:var(--muted);margin-left:8px">${sigs.cycle_pattern} · p${sigs.cycle_period} · ${sigs.cycle_cycles}x confirmed</span>
+        <span style="font-size:11px;font-weight:700;margin-left:8px;color:${sigs.cycle_transition?'#f97316':'var(--green)'}">
+          ${sigs.cycle_transition ? 'SWITCH' : 'HOLD'}
+        </span>
+      </div>` : ''}
+      ${sigs.mirror_info ? (() => {
+        const m = sigs.mirror_info;
+        const tileStr = (m.next_tile||[]).map(v=>v==='ODD'?'O':'E').join('');
+        const pos = m.tile_pos ?? 0;
+        const inProg = m.pattern_name && m.pattern_name.includes('_in');
+        return `
+        <div style="margin-top:8px;padding:6px 8px;background:rgba(234,179,8,.08);border-radius:6px;border-left:3px solid var(--yellow)">
+          <span style="font-size:10px;font-weight:700;color:var(--yellow);text-transform:uppercase;letter-spacing:.07em">Mirror Tile</span>
+          <span style="font-size:11px;color:var(--muted);margin-left:8px">${m.pattern_name} · ${m.tile_size || '?'}r · ${m.cycles}x tiles</span>
+          <span style="font-size:11px;font-weight:700;margin-left:8px;color:var(--yellow)">→ ${tileStr}</span>
+          ${inProg ? `<span style="font-size:10px;color:var(--muted);margin-left:6px">pos ${pos+1}/${m.tile_size}</span>` : ''}
+        </div>`;
+      })() : ''}
+    </div>
+
+    <!-- ACCURACY -->
+    <div class="card">
+      <h2>Accuracy</h2>
+      <div class="row"><span class="key">ODD/EVEN (live)</span><span class="val">${p.oe_accuracy != null ? pct(p.oe_accuracy) : '—'}</span></div>
+      <div class="row"><span class="key">Total scored</span><span class="val">${p.total_scored ?? 0} rounds</span></div>
+      <div class="row" style="margin-top:8px"><span class="key">Loss streak now</span>
+        <span class="val" style="color:${streak >= 5 ? 'var(--red)' : streak >= 3 ? 'var(--yellow)' : 'var(--green)'}">${streak}</span>
+      </div>
+      <div class="row"><span class="key">XGBoost raw</span><span class="val">${sigs.xgb != null ? pct(sigs.xgb) : '—'}</span></div>
+      <div class="row"><span class="key">Target WR</span><span class="val" style="color:#3b82f6">65% (real betting)</span></div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="card" style="grid-column:1/-1">
+      <h2>All rounds — New Model</h2>
+      ${(() => {
+        const wrC = wr => wr == null ? 'var(--muted)' : wr >= 0.65 ? '#22c55e' : wr >= 0.53 ? 'var(--green)' : wr >= 0.47 ? 'var(--yellow)' : 'var(--red)';
+        const cell = (label, wr, n, wins) => `
+          <div style="text-align:center;padding:5px 12px;border-right:1px solid var(--border)">
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px">${label}</div>
+            <div style="font-size:15px;font-weight:700;color:${wrC(wr)}">${wr != null ? (wr*100).toFixed(1)+'%' : '—'}</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:1px">${n != null ? `${wins != null ? wins+'W · ' : ''}n=${n}` : 'no data'}</div>
+          </div>`;
+        return `<div style="display:flex;background:rgba(255,255,255,.03);border-radius:8px;margin-bottom:10px;overflow:hidden">
+          ${cell('Last 100', s1.wr, s1.n, s1.win)}
+          ${cell('Last 200', s2.wr, s2.n, s2.win)}
+          <div style="text-align:center;padding:8px 16px;border-right:1px solid var(--border)">
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Total Predicted</div>
+            <div style="font-size:20px;font-weight:700">${stats.total_predicted ?? '—'}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">rounds scored</div>
+          </div>
+          <div style="display:flex;align-items:center;padding:8px 20px;flex-direction:column;justify-content:center">
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Target</div>
+            <div style="font-size:18px;font-weight:700;color:#3b82f6">65%</div>
+            <div style="font-size:10px;color:var(--muted)">for real betting</div>
+          </div>
+        </div>`;
+      })()}
+      <div class="data-toolbar" style="padding:0 0 8px">
+        <input id="new-search-input" type="text" placeholder="Search round ID, ODD/EVEN, WIN/LOSS…"
+               oninput="onNewSearch(this.value)">
+        <select onchange="onNewSizeChange(this.value)">
+          ${[25,50,100,200].map(n=>`<option value="${n}" ${n===_newDb.size?'selected':''}>${n} / page</option>`).join('')}
+        </select>
+        <span id="new-hist-info" style="font-size:11px;color:var(--muted);margin-left:auto"></span>
+      </div>
+      <table>
+        <colgroup>
+          <col style="width:24%"><col style="width:7%"><col style="width:7%">
+          <col style="width:18%"><col style="width:18%"><col style="width:14%"><col style="width:12%">
+        </colgroup>
+        <thead><tr>
+          <th>Round</th><th>WR</th><th>Bet</th>
+          <th>Actual discs</th><th>Pred OE</th><th>Actual OE</th><th>Result</th>
+        </tr></thead>
+        <tbody id="new-hist-body"><tr><td colspan="7" style="color:var(--muted);padding:12px">Loading…</td></tr></tbody>
+      </table>
+      <div class="pagination" id="new-hist-pager"></div>
+    </div>
+
+  </div>`;
+  renderNewModelData(paged);
 }
 </script>
 </body>
