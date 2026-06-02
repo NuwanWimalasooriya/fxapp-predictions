@@ -32,6 +32,10 @@ PORT           = int(_env.get('PORT', 5050))
 SNAP_NEW_PATH  = os.path.join(_DATA_DIR, 'latest_prediction_new.json')
 LOG_NEW_PATH   = os.path.join(_DATA_DIR, 'pred_log_new.json')
 DB_NEW_PATH    = os.path.join(_DATA_DIR, 'ds3m_new.db')
+# Color game paths
+SNAP_CG_PATH   = os.path.join(_DATA_DIR, 'latest_prediction_cg.json')
+LOG_CG_PATH    = os.path.join(_DATA_DIR, 'pred_log_cg.json')
+DB_CG_PATH     = os.path.join(_DATA_DIR, _env.get('DB_FILE2', 'cg.db'))
 
 app = Flask(__name__, static_folder=os.path.join(_BASE, 'static'))
 app.secret_key = _env.get('SECRET_KEY') or secrets.token_hex(32)
@@ -233,12 +237,17 @@ def api_history():
 def api_status():
     mtime     = os.path.getmtime(SNAP_PATH)     if os.path.exists(SNAP_PATH)     else 0
     mtime_new = os.path.getmtime(SNAP_NEW_PATH) if os.path.exists(SNAP_NEW_PATH) else 0
-    # Use last_id from new model snapshot as the trigger — only refresh UI when a new round arrives
     last_id_new = 0
     snap_new = _load_json(SNAP_NEW_PATH)
     if snap_new:
         last_id_new = snap_new.get('last_id', 0) or 0
-    return _no_cache(jsonify({'mtime': mtime, 'mtime_new': mtime_new, 'last_id_new': last_id_new}))
+    mtime_cg    = os.path.getmtime(SNAP_CG_PATH) if os.path.exists(SNAP_CG_PATH) else 0
+    return _no_cache(jsonify({
+        'mtime':       mtime,
+        'mtime_new':   mtime_new,
+        'last_id_new': last_id_new,
+        'mtime_cg':    mtime_cg,
+    }))
 
 @app.route('/api/data')
 def api_data():
@@ -480,6 +489,117 @@ def api_new_stats():
         'last200': {'win': w200, 'n': n200, 'wr': round(w200 / n200, 4) if n200 else None},
         'bet_only': {'win': 0, 'n': 0, 'wr': None},
     }))
+
+# ── Color Game API ─────────────────────────────────────────────────────────────
+
+@app.route('/api/cg/prediction')
+def api_cg_prediction():
+    snap = _load_json(SNAP_CG_PATH)
+    if snap is None:
+        return jsonify({'error': 'No color game data yet. Run collector_cg.py first.'}), 404
+    return _no_cache(jsonify(snap))
+
+@app.route('/api/cg/data')
+def api_cg_data():
+    page      = max(1, int(request.args.get('page', 1)))
+    page_size = min(200, max(10, int(request.args.get('size', 50))))
+    search    = request.args.get('search', '').strip()
+    sort_col  = request.args.get('sort', 'id')
+    sort_dir  = 'ASC' if request.args.get('dir', 'desc') == 'asc' else 'DESC'
+    VALID_COLS = {'id', 'number', 'color', 'is_purple', 'result', 'pred_color',
+                  'pred_number', 'pred_purple', 'confidence', 'bet'}
+    if sort_col not in VALID_COLS:
+        sort_col = 'id'
+
+    if not os.path.exists(DB_CG_PATH):
+        return _no_cache(jsonify({'total': 0, 'page': 1, 'pages': 1, 'rows': []}))
+    try:
+        conn = sqlite3.connect(DB_CG_PATH, timeout=5)
+        conn.execute('PRAGMA journal_mode=WAL')
+        # Ensure new columns exist (safe migration)
+        existing = {r[1] for r in conn.execute('PRAGMA table_info(rounds)').fetchall()}
+        for col, defn in [('pred_number','INTEGER DEFAULT -1'),
+                          ('pred_purple','INTEGER DEFAULT -1'),
+                          ('number_result','TEXT DEFAULT ""')]:
+            if col not in existing:
+                conn.execute(f'ALTER TABLE rounds ADD COLUMN {col} {defn}')
+        conn.commit()
+
+        where, params = '', []
+        if search:
+            s = search.lower()
+            if s == 'purple':
+                where, params = 'WHERE is_purple=1', []
+            elif s in ('red', 'green'):
+                where, params = 'WHERE color=?', [s]
+            elif s in ('win', 'loss'):
+                where, params = 'WHERE result=?', [s.upper()]
+            elif s in ('hit', 'miss'):
+                where, params = 'WHERE number_result=?', [s.upper()]
+            elif s == 'bet':
+                where, params = 'WHERE bet=1', []
+            else:
+                where  = 'WHERE CAST(id AS TEXT) LIKE ? OR CAST(number AS TEXT) LIKE ? OR result LIKE ?'
+                params = [f'%{search}%'] * 3
+
+        total  = conn.execute(f'SELECT COUNT(*) FROM rounds {where}', params).fetchone()[0]
+        offset = (page - 1) * page_size
+        rows   = conn.execute(
+            f'SELECT id,number,color,is_purple,result,pred_color,confidence,bet,'
+            f'pred_number,pred_purple,number_result '
+            f'FROM rounds {where} ORDER BY {sort_col} {sort_dir} LIMIT ? OFFSET ?',
+            params + [page_size, offset]
+        ).fetchall()
+        conn.close()
+    except Exception as e:
+        return _no_cache(jsonify({'error': str(e)})), 500
+
+    pages = max(1, (total + page_size - 1) // page_size)
+    return _no_cache(jsonify({
+        'total': total, 'page': page, 'pages': pages,
+        'rows': [
+            {'id': r[0], 'number': r[1], 'color': r[2], 'is_purple': r[3],
+             'result': r[4], 'pred_color': r[5], 'confidence': r[6], 'bet': r[7],
+             'pred_number': r[8], 'pred_purple': r[9], 'number_result': r[10]}
+            for r in rows
+        ]
+    }))
+
+@app.route('/api/cg/stats')
+def api_cg_stats():
+    if not os.path.exists(DB_CG_PATH):
+        return _no_cache(jsonify({}))
+    try:
+        conn = sqlite3.connect(DB_CG_PATH, timeout=5)
+        conn.execute('PRAGMA journal_mode=WAL')
+        total_pred = conn.execute(
+            "SELECT COUNT(*) FROM rounds WHERE pred_color != '' AND result IN ('WIN','LOSS')"
+        ).fetchone()[0]
+        last100 = conn.execute(
+            "SELECT result FROM rounds WHERE pred_color != '' AND result IN ('WIN','LOSS') "
+            "ORDER BY id DESC LIMIT 100"
+        ).fetchall()
+        w100 = sum(1 for r in last100 if r[0] == 'WIN')
+        last200 = conn.execute(
+            "SELECT result FROM rounds WHERE pred_color != '' AND result IN ('WIN','LOSS') "
+            "ORDER BY id DESC LIMIT 200"
+        ).fetchall()
+        w200 = sum(1 for r in last200 if r[0] == 'WIN')
+        bet_rows = conn.execute(
+            "SELECT result FROM rounds WHERE bet=1 AND result IN ('WIN','LOSS')"
+        ).fetchall()
+        wb = sum(1 for r in bet_rows if r[0] == 'WIN')
+        conn.close()
+    except Exception as e:
+        return _no_cache(jsonify({'error': str(e)})), 500
+    n100, n200, nb = len(last100), len(last200), len(bet_rows)
+    return _no_cache(jsonify({
+        'total_predicted': total_pred,
+        'last100':  {'win': w100, 'n': n100, 'wr': round(w100/n100, 4) if n100 else None},
+        'last200':  {'win': w200, 'n': n200, 'wr': round(w200/n200, 4) if n200 else None},
+        'bet_only': {'win': wb,   'n': nb,   'wr': round(wb/nb,   4) if nb   else None},
+    }))
+
 
 def _ensure_config():
     if not os.path.exists(CONFIG_PATH):

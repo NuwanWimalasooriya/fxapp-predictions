@@ -58,7 +58,11 @@
       "Bash(dir /b)",
       "PowerShell(Get-ChildItem \"c:\\\\Projects\\\\docs\\\\pocs\\\\predictions\\\\fxproapp3mindiscs\\\\data\" -Force | ForEach-Object { \"$\\($_.Name\\) - $\\([math]::Round\\($_.Length/1KB,1\\)\\) KB\" })",
       "Bash(python predict_new.py)",
-      "Bash(python -c *)"
+      "Bash(python -c *)",
+      "Bash(python -m py_compile backfill_cg.py)",
+      "Bash(python -m py_compile predict_cg.py)",
+      "Bash(python -m py_compile server.py)",
+      "Bash(python predict_cg.py)"
     ]
   }
 }
