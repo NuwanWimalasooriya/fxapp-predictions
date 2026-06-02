@@ -340,6 +340,61 @@ def detect_sym_tile(oe_arr, idx, tile_size=6):
     }
 
 
+# ── Post-symmetric tile in-progress detection ───────────────────────────────────
+# After EEEOOO or OOOEEE (symmetric tile), the next tile is OOEEOE ~63-75% of the time.
+# detect_sym_tile handles the first round at the boundary.
+# This handles rounds 2-6 WITHIN that OOEEOE tile.
+_POST_SYM_TILE = ['ODD', 'ODD', 'EVEN', 'EVEN', 'ODD', 'EVEN']  # OOEEOE
+
+def detect_post_sym_tile_inprogress(oe_arr, idx, tile_size=6):
+    """
+    Detect if we're 1–(tile_size-1) rounds into the OOEEOE tile that follows a
+    symmetric tile (EEEOOO / OOOEEE).
+
+    Returns dict with pred_val and conf, or None.
+    """
+    arr = list(oe_arr[:idx + 1])
+    n   = len(arr)
+    if n < tile_size + 1:
+        return None
+
+    for pos in range(1, tile_size):   # pos = rounds already seen in OOEEOE tile
+        if n < tile_size + pos:
+            continue
+
+        sym_tile = arr[n - tile_size - pos : n - pos]
+        partial  = arr[n - pos : n]
+
+        if len(sym_tile) != tile_size or len(partial) != pos:
+            continue
+
+        # Symmetric tile check: two homogeneous halves that differ
+        half = tile_size // 2
+        fh, sh = sym_tile[:half], sym_tile[half:]
+        if len(set(fh)) != 1 or len(set(sh)) != 1 or fh[0] == sh[0]:
+            continue
+
+        # Check partial matches OOEEOE[:pos]
+        if partial != _POST_SYM_TILE[:pos]:
+            continue
+
+        if pos >= tile_size:
+            continue
+
+        pred_val = _POST_SYM_TILE[pos]
+        conf     = round(0.65 + min(0.10, (pos - 1) * 0.025), 3)
+
+        return {
+            'pred_val':     pred_val,
+            'conf':         conf,
+            'tile_size':    tile_size,
+            'pattern_name': f'post_sym_t{tile_size}',
+            'tile_pos':     pos,
+        }
+
+    return None
+
+
 # ── Cycle detection ─────────────────────────────────────────────────────────────
 def detect_cycle(blocks_with_meta):
     """
@@ -736,6 +791,11 @@ def predict_new(oe_arr, idx):
     # Symmetric tile precursor (used by Rule 10)
     sym_info = detect_sym_tile(oe_arr, idx) if (mirror_info is None and mirror_in_info is None and sym_in_info is None) else None
 
+    # Post-symmetric tile in-progress — rounds 2-6 of OOEEOE after EEEOOO/OOOEEE (Rule 10b)
+    post_sym_info = detect_post_sym_tile_inprogress(oe_arr, idx) if (
+        mirror_info is None and mirror_in_info is None and sym_info is None
+    ) else None
+
     # Known sequence tile — EEOEOOEO / OOEOEEOE (used by Rule 11)
     known_tile_info = detect_known_tile(oe_arr, idx) if mirror_in_info is None else None
 
@@ -787,6 +847,13 @@ def predict_new(oe_arr, idx):
         p_odd      = s_conf if pred_odd_s else (1.0 - s_conf)
         applied_rule = f'rule10_{sym_info["pattern_name"]}'
 
+    # Rule 10b: Inside OOEEOE tile that follows a symmetric tile (rounds 2-6)
+    elif post_sym_info is not None:
+        pred_odd_ps = (post_sym_info['pred_val'] == 'ODD')
+        ps_conf     = post_sym_info['conf']
+        p_odd       = ps_conf if pred_odd_ps else (1.0 - ps_conf)
+        applied_rule = f'rule10b_{post_sym_info["pattern_name"]}'
+
     # Rule 11: Known 8-round tile in progress (EEOEOOEO / OOEOEEOE)
     elif known_tile_info is not None:
         pred_odd_kt = (known_tile_info['pred_val'] == 'ODD')
@@ -834,6 +901,7 @@ def predict_new(oe_arr, idx):
         'cycle_exp_len':   cycle_info['exp_len']      if cycle_info else None,
         'mirror_info':     (mirror_info or mirror_in_info),
         'sym_info':        sym_info,
+        'post_sym_info':   post_sym_info,
         'known_tile_info': known_tile_info,
     }
     return pred_oe, p_odd, sinfo

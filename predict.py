@@ -1336,7 +1336,7 @@ def update_csv_results():
             continue
         conf     = float(entry.get('confidence', 0) or 0)
         bet_int  = 1 if entry.get('bet', False) else 0
-        pred_oe_fmt = f"{entry['pred_oe']}({conf*100:.1f}%)" if conf else entry['pred_oe']
+        pred_oe_fmt = entry['pred_oe']
         ep       = entry.get('pat_even_pct')
         op       = entry.get('pat_odd_pct')
         pat_even = f"{entry['pat_even_lbl']}({ep*100:.1f}%)" if entry.get('pat_even_lbl') and ep is not None else ''
@@ -1370,7 +1370,8 @@ def update_csv_results():
             if not pattern or len(pattern) != 4:
                 continue
             actual_oe = 'ODD' if pattern.count('R') % 2 else 'EVEN'
-            result_updates.append(('WIN' if p_oe == actual_oe else 'LOSS', rid))
+            pred_base = p_oe.split('(')[0]
+            result_updates.append(('WIN' if pred_base == actual_oe else 'LOSS', rid))
         if result_updates:
             conn.executemany(
                 "UPDATE rounds SET result=? WHERE id=?",
