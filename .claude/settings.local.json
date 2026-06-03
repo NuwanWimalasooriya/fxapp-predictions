@@ -62,7 +62,8 @@
       "Bash(python -m py_compile backfill_cg.py)",
       "Bash(python -m py_compile predict_cg.py)",
       "Bash(python -m py_compile server.py)",
-      "Bash(python predict_cg.py)"
+      "Bash(python predict_cg.py)",
+      "Bash(python -m py_compile predict_new.py)"
     ]
   }
 }

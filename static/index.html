@@ -435,41 +435,38 @@ function render(p, stats = {}, cfg = {}) {
       </div>
     </div>
 
-    <!-- ODD/EVEN -->
+    <!-- ODD tile -->
     <div class="card">
-      <h2>ODD / EVEN</h2>
-      <div style="display:flex;gap:24px;margin-bottom:12px">
-        <div>
-          <div class="big odd">${fmt(pred.odd_pct)}<span style="font-size:20px">%</span></div>
-          <div class="label">ODD</div>
-        </div>
-        <div>
-          <div class="big even">${fmt(pred.even_pct)}<span style="font-size:20px">%</span></div>
-          <div class="label">EVEN</div>
-        </div>
-      </div>
+      <h2>ODD</h2>
+      <div class="big odd" style="margin-bottom:4px">${fmt(pred.odd_pct)}<span style="font-size:18px">%</span></div>
       ${(() => {
-        const oa = p.odd_analysis  || {};
-        const ea = p.even_analysis || {};
-        const v  = (val, fb) => val != null ? (val*100).toFixed(1)+'%' : (fb != null ? (fb*100).toFixed(1)+'%' : '—');
-
-        // ODD: P(WWWR next) = switch_prob if cur is RRRW, else 1-switch_prob
-        const curOdd   = oa.cur_run_lbl;
-        const swProb   = oa.switch_prob;
-        const pWwwr    = curOdd === 'RRRW' ? swProb : (swProb != null ? 1 - swProb : null);
-        const pRrrw    = curOdd === 'WWWR' ? swProb : (swProb != null ? 1 - swProb : null);
-
-        // EVEN: P(occurs within next 5 EVEN rounds | gap so far)
-        const wwpct  = ea.wwww_next5_pct;
-        const rrpct  = ea.rrrr_next5_pct;
-
+        const oa = p.odd_analysis || {};
+        const v  = val => val != null ? (val*100).toFixed(1)+'%' : '—';
+        const curOdd = oa.cur_run_lbl;
+        const sw     = oa.switch_prob;
+        const pWwwr  = curOdd === 'RRRW' ? sw : (sw != null ? 1-sw : null);
+        const pRrrw  = curOdd === 'WWWR' ? sw : (sw != null ? 1-sw : null);
         return `
-        <div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px">
-          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Pattern analysis</div>
-          <div class="row"><span class="key">WWWR (ODD)</span><span class="val">${v(pWwwr, null)}</span></div>
-          <div class="row"><span class="key">RRRW (ODD)</span><span class="val">${v(pRrrw, null)}</span></div>
-          <div class="row"><span class="key">WWWW in next 5</span><span class="val">${v(wwpct, null)}</span></div>
-          <div class="row"><span class="key">RRRR in next 5</span><span class="val">${v(rrpct, null)}</span></div>
+        <div style="border-top:1px solid var(--border);padding-top:6px;margin-top:4px">
+          <div class="row"><span class="key">WWWR</span><span class="val">${v(pWwwr)}</span></div>
+          <div class="row"><span class="key">RRRW</span><span class="val">${v(pRrrw)}</span></div>
+          <div class="row"><span class="key">Cur run</span><span class="val" style="font-size:11px">${curOdd||'—'}</span></div>
+        </div>`;
+      })()}
+    </div>
+
+    <!-- EVEN tile -->
+    <div class="card">
+      <h2>EVEN</h2>
+      <div class="big even" style="margin-bottom:4px">${fmt(pred.even_pct)}<span style="font-size:18px">%</span></div>
+      ${(() => {
+        const ea = p.even_analysis || {};
+        const v  = val => val != null ? (val*100).toFixed(1)+'%' : '—';
+        return `
+        <div style="border-top:1px solid var(--border);padding-top:6px;margin-top:4px">
+          <div class="row"><span class="key">WWWW next 5</span><span class="val">${v(ea.wwww_next5_pct)}</span></div>
+          <div class="row"><span class="key">RRRR next 5</span><span class="val">${v(ea.rrrr_next5_pct)}</span></div>
+          <div class="row"><span class="key" style="color:var(--muted)">pattern</span><span class="val" style="font-size:11px;color:var(--muted)">${ea.cur_run_lbl||'—'}</span></div>
         </div>`;
       })()}
     </div>

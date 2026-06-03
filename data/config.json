@@ -1,1 +1,1 @@
-{"training_enabled": false, "bankroll": 5.0, "kelly_fraction": 0.03}
+{"training_enabled": true, "bankroll": 5.0, "kelly_fraction": 0.03}

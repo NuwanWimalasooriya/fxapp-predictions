@@ -204,6 +204,71 @@ def _loss_streak():
 
 _cur_loss_streak = _loss_streak()
 
+# ── Symmetric block detection (GGGRRR / GGRRRR patterns) ─────────────────────
+
+def detect_sym_block_inprogress(arr, min_prev=2):
+    """
+    Detect when we're INSIDE the second half of a symmetric-ish color block.
+    Pattern: [prev_color × prev_run] then [cur_color × cur_run]
+    where prev_run >= min_prev and cur_run >= 1.
+
+    Behaviour:
+    - While cur_run < prev_run  → continue current color (building to match prev)
+    - While cur_run == prev_run → predict flip to prev_color (symmetric complete)
+    - While cur_run > prev_run  → continue current color (second half longer)
+
+    Returns dict or None.
+    """
+    if len(arr) < min_prev + 1:
+        return None
+
+    runs = build_runs(arr)
+    if len(runs) < 2:
+        return None
+
+    cur_val,  cur_run  = runs[-1]
+    prev_val, prev_run = runs[-2]
+
+    if prev_run < min_prev:
+        return None
+
+    if cur_run >= prev_run * 2:
+        return None   # far exceeded prev — not a symmetric block
+
+    if cur_run < prev_run:
+        # Still building — predict continuation of current color
+        ratio = cur_run / prev_run
+        conf  = round(0.60 + 0.08 * ratio, 3)   # 0.60 early, ~0.68 near end
+        return {
+            'pred_val':  cur_val,
+            'conf':      conf,
+            'phase':     'building',
+            'cur_run':   cur_run,
+            'prev_run':  prev_run,
+            'prev_val':  prev_val,
+        }
+    elif cur_run == prev_run:
+        # Symmetric complete — predict flip to prev color
+        return {
+            'pred_val':  prev_val,
+            'conf':      0.68,
+            'phase':     'complete',
+            'cur_run':   cur_run,
+            'prev_run':  prev_run,
+            'prev_val':  prev_val,
+        }
+    else:
+        # cur_run > prev_run — second half longer than first, still lean to continue
+        return {
+            'pred_val':  cur_val,
+            'conf':      0.62,
+            'phase':     'extended',
+            'cur_run':   cur_run,
+            'prev_run':  prev_run,
+            'prev_val':  prev_val,
+        }
+
+
 # ── COLOR prediction ───────────────────────────────────────────────────────────
 
 def predict_color(idx):
@@ -217,24 +282,38 @@ def predict_color(idx):
 
     mirror_info    = detect_mirror_tile(arr)
     mirror_in_info = detect_mirror_tile_inprogress(arr) if mirror_info is None else None
+    sym_block_info = detect_sym_block_inprogress(arr)
     seq_pred, seq_conf = color_sequence_signal(arr)
 
     applied_rule = 'default'
     p_red = 0.5
 
-    # Rule 1: Long streak → continue
+    # Rule 1: Long streak (4+) → continue strongly
     if cr >= 4:
         p_red = 0.78 if cv == 'red' else 0.22
         applied_rule = 'rule1_long_streak'
+
+    # Rule 1b: Medium streak (3) → continue with moderate confidence
+    elif cr == 3:
+        p_red = 0.65 if cv == 'red' else 0.35
+        applied_rule = 'rule1_medium_streak'
 
     # Rule 2: Just switched from long streak → stay on new direction
     elif pr >= 4 and cr <= 2:
         p_red = 0.72 if cv == 'red' else 0.28
         applied_rule = 'rule2_post_long'
 
-    # Rule 3: Confirmed alternating (3+ unbroken)
+    # Rule 2b: Symmetric block in progress (GGGRRR / GGRRRR pattern)
+    elif sym_block_info is not None:
+        pred = sym_block_info['pred_val']
+        c    = sym_block_info['conf']
+        p_red = c if pred == 'red' else (1.0 - c)
+        applied_rule = f'rule2b_sym_{sym_block_info["phase"]}'
+
+    # Rule 3: Confirmed alternating (3+ unbroken) → predict flip to opposite color
     elif cr == 1 and pr == 1 and alt >= 3:
-        p_red = 0.70 if cv == 'red' else 0.30
+        conf_alt = round(0.65 + min(0.10, (alt - 3) * 0.025), 3)
+        p_red = (1.0 - conf_alt) if cv == 'red' else conf_alt
         applied_rule = 'rule3_alternating'
 
     # Rules 4-7 only if 1-3 didn't fire
@@ -269,7 +348,8 @@ def predict_color(idx):
         'cur_val': cv, 'cur_run': cr, 'prev_val': pv, 'prev_run': pr,
         'alt_run': alt, 'dom_r8': round(r8/len(recent8), 3) if recent8 else 0.5,
         'rule': applied_rule, 'loss_streak': _cur_loss_streak,
-        'mirror_info': mirror_info or mirror_in_info,
+        'mirror_info':   mirror_info or mirror_in_info,
+        'sym_block_info': sym_block_info,
         'seq_pred': seq_pred, 'seq_conf': round(seq_conf, 3),
     }
 

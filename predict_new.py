@@ -819,6 +819,17 @@ def predict_new(oe_arr, idx):
         p_odd = 0.82 if cur_val == 'ODD' else 0.18
         applied_rule = 'rule1_long_block'
 
+    # Rule 1b: Medium streak (run == 3) → continue with moderate confidence
+    elif cur_run == 3:
+        p_odd = 0.67 if cur_val == 'ODD' else 0.33
+        applied_rule = 'rule1_medium_block'
+
+    # Rule 3: Confirmed alternating (3+ unbroken single-round runs) → predict flip
+    elif alt_confirmed and cur_run == 1 and prev_run == 1:
+        conf_alt = round(0.65 + min(0.10, (alt_run - 3) * 0.025), 3)
+        p_odd    = (1.0 - conf_alt) if cur_val == 'ODD' else conf_alt
+        applied_rule = 'rule3_alternating'
+
     # Rule 6: EOE return — after a run of 3+, a single-round switch is a blip, original returns.
     # Confidence scales with run length: longer run = more certain the original direction resumes.
     elif cur_run == 1 and prev_run >= 3:
