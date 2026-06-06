@@ -138,13 +138,12 @@
 </header>
 
 <div class="tabs">
-  <div class="tab active" id="tab-pred" onclick="switchTab('pred')">3MDiscs</div>
-  <div class="tab" id="tab-new"  onclick="switchTab('new')">3MDiscs-Hot</div>
+  <div class="tab active" id="tab-new"  onclick="switchTab('new')">3MDiscs-Hot</div>
   <div class="tab" id="tab-cg"   onclick="switchTab('cg')">3MRedGreen</div>
 </div>
 
-<div id="root"><p class="error-msg">Loading prediction data…</p></div>
-<div id="new-panel" style="display:none"></div>
+<div id="root" style="display:none"></div>
+<div id="new-panel"></div>
 <div id="cg-panel"  style="display:none"></div>
 
 <script>
@@ -589,11 +588,11 @@ async function pollStatus() {
 
     if (mtime !== _lastMtime) {
       _lastMtime = mtime;
-      load();
+      // 3MDiscs tab removed — no refresh needed for old model
     }
     if (idNew !== 0 && idNew !== _lastIdNew) {
       _lastIdNew = idNew;
-      if (document.getElementById('new-panel').style.display !== 'none') { _newDb.page = 1; loadNewModel(); }
+      _newDb.page = 1; loadNewModel();
     }
     if (mtimeCg !== 0 && mtimeCg !== _lastMtimeCg) {
       _lastMtimeCg = mtimeCg;
@@ -602,18 +601,12 @@ async function pollStatus() {
   } catch(e) {}
 }
 
-load();
-loadConfig();
-setInterval(pollStatus, 10000);
-
 // ── Tab switching ─────────────────────────────────────────────────────────────
 function switchTab(tab) {
-  document.getElementById('tab-pred').classList.toggle('active', tab === 'pred');
-  document.getElementById('tab-new').classList.toggle('active',  tab === 'new');
-  document.getElementById('tab-cg').classList.toggle('active',   tab === 'cg');
-  document.getElementById('root').style.display      = tab === 'pred' ? '' : 'none';
-  document.getElementById('new-panel').style.display = tab === 'new'  ? '' : 'none';
-  document.getElementById('cg-panel').style.display  = tab === 'cg'   ? '' : 'none';
+  document.getElementById('tab-new').classList.toggle('active', tab === 'new');
+  document.getElementById('tab-cg').classList.toggle('active',  tab === 'cg');
+  document.getElementById('new-panel').style.display = tab === 'new' ? '' : 'none';
+  document.getElementById('cg-panel').style.display  = tab === 'cg'  ? '' : 'none';
   if (tab === 'new') loadNewModel();
   if (tab === 'cg')  loadColorGame();
 }
@@ -622,6 +615,10 @@ function switchTab(tab) {
 let _newDb = { page: 1, size: 50, search: '' };
 let _newSearchTimer = null;
 let _newFirstPredId = null;
+
+loadNewModel();
+loadConfig();
+setInterval(pollStatus, 10000);
 
 function goNewPage(p)       { _newDb.page = p; loadNewModelData(); }
 function onNewSizeChange(v) { _newDb.size = parseInt(v); _newDb.page = 1; loadNewModelData(); }

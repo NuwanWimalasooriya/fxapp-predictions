@@ -14415,3 +14415,1419 @@ id,disc1,disc2,disc3,disc4,pattern,flag,oe,result,pred_oe,bet,pat_even,pat_odd,w
 2060700393,R,W,R,W,RWRW,,EVEN,WIN,EVEN,0,RRRR(50.6%),WWWR(51.1%),0.0255,30,0.0795,5,0.1526,0.4185
 2060700394,W,R,W,R,WRWR,,EVEN,WIN,EVEN,0,RRRR(49.3%),WWWR(51.1%),0.0327,31,0.0681,6,0.2005,0.3154
 2060700395,R,W,R,W,RWRW,,EVEN,WIN,EVEN,0,RRRR(48.6%),WWWR(51.1%),0.0338,32,0.0517,7,0.4164,0.3739
+2060700396,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700397,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700398,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700399,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700400,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700401,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700402,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700403,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700404,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700405,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700406,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700407,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700408,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700409,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700410,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700411,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700412,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700413,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700414,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700415,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700416,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700417,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700418,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700419,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700420,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700421,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700422,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700423,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700424,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700425,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700426,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700427,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700428,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700429,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700430,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700431,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700432,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700433,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700434,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700435,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700436,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700437,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700438,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700439,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700440,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700441,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700442,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700443,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700444,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700445,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700446,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700447,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700448,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700449,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700450,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700451,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700452,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700453,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700454,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700455,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700456,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700457,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700458,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700459,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700460,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700461,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700462,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700463,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700464,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700465,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700466,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700467,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700468,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700469,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700470,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700471,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700472,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700473,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700474,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700475,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700476,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700477,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700478,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700479,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060700480,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800001,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800002,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800003,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800004,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800005,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800006,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800007,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800008,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800009,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800010,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800011,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800012,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800013,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800014,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800015,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800016,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800017,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800018,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800019,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800020,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800021,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800022,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800023,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800024,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800025,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800026,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800027,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800028,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800029,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800030,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800031,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800032,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800033,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800034,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800035,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800036,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800037,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800038,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800039,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800040,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800041,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800042,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800043,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800044,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800045,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800046,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800047,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800048,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800049,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800050,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800051,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800052,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800053,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800054,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800055,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800056,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800057,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800058,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800059,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800060,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800061,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800062,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800063,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800064,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800065,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800066,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800067,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800068,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800069,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800070,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800071,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800072,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800073,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800074,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800075,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800076,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800077,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800078,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800079,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800080,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800081,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800082,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800083,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800084,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800085,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800086,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800087,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800088,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800089,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800090,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800091,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800092,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800093,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800094,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800095,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800096,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800097,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800098,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800099,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800100,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800101,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800102,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800103,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800104,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800105,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800106,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800107,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800108,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800109,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800110,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800111,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800112,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800113,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800114,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800115,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800116,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800117,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800118,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800119,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800120,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800121,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800122,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800123,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800124,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800125,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800126,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800127,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800128,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800129,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800130,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800131,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800132,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800133,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800134,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800135,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800136,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800137,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800138,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800139,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800140,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800141,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800142,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800143,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800144,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800145,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800146,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800147,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800148,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800149,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800150,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800151,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800152,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800153,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800154,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800155,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800156,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800157,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800158,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800159,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800160,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800161,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800162,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800163,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800164,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800165,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800166,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800167,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800168,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800169,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800170,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800171,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800172,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800173,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800174,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800175,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800176,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800177,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800178,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800179,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800180,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800181,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800182,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800183,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800184,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800185,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800186,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800187,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800188,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800189,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800190,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800191,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800192,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800193,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800194,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800195,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800196,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800197,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800198,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800199,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800200,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800201,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800202,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800203,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800204,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800205,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800206,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800207,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800208,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800209,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800210,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800211,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800212,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800213,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800214,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800215,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800216,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800217,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800218,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800219,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800220,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800221,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800222,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800223,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800224,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800225,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800226,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800227,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800228,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800229,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800230,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800231,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800232,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800233,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800234,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800235,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800236,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800237,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800238,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800239,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800240,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800241,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800242,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800243,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800244,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800245,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800246,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800247,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800248,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800249,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800250,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800251,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800252,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800253,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800254,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800255,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800256,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800257,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800258,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800259,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800260,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800261,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800262,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800263,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800264,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800265,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800266,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800267,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800268,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800269,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800270,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800271,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800272,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800273,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800274,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800275,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800276,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800277,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800278,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800279,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800280,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800281,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800282,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800283,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800284,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800285,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800286,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800287,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800288,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800289,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800290,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800291,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800292,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800293,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800294,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800295,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800296,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800297,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800298,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800299,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800300,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800301,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800302,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800303,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800304,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800305,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800306,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800307,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800308,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800309,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800310,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800311,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800312,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800313,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800314,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800315,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800316,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800317,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800318,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800319,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800320,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800321,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800322,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800323,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800324,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800325,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800326,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800327,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800328,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800329,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800330,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800331,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800332,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800333,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800334,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800335,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800336,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800337,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800338,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800339,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800340,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800341,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800342,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800343,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800344,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800345,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800346,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800347,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800348,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800349,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800350,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800351,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800352,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800353,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800354,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800355,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800356,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800357,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800358,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800359,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800360,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800361,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800362,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800363,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800364,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800365,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800366,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800367,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800368,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800369,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800370,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800371,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800372,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800373,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800374,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800375,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800376,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800377,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800378,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800379,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800380,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800381,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800382,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800383,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800384,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800385,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800386,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800387,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800388,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800389,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800390,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800391,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800392,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800393,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800394,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800395,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800396,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800397,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800398,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800399,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800400,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800401,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800402,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800403,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800404,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800405,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800406,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800407,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800408,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800409,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800410,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800411,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800412,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800413,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800414,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800415,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800416,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800417,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800418,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800419,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800420,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800421,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800422,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800423,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800424,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800425,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800426,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800427,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800428,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800429,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800430,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800431,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800432,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800433,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800434,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800435,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800436,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800437,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800438,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800439,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800440,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800441,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800442,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800443,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800444,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800445,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800446,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800447,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800448,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800449,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800450,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800451,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800452,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800453,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800454,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800455,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800456,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800457,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800458,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800459,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800460,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800461,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800462,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800463,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800464,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800465,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800466,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800467,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800468,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800469,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800470,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800471,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800472,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800473,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800474,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800475,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800476,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800477,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800478,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800479,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060800480,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900001,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900002,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900003,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900004,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900005,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900006,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900007,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900008,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900009,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900010,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900011,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900012,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900013,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900014,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900015,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900016,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900017,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900018,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900019,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900020,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900021,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900022,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900023,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900024,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900025,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900026,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900027,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900028,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900029,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900030,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900031,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900032,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900033,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900034,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900035,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900036,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900037,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900038,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900039,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900040,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900041,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2060900042,W,R,W,R,WRWR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900043,R,R,W,R,RRWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900044,R,R,W,R,RRWR,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900045,R,R,W,R,RRWR,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900046,W,W,W,W,WWWW,WWWW,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900047,W,W,R,W,WWRW,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900048,W,R,R,W,WRRW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900049,W,R,R,W,WRRW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900050,W,R,W,W,WRWW,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900051,R,W,R,W,RWRW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900052,R,R,W,W,RRWW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900053,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900054,R,W,W,R,RWWR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900055,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900056,W,W,W,R,WWWR,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900057,R,W,W,R,RWWR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900058,R,W,R,W,RWRW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900059,W,W,W,W,WWWW,WWWW,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900060,W,R,W,R,WRWR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900061,R,R,R,R,RRRR,RRRR,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900062,R,R,R,R,RRRR,RRRR,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900063,W,R,R,R,WRRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900064,W,R,R,W,WRRW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900065,R,W,R,R,RWRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900066,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900067,R,W,W,W,RWWW,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900068,R,W,R,R,RWRR,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900069,R,W,W,W,RWWW,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900070,R,W,W,R,RWWR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900071,W,R,W,W,WRWW,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900072,R,W,R,W,RWRW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900073,R,R,W,W,RRWW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900074,W,R,W,R,WRWR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900075,W,W,W,R,WWWR,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900076,W,W,W,R,WWWR,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900077,R,R,R,W,RRRW,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900078,R,R,W,R,RRWR,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900079,W,W,R,R,WWRR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900080,W,R,R,W,WRRW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900081,R,W,W,W,RWWW,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900082,W,W,W,R,WWWR,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900083,R,R,R,R,RRRR,RRRR,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900084,W,R,W,R,WRWR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900085,W,R,W,W,WRWW,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900086,W,W,R,R,WWRR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900087,W,R,W,R,WRWR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900088,R,W,R,W,RWRW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900089,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900090,R,W,R,R,RWRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900091,W,R,R,W,WRRW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900092,W,R,W,R,WRWR,,EVEN,WIN,EVEN,0,WWWW(49.1%),RRRW(50.6%),0.0323,32,0.0268,8,0.1965,0.0915
+2060900093,R,R,W,W,RRWW,,EVEN,WIN,EVEN,0,WWWW(49.1%),RRRW(50.6%),0.06,33,0.0662,9,0.0972,0.2069
+2060900094,R,W,R,W,RWRW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900095,R,R,W,W,RRWW,,EVEN,WIN,EVEN,0,WWWW(48.9%),RRRW(50.6%),0.0672,35,0.06,11,0.1968,0.4242
+2060900096,R,R,W,W,RRWW,,EVEN,WIN,EVEN,0,WWWW(49.4%),RRRW(50.6%),0.056,36,0.0592,12,0.3477,0.3428
+2060900097,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,WWWW(47.8%),RRRW(50.6%),0.0593,37,0.0557,13,0.1038,0.4752
+2060900098,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,WWWW(47.8%),RRRW(50.4%),0.009,38,0.0538,14,0.0937,0.3923
+2060900099,R,W,R,W,RWRW,,EVEN,LOSS,ODD,0,WWWW(47.8%),WWWR(50.7%),0.0364,39,0.0542,15,0.635,0.1238
+2060900100,R,R,W,R,RRWR,,ODD,LOSS,EVEN,0,RRRR(46.3%),WWWR(50.7%),0.0566,40,0.0659,16,0.156,0.1834
+2060900101,R,W,R,R,RWRR,,ODD,WIN,ODD,0,RRRR(46.3%),RRRW(50.6%),0.06,41,0.0706,17,0.1736,0.596
+2060900102,W,R,W,W,WRWW,,ODD,WIN,ODD,0,RRRR(46.3%),WWWR(50.6%),0.0426,42,0.0627,18,0.0537,0.3249
+2060900103,R,W,W,R,RWWR,,EVEN,LOSS,ODD,0,RRRR(46.3%),RRRW(50.4%),0.0556,43,0.0528,19,0.1029,0.2758
+2060900104,R,W,W,W,RWWW,,ODD,WIN,ODD,0,WWWW(47.3%),RRRW(50.4%),0.0353,44,0.0706,20,0.0922,0.2065
+2060900105,W,R,W,W,WRWW,,ODD,WIN,ODD,0,WWWW(47.3%),RRRW(50.0%),0.0366,45,0.036,21,0.2735,0.5049
+2060900106,W,W,W,W,WWWW,WWWW,EVEN,LOSS,ODD,0,WWWW(47.3%),WWWR(53.2%),0.0127,46,0.0456,22,0.1788,0.3688
+2060900107,W,W,R,R,WWRR,,EVEN,LOSS,ODD,0,RRRR(47.9%),WWWR(53.2%),0.0561,0,0.0652,23,0.2164,0.154
+2060900108,R,W,W,W,RWWW,,ODD,WIN,ODD,0,RRRR(52.9%),WWWR(53.2%),0.0739,1,0.0651,24,0.2132,0.1411
+2060900109,R,W,R,R,RWRR,,ODD,WIN,ODD,0,RRRR(52.9%),RRRW(50.6%),0.0615,2,0.0498,25,0.2416,0.1534
+2060900110,W,R,R,W,WRRW,,EVEN,LOSS,ODD,0,RRRR(52.9%),WWWR(50.7%),0.0404,3,0.0366,26,0.1011,0.1282
+2060900111,W,R,W,R,WRWR,,EVEN,WIN,EVEN,0,RRRR(53.6%),WWWR(50.7%),0.0422,4,0.0707,27,0.3641,0.4687
+2060900112,R,R,W,W,RRWW,,EVEN,WIN,EVEN,0,RRRR(53.0%),WWWR(50.7%),0.0668,5,0.0585,28,0.2487,0.4318
+2060900113,W,W,R,R,WWRR,,EVEN,WIN,EVEN,0,RRRR(52.5%),WWWR(50.7%),0.0488,6,0.0497,29,0.1499,0.4667
+2060900114,W,W,R,R,WWRR,,EVEN,WIN,EVEN,0,RRRR(52.3%),WWWR(50.7%),0.0598,7,0.0523,30,0.1585,0.3592
+2060900115,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,RRRR(47.9%),WWWR(50.7%),0.0527,8,0.0345,31,0.185,0.1736
+2060900116,W,R,R,W,WRRW,,EVEN,WIN,EVEN,0,RRRR(47.9%),RRRW(50.4%),0.0729,9,0.05,32,0.1249,0.4845
+2060900117,W,R,W,R,WRWR,,EVEN,WIN,EVEN,0,RRRR(54.7%),RRRW(50.4%),0.0476,10,0.0677,33,0.1472,0.1595
+2060900118,R,W,R,W,RWRW,,EVEN,WIN,EVEN,0,RRRR(54.5%),RRRW(50.4%),0.0435,11,0.0161,34,0.2854,0.3143
+2060900119,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,RRRR(46.8%),RRRW(50.4%),0.0568,12,0.0574,35,0.185,0.3096
+2060900120,R,R,W,R,RRWR,,ODD,LOSS,EVEN,0,RRRR(46.8%),WWWR(50.0%),0.0578,13,0.0435,36,0.0899,0.3865
+2060900121,W,W,R,R,WWRR,,EVEN,WIN,EVEN,0,RRRR(46.8%),WWWR(50.7%),0.0537,14,0.0364,37,0.157,0.3905
+2060900122,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,RRRR(53.7%),WWWR(50.7%),0.0649,15,0.0472,38,0.1734,0.3094
+2060900123,R,W,R,R,RWRR,,ODD,WIN,ODD,0,RRRR(53.7%),RRRW(50.6%),0.0607,16,0.0297,39,0.1602,0.1583
+2060900124,R,R,W,R,RRWR,,ODD,WIN,ODD,0,RRRR(53.7%),WWWR(50.7%),0.0462,17,0.0306,40,0.2295,0.2455
+2060900125,W,W,R,R,WWRR,,EVEN,LOSS,ODD,0,RRRR(53.7%),WWWR(53.9%),0.0484,18,0.0211,41,0.1377,0.5155
+2060900126,W,W,W,W,WWWW,WWWW,EVEN,LOSS,ODD,0,RRRR(52.6%),WWWR(53.9%),0.0542,19,0.0753,42,0.2219,0.2634
+2060900127,W,W,R,W,WWRW,,ODD,WIN,ODD,0,RRRR(48.3%),WWWR(53.9%),0.056,0,0.0116,43,0.1758,0.0846
+2060900128,R,W,R,W,RWRW,,EVEN,LOSS,ODD,1,RRRR(48.3%),RRRW(50.3%),0.0738,1,0.0353,44,0.4841,0.2608
+2060900129,R,R,R,R,RRRR,RRRR,EVEN,WIN,EVEN,1,RRRR(52.0%),RRRW(50.3%),0.0614,2,0.0366,45,0.1501,0.2372
+2060900130,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,RRRR(51.3%),RRRW(50.3%),0.0404,3,0.0669,0,0.383,0.2108
+2060900131,W,W,W,W,WWWW,WWWW,EVEN,LOSS,ODD,1,RRRR(51.3%),RRRW(50.0%),0.0421,4,0.0617,1,0.2675,0.5892
+2060900132,R,R,R,W,RRRW,,ODD,LOSS,EVEN,1,RRRR(49.6%),RRRW(50.0%),0.0559,0,0.0682,2,0.0538,0.4227
+2060900133,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,RRRR(49.6%),WWWR(50.7%),0.0738,1,0.0731,3,0.1269,0.3068
+2060900134,W,W,W,W,WWWW,WWWW,EVEN,LOSS,ODD,0,RRRR(49.6%),RRRW(50.3%),0.0614,2,0.0667,4,0.0801,0.2327
+2060900135,W,W,W,W,WWWW,WWWW,EVEN,LOSS,ODD,0,RRRR(50.5%),RRRW(50.3%),0.0559,0,0.0816,5,0.1972,0.3908
+2060900136,R,W,W,R,RWWR,,EVEN,LOSS,ODD,0,RRRR(49.3%),RRRW(50.3%),0.0569,0,0.0651,6,0.2531,0.3587
+2060900137,W,R,W,R,WRWR,,EVEN,LOSS,ODD,0,RRRR(48.7%),RRRW(50.3%),0.0737,1,0.0492,7,0.5969,0.1957
+2060900138,R,W,R,W,RWRW,,EVEN,LOSS,ODD,0,RRRR(46.9%),RRRW(50.3%),0.0626,2,0.0268,8,0.3382,0.3144
+2060900139,R,R,W,W,RRWW,,EVEN,LOSS,ODD,0,RRRR(48.0%),RRRW(50.3%),0.0403,3,0.0661,9,0.3465,0.2636
+2060900140,W,R,R,R,WRRR,,ODD,WIN,ODD,0,RRRR(48.6%),RRRW(50.3%),0.0435,4,0.0806,10,0.2711,0.5763
+2060900141,W,W,W,W,WWWW,WWWW,EVEN,WIN,EVEN,0,RRRR(48.6%),WWWR(50.7%),0.0667,5,0.0598,11,0.199,0.6433
+2060900142,W,R,W,R,WRWR,,EVEN,WIN,EVEN,1,RRRR(48.3%),WWWR(50.7%),0.0569,0,0.0591,12,0.2351,0.2229
+2060900143,W,W,R,W,WWRW,,ODD,LOSS,EVEN,0,WWWW(45.6%),WWWR(50.7%),0.0736,1,0.0556,13,0.2898,0.5238
+2060900144,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900145,R,R,R,R,RRRR,RRRR,EVEN,WIN,EVEN,0,WWWW(45.6%),WWWR(50.8%),0.0403,3,0.0541,15,0.0501,0.7058
+2060900146,W,R,W,R,WRWR,,EVEN,WIN,EVEN,0,RRRR(51.3%),WWWR(50.8%),0.0434,4,0.0668,0,0.3516,0.2075
+2060900147,W,R,R,W,WRRW,,EVEN,LOSS,ODD,0,RRRR(49.5%),WWWR(50.8%),0.0681,5,0.0617,1,0.1729,0.4788
+2060900148,W,W,W,R,WWWR,,ODD,WIN,ODD,0,RRRR(50.4%),WWWR(50.8%),0.0487,6,0.0681,2,0.0794,0.2371
+2060900149,R,R,R,R,RRRR,RRRR,EVEN,WIN,EVEN,0,RRRR(50.4%),RRRW(50.4%),0.0597,7,0.073,3,0.0872,0.1411
+2060900150,R,W,W,W,RWWW,,ODD,LOSS,EVEN,0,RRRR(51.3%),RRRW(50.4%),0.0526,8,0.0667,0,0.1048,0.5354
+2060900151,R,R,W,W,RRWW,,EVEN,WIN,EVEN,0,RRRR(51.3%),RRRW(50.0%),0.0728,9,0.0616,1,0.1951,0.304
+2060900152,W,R,R,R,WRRR,,ODD,LOSS,EVEN,0,RRRR(49.6%),RRRW(50.0%),0.0475,10,0.068,2,0.1663,0.1745
+2060900153,R,R,R,R,RRRR,RRRR,EVEN,WIN,EVEN,0,RRRR(49.6%),WWWR(50.8%),0.0434,11,0.0742,3,0.547,0.2487
+2060900154,R,R,W,W,RRWW,,EVEN,WIN,EVEN,0,RRRR(51.4%),WWWR(50.8%),0.0567,12,0.0667,0,0.2965,0.4534
+2060900155,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,RRRR(49.6%),WWWR(50.8%),0.0577,13,0.0615,1,0.2207,0.2814
+2060900156,W,W,R,R,WWRR,,EVEN,LOSS,ODD,0,RRRR(49.6%),RRRW(50.3%),0.0536,14,0.0679,2,0.0817,0.5041
+2060900157,R,W,W,W,RWWW,,ODD,LOSS,EVEN,0,RRRR(50.5%),RRRW(50.3%),0.0647,15,0.0754,3,0.6191,0.2377
+2060900158,R,R,W,R,RRWR,,ODD,LOSS,EVEN,0,RRRR(50.5%),RRRW(50.1%),0.0605,16,0.0666,4,0.3937,0.213
+2060900159,R,R,W,R,RRWR,,ODD,LOSS,EVEN,0,RRRR(50.5%),WWWR(50.8%),0.046,17,0.0815,5,0.1144,0.1582
+2060900160,W,R,R,R,WRRR,,ODD,WIN,ODD,0,RRRR(50.5%),RRRW(50.7%),0.0482,18,0.065,6,0.137,0.5992
+2060900161,W,R,R,W,WRRW,,EVEN,WIN,EVEN,0,RRRR(50.5%),WWWR(50.6%),0.0574,19,0.0492,7,0.6546,0.1844
+2060900162,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,RRRR(49.2%),WWWR(50.6%),0.0609,20,0.0267,8,0.1207,0.2401
+2060900163,R,W,W,W,RWWW,,ODD,LOSS,EVEN,1,RRRR(49.2%),RRRW(50.3%),0.0534,21,0.0659,9,0.1681,0.624
+2060900164,R,W,R,W,RWRW,,EVEN,WIN,EVEN,0,RRRR(49.2%),RRRW(50.2%),0.0403,22,0.0804,10,0.2256,0.3709
+2060900165,R,R,W,W,RRWW,,EVEN,WIN,EVEN,0,RRRR(48.6%),RRRW(50.2%),0.042,23,0.0597,11,0.336,0.3016
+2060900166,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,RRRR(47.0%),RRRW(50.2%),0.0482,24,0.059,12,0.191,0.1655
+2060900167,W,R,R,W,WRRW,,EVEN,WIN,EVEN,1,RRRR(47.0%),WWWR(53.3%),0.0507,25,0.0554,13,0.0661,0.7123
+2060900168,R,R,R,R,RRRR,RRRR,EVEN,LOSS,ODD,1,RRRR(48.1%),WWWR(53.3%),0.0437,26,0.0536,14,0.3235,0.1367
+2060900169,R,R,W,W,RRWW,,EVEN,LOSS,ODD,1,RRRR(51.3%),WWWR(53.3%),0.0457,27,0.0666,0,0.2485,0.1041
+2060900170,W,R,W,W,WRWW,,ODD,WIN,ODD,0,RRRR(49.6%),WWWR(53.3%),0.0479,28,0.0615,1,0.1949,0.3585
+2060900171,W,R,W,W,WRWW,,ODD,WIN,ODD,1,RRRR(49.6%),RRRW(50.8%),0.0782,29,0.0678,2,0.0391,0.6129
+2060900172,R,W,W,W,RWWW,,ODD,WIN,ODD,1,RRRR(49.6%),WWWR(52.8%),0.0242,30,0.0753,3,0.1606,0.2427
+2060900173,W,W,R,W,WWRW,,ODD,LOSS,EVEN,0,RRRR(49.6%),WWWR(50.8%),0.0311,31,0.0665,4,0.1035,0.1889
+2060900174,W,W,W,W,WWWW,WWWW,EVEN,WIN,EVEN,0,RRRR(49.6%),RRRW(57.6%),0.0321,32,0.0814,5,0.1686,0.2489
+2060900175,W,W,W,R,WWWR,,ODD,WIN,ODD,0,RRRR(50.5%),RRRW(57.6%),0.0568,0,0.0649,6,0.1305,0.4738
+2060900176,W,W,W,W,WWWW,WWWW,EVEN,WIN,EVEN,0,RRRR(50.5%),RRRW(64.3%),0.0735,1,0.0491,7,0.3067,0.19
+2060900177,W,W,R,W,WWRW,,ODD,LOSS,EVEN,0,RRRR(49.3%),RRRW(64.3%),0.0568,0,0.0267,8,0.0501,0.1083
+2060900178,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,RRRR(49.3%),RRRW(60.0%),0.0746,1,0.0658,9,0.0862,0.0976
+2060900179,R,R,R,W,RRRW,,ODD,LOSS,EVEN,1,RRRR(49.3%),RRRW(60.0%),0.0624,2,0.0802,10,0.1986,0.4445
+2060900180,W,W,R,R,WWRR,,EVEN,WIN,EVEN,0,RRRR(49.3%),WWWR(50.8%),0.0402,3,0.0596,11,0.1054,0.3788
+2060900181,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,RRRR(48.8%),WWWR(50.8%),0.0434,4,0.0588,12,0.3787,0.2138
+2060900182,W,R,R,W,WRRW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900183,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900184,W,W,R,R,WWRR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900185,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900186,W,R,R,W,WRRW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900187,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900188,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900189,W,R,W,R,WRWR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900190,R,R,W,W,RRWW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900191,W,W,R,R,WWRR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900192,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900193,W,W,W,W,WWWW,WWWW,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900194,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900195,R,R,W,W,RRWW,,EVEN,LOSS,ODD,0,RRRR(46.1%),WWWR(50.9%),0.0745,1,0.0365,26,0.1274,0.1619
+2060900196,W,R,R,R,WRRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900197,R,W,W,R,RWWR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900198,R,R,R,R,RRRR,RRRR,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900199,R,W,W,R,RWWR,,EVEN,WIN,EVEN,0,RRRR(51.3%),RRRW(50.7%),0.0679,5,0.0665,0,0.3336,0.4975
+2060900200,W,W,W,W,WWWW,WWWW,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900201,W,W,W,R,WWWR,,ODD,WIN,ODD,0,RRRR(50.5%),RRRW(50.7%),0.0566,0,0.0678,2,0.2581,0.5645
+2060900202,R,W,R,W,RWRW,,EVEN,LOSS,ODD,0,RRRR(50.5%),RRRW(50.3%),0.0744,1,0.0752,3,0.3234,0.3293
+2060900203,R,R,W,W,RRWW,,EVEN,LOSS,ODD,0,RRRR(49.2%),RRRW(50.3%),0.0623,2,0.0664,4,0.0848,0.4717
+2060900204,R,R,R,W,RRRW,,ODD,WIN,ODD,0,RRRR(48.7%),RRRW(50.3%),0.0401,3,0.0813,5,0.1316,0.048
+2060900205,W,R,R,R,WRRR,,ODD,WIN,ODD,0,RRRR(48.7%),WWWR(50.8%),0.0432,4,0.0648,6,0.6084,0.2688
+2060900206,W,W,R,R,WWRR,,EVEN,LOSS,ODD,0,RRRR(48.7%),RRRW(50.7%),0.0678,5,0.049,7,0.2744,0.3216
+2060900207,R,W,W,W,RWWW,,ODD,WIN,ODD,0,RRRR(47.1%),RRRW(50.7%),0.0501,6,0.0266,8,0.0851,0.3427
+2060900208,R,R,R,R,RRRR,RRRR,EVEN,WIN,EVEN,0,RRRR(47.1%),RRRW(50.3%),0.0595,7,0.0657,9,0.192,0.2192
+2060900209,W,R,R,R,WRRR,,ODD,LOSS,EVEN,0,RRRR(51.2%),RRRW(50.3%),0.0524,8,0.0665,0,0.1833,0.4783
+2060900210,R,R,R,R,RRRR,RRRR,EVEN,WIN,EVEN,0,RRRR(51.2%),WWWR(50.8%),0.0725,9,0.0613,1,0.3688,0.3989
+2060900211,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,RRRR(51.3%),WWWR(50.8%),0.0473,10,0.0664,0,0.154,0.6242
+2060900212,W,W,R,W,WWRW,,ODD,LOSS,EVEN,0,RRRR(51.3%),RRRW(50.6%),0.0432,11,0.0624,1,0.7855,0.1228
+2060900213,W,W,R,W,WWRW,,ODD,LOSS,EVEN,0,RRRR(51.3%),RRRW(50.4%),0.0564,12,0.0677,2,0.2268,0.3255
+2060900214,R,W,R,R,RWRR,,ODD,LOSS,EVEN,0,RRRR(51.3%),RRRW(50.2%),0.0574,13,0.0751,3,0.2614,0.2067
+2060900215,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,RRRR(51.3%),WWWR(50.8%),0.0533,14,0.0663,4,0.0986,0.4383
+2060900216,W,R,R,R,WRRR,,ODD,WIN,ODD,0,RRRR(51.3%),RRRW(50.6%),0.0643,15,0.0812,5,0.3538,0.1905
+2060900217,W,W,W,W,WWWW,WWWW,EVEN,WIN,EVEN,0,RRRR(51.3%),WWWR(50.7%),0.063,16,0.0647,6,0.0946,0.4114
+2060900218,R,R,W,W,RRWW,,EVEN,WIN,EVEN,0,RRRR(49.6%),WWWR(50.7%),0.0566,0,0.0489,7,0.3783,0.1158
+2060900219,W,R,R,R,WRRR,,ODD,WIN,ODD,0,RRRR(50.5%),WWWR(50.7%),0.0743,1,0.0266,8,0.159,0.338
+2060900220,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,RRRR(50.5%),WWWR(54.1%),0.0622,2,0.0674,9,0.2597,0.3556
+2060900221,W,W,R,W,WWRW,,ODD,LOSS,EVEN,0,RRRR(50.5%),WWWR(55.1%),0.0401,3,0.0801,10,0.0747,0.3992
+2060900222,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,RRRR(50.5%),RRRW(50.3%),0.0432,4,0.0594,11,0.3649,0.1589
+2060900223,W,W,R,W,WWRW,,ODD,LOSS,EVEN,0,RRRR(50.5%),RRRW(50.2%),0.0677,5,0.0587,12,0.2426,0.1364
+2060900224,R,W,R,R,RWRR,,ODD,LOSS,EVEN,0,RRRR(50.5%),WWWR(53.4%),0.05,6,0.0552,13,0.2819,0.4025
+2060900225,R,R,R,W,RRRW,,ODD,WIN,ODD,0,RRRR(50.5%),WWWR(50.8%),0.0594,7,0.0558,14,0.19,0.13
+2060900226,R,W,R,R,RWRR,,ODD,LOSS,EVEN,0,RRRR(50.5%),RRRW(50.6%),0.0523,8,0.0565,15,0.1883,0.2666
+2060900227,R,R,W,R,RRWR,,ODD,LOSS,EVEN,0,RRRR(50.5%),WWWR(50.6%),0.0724,9,0.0655,16,0.138,0.2218
+2060900228,W,R,R,R,WRRR,,ODD,LOSS,EVEN,0,RRRR(50.5%),WWWR(53.8%),0.0472,10,0.0701,17,0.1387,0.3807
+2060900229,W,R,R,R,WRRR,,ODD,LOSS,EVEN,0,RRRR(50.5%),WWWR(55.6%),0.0431,11,0.0623,18,0.4567,0.2664
+2060900230,W,R,W,R,WRWR,,EVEN,WIN,EVEN,0,RRRR(50.5%),WWWR(50.0%),0.0563,12,0.0524,19,0.509,0.147
+2060900231,W,W,W,W,WWWW,WWWW,EVEN,WIN,EVEN,0,RRRR(49.3%),WWWR(50.0%),0.0573,13,0.0701,20,0.5464,0.1311
+2060900232,R,W,W,R,RWWR,,EVEN,LOSS,ODD,0,RRRR(48.8%),WWWR(50.0%),0.0565,0,0.0357,21,0.4774,0.0978
+2060900233,R,R,R,R,RRRR,RRRR,EVEN,LOSS,ODD,0,RRRR(47.2%),WWWR(50.0%),0.0743,1,0.0453,22,0.5166,0.1478
+2060900234,W,R,W,R,WRWR,,EVEN,LOSS,ODD,0,RRRR(51.2%),WWWR(50.0%),0.0621,2,0.0663,0,0.4596,0.277
+2060900235,W,R,R,R,WRRR,,ODD,WIN,ODD,0,RRRR(49.6%),WWWR(50.0%),0.04,3,0.0623,1,0.344,0.2562
+2060900236,R,R,R,W,RRRW,,ODD,WIN,ODD,0,RRRR(49.6%),RRRW(66.7%),0.0431,4,0.0676,2,0.197,0.3409
+2060900237,R,R,R,R,RRRR,RRRR,EVEN,WIN,EVEN,0,RRRR(49.6%),RRRW(68.8%),0.0676,5,0.075,3,0.1983,0.1655
+2060900238,R,R,W,R,RRWR,,ODD,WIN,ODD,0,RRRR(51.3%),RRRW(68.8%),0.0499,6,0.0663,0,0.136,0.0636
+2060900239,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,RRRR(51.3%),WWWR(54.5%),0.0593,7,0.0622,1,0.2204,0.3943
+2060900240,R,R,R,R,RRRR,RRRR,EVEN,WIN,EVEN,0,RRRR(51.3%),RRRW(50.3%),0.0523,8,0.0675,2,0.0675,0.1907
+2060900241,W,W,W,W,WWWW,WWWW,EVEN,LOSS,ODD,0,RRRR(51.3%),RRRW(50.3%),0.0722,9,0.0662,0,0.1599,0.1756
+2060900242,R,R,W,R,RRWR,,ODD,WIN,ODD,0,RRRR(49.7%),RRRW(50.3%),0.0564,0,0.0622,1,0.317,0.3131
+2060900243,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900244,W,W,W,W,WWWW,WWWW,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900245,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900246,R,W,R,W,RWRW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900247,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900248,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900249,W,W,R,R,WWRR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900250,W,R,R,R,WRRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900251,W,R,R,W,WRRW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900252,R,R,R,R,RRRR,RRRR,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900253,W,W,W,W,WWWW,WWWW,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900254,R,R,R,R,RRRR,RRRR,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900255,W,W,R,R,WWRR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900256,R,R,W,R,RRWR,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900257,W,R,R,W,WRRW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900258,W,R,W,R,WRWR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900259,W,W,R,R,WWRR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900260,R,W,R,R,RWRR,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900261,R,R,R,W,RRRW,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900262,R,W,R,W,RWRW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900263,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900264,R,R,R,R,RRRR,RRRR,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900265,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900266,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900267,R,W,W,R,RWWR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900268,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900269,R,W,R,R,RWRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900270,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900271,R,W,W,W,RWWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900272,W,W,W,W,WWWW,WWWW,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900273,R,R,W,W,RRWW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900274,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900275,W,R,W,R,WRWR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900276,R,R,R,W,RRRW,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900277,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900278,R,R,W,W,RRWW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900279,W,R,W,R,WRWR,,EVEN,LOSS,ODD,0,RRRR(47.5%),RRRW(50.3%),0.0497,6,0.0557,14,0.3176,0.2942
+2060900280,W,R,W,R,WRWR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900281,R,R,W,R,RRWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900282,W,W,R,W,WWRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900283,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900284,W,W,W,W,WWWW,WWWW,EVEN,WIN,EVEN,0,RRRR(48.6%),RRRW(50.2%),0.0429,11,0.0523,19,0.4702,0.2021
+2060900285,W,R,W,R,WRWR,,EVEN,LOSS,ODD,0,RRRR(48.3%),RRRW(50.2%),0.0562,0,0.0699,20,0.0411,0.1272
+2060900286,R,W,W,R,RWWR,,EVEN,LOSS,ODD,0,WWWW(45.9%),RRRW(50.2%),0.0738,1,0.0356,21,0.2767,0.2361
+2060900287,R,W,W,W,RWWW,,ODD,WIN,ODD,0,RRRR(44.8%),RRRW(50.2%),0.063,2,0.0492,22,0.1198,0.5722
+2060900288,R,W,R,R,RWRR,,ODD,LOSS,EVEN,0,RRRR(44.8%),WWWR(53.4%),0.0398,3,0.0647,23,0.0887,0.2256
+2060900289,R,W,R,W,RWRW,,EVEN,WIN,EVEN,0,RRRR(44.8%),WWWR(50.8%),0.0429,4,0.0645,24,0.6822,0.0929
+2060900290,R,R,W,R,RRWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900291,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,RRRR(46.4%),RRRW(50.8%),0.0496,6,0.0363,26,0.0833,0.4737
+2060900292,R,R,R,R,RRRR,RRRR,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900293,W,W,R,R,WWRR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900294,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900295,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900296,W,R,R,R,WRRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900297,R,W,W,W,RWWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900298,R,R,R,R,RRRR,RRRR,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900299,W,W,R,W,WWRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900300,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900301,R,R,W,R,RRWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900302,R,R,R,R,RRRR,RRRR,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900303,R,R,R,R,RRRR,RRRR,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900304,R,W,R,R,RWRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900305,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900306,W,R,R,R,WRRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900307,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900308,W,W,W,W,WWWW,WWWW,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900309,R,W,W,R,RWWR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900310,R,R,R,R,RRRR,RRRR,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900311,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900312,W,R,R,W,WRRW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900313,W,R,R,W,WRRW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900314,W,W,R,W,WWRW,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900315,R,W,R,W,RWRW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900316,R,R,R,W,RRRW,,ODD,WIN,ODD,0,RRRR(49.5%),WWWR(53.0%),0.0588,7,0.0819,5,0.1434,0.3965
+2060900317,R,R,R,W,RRRW,,ODD,WIN,ODD,0,RRRR(49.5%),WWWR(50.8%),0.0536,8,0.0657,6,0.1413,0.4312
+2060900318,R,W,W,W,RWWW,,ODD,LOSS,EVEN,0,RRRR(49.5%),RRRW(50.8%),0.0736,9,0.0486,7,0.2935,0.1053
+2060900319,R,W,W,W,RWWW,,ODD,LOSS,EVEN,0,RRRR(49.5%),RRRW(50.3%),0.0468,10,0.0264,8,0.1838,0.1593
+2060900320,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900321,W,W,R,R,WWRR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900322,W,W,W,W,WWWW,WWWW,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900323,W,W,W,W,WWWW,WWWW,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900324,W,W,W,W,WWWW,WWWW,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900325,W,W,R,R,WWRR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900326,R,R,W,R,RRWR,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900327,W,R,R,W,WRRW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900328,R,R,R,W,RRRW,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900329,R,R,R,R,RRRR,RRRR,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900330,W,W,W,W,WWWW,WWWW,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900331,R,W,W,W,RWWW,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900332,R,R,W,R,RRWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900333,W,R,R,W,WRRW,,EVEN,WIN,EVEN,0,RRRR(49.9%),WWWR(50.7%),0.0627,2,0.0767,3,0.1634,0.2485
+2060900334,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900335,W,W,W,W,WWWW,WWWW,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900336,R,W,W,R,RWWR,,EVEN,WIN,EVEN,0,RRRR(49.4%),RRRW(50.3%),0.058,0,0.0656,6,0.2892,0.4211
+2060900337,R,R,W,R,RRWR,,ODD,WIN,ODD,0,RRRR(48.9%),RRRW(50.3%),0.0735,1,0.0485,7,0.4131,0.2009
+2060900338,W,R,W,R,WRWR,,EVEN,WIN,EVEN,0,RRRR(48.9%),WWWR(50.7%),0.0627,2,0.0264,8,0.1757,0.2321
+2060900339,R,R,R,R,RRRR,RRRR,EVEN,LOSS,ODD,0,RRRR(47.5%),WWWR(50.7%),0.0396,3,0.0686,9,0.2565,0.4704
+2060900340,R,R,W,R,RRWR,,ODD,WIN,ODD,0,RRRR(51.3%),WWWR(50.7%),0.044,4,0.0665,0,0.0534,0.5348
+2060900341,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900342,R,W,R,R,RWRR,,ODD,LOSS,EVEN,0,RRRR(51.3%),WWWR(50.4%),0.0494,6,0.068,2,0.5325,0.1594
+2060900343,R,W,W,R,RWWR,,EVEN,WIN,EVEN,0,RRRR(51.3%),WWWR(54.0%),0.0587,7,0.0766,3,0.2681,0.0564
+2060900344,R,R,W,W,RRWW,,EVEN,LOSS,ODD,0,RRRR(49.9%),WWWR(54.0%),0.0535,8,0.0656,4,0.063,0.283
+2060900345,W,W,R,R,WWRR,,EVEN,LOSS,ODD,0,RRRR(50.7%),WWWR(54.0%),0.0734,9,0.0817,5,0.4447,0.0896
+2060900346,R,R,R,W,RRRW,,ODD,WIN,ODD,0,RRRR(49.5%),WWWR(54.0%),0.0467,10,0.0655,6,0.0839,0.1415
+2060900347,W,R,R,R,WRRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900348,R,W,R,R,RWRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900349,W,W,W,W,WWWW,WWWW,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900350,W,R,R,R,WRRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900351,W,W,R,R,WWRR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900352,W,R,R,W,WRRW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900353,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900354,R,W,W,W,RWWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900355,R,R,W,R,RRWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900356,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900357,W,R,R,R,WRRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900358,R,R,W,W,RRWW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900359,W,W,R,R,WWRR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900360,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900361,R,R,W,R,RRWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900362,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,RRRR(48.6%),WWWR(50.8%),0.0557,12,0.049,22,0.3506,0.2067
+2060900363,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900364,R,W,W,R,RWWR,,EVEN,WIN,EVEN,0,RRRR(48.6%),RRRW(50.4%),0.0529,14,0.0642,24,0.1502,0.0698
+2060900365,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900366,R,W,R,W,RWRW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900367,W,R,R,W,WRRW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900368,R,R,W,W,RRWW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900369,W,R,R,W,WRRW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900370,W,W,R,R,WWRR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900371,R,W,W,R,RWWR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900372,R,R,W,W,RRWW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900373,W,W,R,R,WWRR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900374,W,R,W,R,WRWR,,EVEN,LOSS,ODD,0,RRRR(52.0%),WWWR(50.7%),0.048,24,0.016,34,0.3319,0.2203
+2060900375,R,W,R,R,RWRR,,ODD,LOSS,EVEN,0,RRRR(51.7%),WWWR(50.7%),0.0505,25,0.0569,35,0.1743,0.4719
+2060900376,R,W,W,W,RWWW,,ODD,WIN,ODD,0,RRRR(51.7%),RRRW(50.7%),0.0435,26,0.0431,36,0.1447,0.1877
+2060900377,R,R,W,R,RRWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900378,W,R,R,W,WRRW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900379,W,R,R,R,WRRR,,ODD,WIN,ODD,0,RRRR(47.3%),WWWR(50.7%),0.0778,29,0.0294,39,0.2339,0.163
+2060900380,R,R,W,R,RRWR,,ODD,LOSS,EVEN,0,RRRR(47.3%),RRRW(50.6%),0.0241,30,0.0303,40,0.1556,0.258
+2060900381,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,RRRR(47.3%),WWWR(50.3%),0.0309,31,0.0208,41,0.2294,0.4911
+2060900382,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,RRRR(47.3%),RRRW(50.4%),0.0382,32,0.0745,42,0.1083,0.4573
+2060900383,R,R,R,R,RRRR,RRRR,EVEN,WIN,EVEN,0,RRRR(47.3%),WWWR(50.1%),0.0596,33,0.0115,43,0.5218,0.1301
+2060900384,R,R,W,W,RRWW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900385,R,R,R,R,RRRR,RRRR,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900386,R,W,R,W,RWRW,,EVEN,LOSS,ODD,0,RRRR(51.3%),WWWR(50.1%),0.0556,36,0.0664,0,0.2041,0.4378
+2060900387,W,W,R,R,WWRR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900388,W,W,R,R,WWRR,,EVEN,LOSS,ODD,0,RRRR(50.7%),WWWR(50.1%),0.0089,38,0.0679,2,0.3325,0.3153
+2060900389,W,W,W,R,WWWR,,ODD,WIN,ODD,0,RRRR(49.4%),WWWR(50.1%),0.036,39,0.0765,3,0.4974,0.2338
+2060900390,W,R,R,R,WRRR,,ODD,WIN,ODD,0,RRRR(49.4%),WWWR(52.8%),0.0561,40,0.0655,4,0.2111,0.1612
+2060900391,W,W,R,W,WWRW,,ODD,LOSS,EVEN,0,RRRR(49.4%),WWWR(50.7%),0.0594,41,0.0815,5,0.6415,0.0879
+2060900392,W,W,R,R,WWRR,,EVEN,WIN,EVEN,0,RRRR(49.4%),RRRW(50.4%),0.0421,42,0.0654,6,0.27,0.1768
+2060900393,W,W,W,W,WWWW,WWWW,EVEN,LOSS,ODD,0,RRRR(48.9%),RRRW(50.4%),0.0549,43,0.0483,7,0.5973,0.2373
+2060900394,R,W,R,W,RWRW,,EVEN,LOSS,ODD,0,RRRR(47.5%),RRRW(50.4%),0.0579,0,0.0263,8,0.1493,0.2912
+2060900395,R,R,W,R,RRWR,,ODD,WIN,ODD,0,RRRR(48.0%),RRRW(50.4%),0.0733,1,0.0701,9,0.3825,0.1946
+2060900396,R,W,R,R,RWRR,,ODD,LOSS,EVEN,0,RRRR(48.0%),WWWR(50.7%),0.0625,2,0.0793,10,0.0284,0.0744
+2060900397,W,W,R,W,WWRW,,ODD,LOSS,EVEN,0,RRRR(48.0%),RRRW(50.7%),0.0395,3,0.0609,11,0.1514,0.1771
+2060900398,W,W,R,R,WWRR,,EVEN,WIN,EVEN,0,RRRR(48.0%),RRRW(50.4%),0.0439,4,0.0582,12,0.1655,0.2354
+2060900399,R,W,W,W,RWWW,,ODD,WIN,ODD,0,RRRR(48.8%),RRRW(50.4%),0.0681,5,0.0546,13,0.2322,0.3315
+2060900400,W,R,W,R,WRWR,,EVEN,WIN,EVEN,0,RRRR(48.8%),WWWR(50.2%),0.0493,6,0.0553,14,0.2332,0.2138
+2060900401,W,R,W,R,WRWR,,EVEN,WIN,EVEN,0,RRRR(48.5%),WWWR(50.2%),0.0585,7,0.0559,15,0.1449,0.5955
+2060900402,W,W,R,W,WWRW,,ODD,WIN,ODD,0,RRRR(45.9%),WWWR(50.2%),0.0533,8,0.0648,16,0.3873,0.199
+2060900403,W,W,W,W,WWWW,WWWW,EVEN,WIN,EVEN,0,RRRR(45.9%),WWWR(52.7%),0.0732,9,0.0693,17,0.0915,0.7421
+2060900404,W,W,R,W,WWRW,,ODD,WIN,ODD,0,WWWW(45.4%),WWWR(52.7%),0.0578,0,0.0647,18,0.1823,0.22
+2060900405,W,R,W,R,WRWR,,EVEN,LOSS,ODD,0,WWWW(45.4%),RRRW(50.8%),0.0732,1,0.0519,19,0.1329,0.3171
+2060900406,W,R,R,R,WRRR,,ODD,WIN,ODD,0,RRRR(46.4%),RRRW(50.8%),0.0624,2,0.0693,20,0.0599,0.7219
+2060900407,R,W,W,W,RWWW,,ODD,WIN,ODD,0,RRRR(46.4%),WWWR(50.7%),0.0394,3,0.0353,21,0.1127,0.6587
+2060900408,R,W,W,R,RWWR,,EVEN,WIN,EVEN,0,RRRR(46.4%),RRRW(50.4%),0.0438,4,0.0488,22,0.332,0.3498
+2060900409,R,W,R,W,RWRW,,EVEN,LOSS,ODD,0,RRRR(46.8%),RRRW(50.4%),0.068,5,0.0641,23,0.0611,0.4507
+2060900410,R,W,W,R,RWWR,,EVEN,LOSS,ODD,0,RRRR(47.6%),RRRW(50.4%),0.0492,6,0.0639,24,0.3982,0.1284
+2060900411,R,R,R,R,RRRR,RRRR,EVEN,LOSS,ODD,0,RRRR(52.2%),RRRW(50.4%),0.0584,7,0.0488,25,0.1353,0.5355
+2060900412,W,R,W,R,WRWR,,EVEN,LOSS,ODD,0,RRRR(51.3%),RRRW(50.4%),0.0532,8,0.0663,0,0.4901,0.3728
+2060900413,R,W,R,R,RWRR,,ODD,WIN,ODD,0,RRRR(49.9%),RRRW(50.4%),0.0749,9,0.0635,1,0.3126,0.3207
+2060900414,R,W,W,R,RWWR,,EVEN,LOSS,ODD,0,RRRR(49.9%),WWWR(50.7%),0.0466,10,0.0678,2,0.2828,0.2057
+2060900415,W,W,W,W,WWWW,WWWW,EVEN,LOSS,ODD,0,RRRR(50.6%),WWWR(50.7%),0.0446,11,0.0764,3,0.1576,0.0919
+2060900416,W,R,R,W,WRRW,,EVEN,LOSS,ODD,0,RRRR(49.3%),WWWR(50.7%),0.0578,0,0.0654,4,0.6088,0.1002
+2060900417,W,R,W,R,WRWR,,EVEN,LOSS,ODD,0,RRRR(48.8%),WWWR(50.7%),0.0731,1,0.0814,5,0.3882,0.2655
+2060900418,W,W,W,W,WWWW,WWWW,EVEN,LOSS,ODD,0,RRRR(47.4%),WWWR(50.7%),0.0623,2,0.0653,6,0.414,0.3142
+2060900419,W,R,W,W,WRWW,,ODD,WIN,ODD,0,RRRR(47.9%),WWWR(50.7%),0.0577,0,0.0483,7,0.3563,0.2412
+2060900420,R,R,W,W,RRWW,,EVEN,LOSS,ODD,0,RRRR(47.9%),RRRW(50.4%),0.073,1,0.0262,8,0.1682,0.467
+2060900421,W,W,W,W,WWWW,WWWW,EVEN,LOSS,ODD,0,RRRR(48.7%),RRRW(50.4%),0.0635,2,0.07,9,0.1429,0.0672
+2060900422,W,W,R,R,WWRR,,EVEN,LOSS,ODD,0,RRRR(48.3%),RRRW(50.4%),0.0576,0,0.0792,10,0.3032,0.065
+2060900423,R,R,W,W,RRWW,,EVEN,LOSS,ODD,0,WWWW(46.0%),RRRW(50.4%),0.0729,1,0.0608,11,0.1886,0.2373
+2060900424,R,R,R,R,RRRR,RRRR,EVEN,LOSS,ODD,0,RRRR(45.1%),RRRW(50.4%),0.0647,2,0.058,12,0.0618,0.4487
+2060900425,R,W,W,R,RWWR,,EVEN,LOSS,ODD,0,RRRR(51.2%),RRRW(50.4%),0.0393,3,0.0663,0,0.2295,0.3052
+2060900426,R,W,R,W,RWRW,,EVEN,LOSS,ODD,0,RRRR(49.8%),RRRW(50.4%),0.0438,4,0.0634,1,0.3203,0.2494
+2060900427,W,W,W,W,WWWW,WWWW,EVEN,LOSS,ODD,0,RRRR(50.5%),RRRW(50.4%),0.0679,5,0.0677,2,0.5566,0.251
+2060900428,R,R,W,R,RRWR,,ODD,WIN,ODD,0,RRRR(49.2%),RRRW(50.4%),0.0576,0,0.0764,3,0.4149,0.0314
+2060900429,R,R,R,R,RRRR,RRRR,EVEN,LOSS,ODD,0,RRRR(49.2%),WWWR(50.7%),0.0729,1,0.0653,4,0.1591,0.6626
+2060900430,W,W,R,R,WWRR,,EVEN,LOSS,ODD,0,RRRR(51.2%),WWWR(50.7%),0.0646,2,0.0662,0,0.3751,0.1406
+2060900431,R,W,R,R,RWRR,,ODD,WIN,ODD,0,RRRR(49.9%),WWWR(50.7%),0.0393,3,0.0634,1,0.4132,0.2256
+2060900432,W,R,W,R,WRWR,,EVEN,LOSS,ODD,0,RRRR(49.9%),RRRW(50.6%),0.0437,4,0.0677,2,0.5951,0.2432
+2060900433,W,W,R,W,WWRW,,ODD,WIN,ODD,0,RRRR(50.6%),RRRW(50.6%),0.0693,5,0.0763,3,0.1353,0.2958
+2060900434,W,W,W,W,WWWW,WWWW,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900435,R,R,R,R,RRRR,RRRR,EVEN,LOSS,ODD,0,RRRR(49.3%),RRRW(50.4%),0.0575,0,0.0813,5,0.0514,0.0741
+2060900436,W,W,W,R,WWWR,,ODD,WIN,ODD,0,RRRR(51.3%),RRRW(50.4%),0.0728,1,0.0661,0,0.2698,0.1968
+2060900437,R,W,R,W,RWRW,,EVEN,LOSS,ODD,0,RRRR(51.3%),WWWR(50.2%),0.0646,2,0.0633,1,0.061,0.176
+2060900438,R,W,R,R,RWRR,,ODD,WIN,ODD,0,RRRR(49.9%),WWWR(50.2%),0.0392,3,0.0676,2,0.2553,0.3976
+2060900439,R,R,W,W,RRWW,,EVEN,LOSS,ODD,0,RRRR(49.9%),WWWR(50.7%),0.0437,4,0.0762,3,0.1969,0.1409
+2060900440,W,R,W,R,WRWR,,EVEN,LOSS,ODD,0,RRRR(50.7%),WWWR(50.7%),0.0692,5,0.0665,4,0.1623,0.7279
+2060900441,W,R,R,R,WRRR,,ODD,WIN,ODD,0,RRRR(49.4%),WWWR(50.7%),0.0506,6,0.0826,5,0.1953,0.5043
+2060900442,W,W,W,R,WWWR,,ODD,WIN,ODD,0,RRRR(49.4%),RRRW(50.6%),0.0583,7,0.0652,6,0.1261,0.6764
+2060900443,R,W,W,R,RWWR,,EVEN,WIN,EVEN,0,RRRR(49.4%),RRRW(50.4%),0.0531,8,0.0482,7,0.1788,0.2593
+2060900444,R,W,R,R,RWRR,,ODD,WIN,ODD,0,RRRR(48.7%),RRRW(50.4%),0.0748,9,0.0262,8,0.362,0.2869
+2060900445,W,W,R,W,WWRW,,ODD,LOSS,EVEN,0,RRRR(48.7%),WWWR(50.7%),0.0465,10,0.0699,9,0.6739,0.1012
+2060900446,R,W,R,W,RWRW,,EVEN,WIN,EVEN,0,RRRR(48.7%),RRRW(50.4%),0.0466,11,0.079,10,0.1101,0.1819
+2060900447,W,R,R,R,WRRR,,ODD,WIN,ODD,0,RRRR(47.3%),RRRW(50.4%),0.0556,12,0.0607,11,0.2335,0.0965
+2060900448,R,W,R,W,RWRW,,EVEN,WIN,EVEN,0,RRRR(47.3%),WWWR(50.7%),0.0635,13,0.0601,12,0.0828,0.4392
+2060900449,W,W,W,W,WWWW,WWWW,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900450,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900451,R,W,R,R,RWRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900452,R,R,R,R,RRRR,RRRR,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900453,W,W,R,R,WWRR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900454,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900455,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900456,R,W,W,R,RWWR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900457,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900458,R,R,W,W,RRWW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900459,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900460,W,R,W,R,WRWR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900461,W,R,R,W,WRRW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900462,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900463,W,W,R,W,WWRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900464,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900465,R,R,W,R,RRWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900466,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900467,W,W,R,R,WWRR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900468,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900469,R,R,W,R,RRWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900470,W,R,W,R,WRWR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900471,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900472,R,R,R,R,RRRR,RRRR,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900473,R,W,R,W,RWRW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900474,W,R,W,R,WRWR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900475,R,R,W,W,RRWW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900476,W,W,W,R,WWWR,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900477,W,W,R,W,WWRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900478,W,R,R,W,WRRW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2060900479,W,W,R,W,WWRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2060900480,R,R,R,R,RRRR,RRRR,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000001,R,R,W,R,RRWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000002,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000003,W,R,R,R,WRRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000004,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000005,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000006,R,R,W,R,RRWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000007,W,R,R,R,WRRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000008,R,W,R,W,RWRW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000009,R,W,W,W,RWWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000010,R,W,W,R,RWWR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000011,R,W,W,R,RWWR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000012,R,R,R,R,RRRR,RRRR,EVEN,WIN,EVEN,0,RRRR(49.6%),RRRW(50.4%),0.0,99562,0.0,99531,0.4267,0.2002
+2061000013,R,W,W,R,RWWR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000014,W,R,W,W,WRWW,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000015,R,R,W,R,RRWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000016,R,R,W,R,RRWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000017,W,W,R,W,WWRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000018,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000019,R,R,W,W,RRWW,,EVEN,WIN,EVEN,0,WWWW(50.0%),WWWR(50.2%),0.1111,99569,0.0648,6,0.1697,0.2586
+2061000020,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000021,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000022,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000023,W,R,W,R,WRWR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000024,R,W,R,W,RWRW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000025,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000026,W,R,R,R,WRRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000027,W,R,R,W,WRRW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000028,R,R,W,R,RRWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000029,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000030,R,W,R,R,RWRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000031,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000032,W,R,R,W,WRRW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000033,R,W,W,R,RWWR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000034,R,W,W,R,RWWR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000035,W,R,W,R,WRWR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000036,R,R,W,R,RRWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000037,R,W,W,R,RWWR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000038,R,W,R,R,RWRR,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000039,R,R,R,R,RRRR,RRRR,EVEN,LOSS,ODD,0,WWWW(58.6%),WWWR(54.0%),0.5,99589,0.0357,26,0.205,0.3333
+2061000040,R,W,W,W,RWWW,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000041,R,W,R,W,RWRW,,EVEN,LOSS,ODD,0,RRRR(51.2%),RRRW(50.4%),0.5,99591,0.063,1,0.6426,0.0888
+2061000042,R,R,R,W,RRRW,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000043,W,R,R,R,WRRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000044,R,R,W,W,RRWW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000045,R,R,W,R,RRWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000046,R,R,W,W,RRWW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000047,R,W,R,W,RWRW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000048,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000049,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000050,R,W,W,W,RWWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000051,R,R,W,R,RRWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000052,W,R,W,R,WRWR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000053,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000054,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000055,R,R,R,R,RRRR,RRRR,EVEN,WIN,EVEN,0,RRRR(47.4%),RRRW(50.4%),0.0,99605,0.0551,15,0.1219,0.2312
+2061000056,W,W,W,W,WWWW,WWWW,EVEN,WIN,EVEN,0,RRRR(51.2%),RRRW(50.4%),0.0,99606,0.0657,0,0.2448,0.203
+2061000057,R,W,W,R,RWWR,,EVEN,WIN,EVEN,0,RRRR(49.9%),RRRW(50.4%),0.0574,0,0.0629,1,0.1077,0.061
+2061000058,W,R,R,R,WRRR,,ODD,WIN,ODD,0,RRRR(50.7%),RRRW(50.4%),0.0726,1,0.0671,2,0.5826,0.1337
+2061000059,W,R,R,W,WRRW,,EVEN,WIN,EVEN,0,RRRR(50.7%),WWWR(50.6%),0.0644,2,0.0756,3,0.148,0.1261
+2061000060,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000061,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000062,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000063,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000064,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000065,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000066,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000067,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000068,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000069,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000070,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000071,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000072,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000073,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000074,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000075,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000076,R,W,W,R,RWWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000077,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000078,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000079,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000080,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000081,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000082,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000083,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000084,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000085,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000086,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000087,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000088,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000089,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000090,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000091,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000092,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000093,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000094,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000095,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000096,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000097,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000098,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000099,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000100,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000101,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000102,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000103,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000104,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000105,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000106,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000107,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000108,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000109,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000110,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000111,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000112,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000113,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000114,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000115,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000116,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000117,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000118,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000119,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000120,W,W,R,W,WWRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000121,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000122,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000123,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000124,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000125,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000126,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000127,R,R,R,W,RRRW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000128,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000129,R,W,R,R,RWRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000130,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000131,R,R,R,R,RRRR,RRRR,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000132,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000133,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000134,W,R,W,R,WRWR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000135,R,W,W,W,RWWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000136,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000137,W,R,R,R,WRRR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000138,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000139,W,R,R,W,WRRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000140,W,W,R,R,WWRR,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000141,R,W,R,W,RWRW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000142,W,R,R,R,WRRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000143,R,W,W,W,RWWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000144,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000145,W,W,W,W,WWWW,WWWW,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000146,W,R,W,R,WRWR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000147,R,R,W,W,RRWW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000148,W,W,R,R,WWRR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000149,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000150,W,W,R,W,WWRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000151,R,R,W,W,RRWW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000152,R,W,R,R,RWRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000153,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000154,W,W,R,W,WWRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000155,R,R,W,W,RRWW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000156,R,W,W,R,RWWR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000157,W,R,R,W,WRRW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000158,R,W,R,R,RWRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000159,W,R,R,W,WRRW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000160,W,W,W,W,WWWW,WWWW,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000161,W,R,W,R,WRWR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000162,W,R,W,R,WRWR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000163,R,R,R,W,RRRW,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000164,R,W,W,W,RWWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000165,W,R,W,R,WRWR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000166,R,R,W,R,RRWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000167,W,W,R,R,WWRR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000168,W,R,W,R,WRWR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000169,W,R,R,R,WRRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000170,W,W,R,W,WWRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000171,R,R,R,R,RRRR,RRRR,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000172,W,W,R,R,WWRR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000173,R,W,W,W,RWWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000174,W,R,R,W,WRRW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000175,R,R,W,R,RRWR,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000176,W,R,R,R,WRRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000177,W,W,W,W,WWWW,WWWW,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000178,W,R,R,R,WRRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000179,R,R,W,R,RRWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000180,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000181,W,R,R,W,WRRW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000182,W,R,W,R,WRWR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000183,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000184,R,W,W,R,RWWR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000185,R,W,W,W,RWWW,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000186,W,R,W,R,WRWR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000187,W,R,R,R,WRRR,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000188,W,R,R,R,WRRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000189,W,R,R,W,WRRW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000190,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000191,R,R,W,W,RRWW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000192,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,WWWW(46.5%),RRRW(50.5%),0.0568,14,0.0679,20,0.3194,0.2098
+2061000193,R,W,R,W,RWRW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000194,W,W,W,W,WWWW,WWWW,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000195,R,R,W,R,RRWR,,ODD,WIN,ODD,0,RRRR(46.9%),WWWR(50.5%),0.057,0,0.0628,23,0.2952,0.082
+2061000196,W,R,R,R,WRRR,,ODD,LOSS,EVEN,0,RRRR(46.9%),RRRW(50.2%),0.0721,1,0.0625,24,0.244,0.5458
+2061000197,R,W,R,R,RWRR,,ODD,LOSS,EVEN,0,RRRR(46.9%),WWWR(50.4%),0.0639,2,0.0524,25,0.4976,0.3293
+2061000198,W,W,R,W,WWRW,,ODD,LOSS,EVEN,0,RRRR(46.9%),WWWR(53.9%),0.0388,3,0.0452,26,0.3913,0.1618
+2061000199,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,RRRR(46.9%),RRRW(50.6%),0.0432,4,0.0737,27,0.3646,0.0894
+2061000200,R,W,R,W,RWRW,,EVEN,WIN,EVEN,0,RRRR(46.9%),WWWR(50.2%),0.0684,5,0.0568,28,0.1718,0.1856
+2061000201,R,R,W,W,RRWW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000202,W,W,W,W,WWWW,WWWW,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000203,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000204,R,W,R,W,RWRW,,EVEN,WIN,EVEN,0,RRRR(52.2%),WWWR(50.5%),0.072,1,0.0486,32,0.1287,0.3603
+2061000205,R,W,R,W,RWRW,,EVEN,LOSS,ODD,0,RRRR(53.2%),WWWR(50.5%),0.0638,2,0.0657,33,0.2127,0.4863
+2061000206,W,R,W,W,WRWW,,ODD,WIN,ODD,0,RRRR(52.5%),WWWR(50.5%),0.0388,3,0.0156,34,0.2164,0.4831
+2061000207,W,W,R,W,WWRW,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000208,R,W,R,R,RWRR,,ODD,WIN,ODD,0,RRRR(52.5%),WWWR(50.1%),0.0683,5,0.042,36,0.2432,0.4024
+2061000209,W,W,R,W,WWRW,,ODD,LOSS,EVEN,0,RRRR(52.5%),WWWR(50.5%),0.0499,6,0.0351,37,0.3426,0.2685
+2061000210,R,R,W,R,RRWR,,ODD,LOSS,EVEN,0,RRRR(52.5%),RRRW(50.5%),0.0591,7,0.0455,38,0.7744,0.0266
+2061000211,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,RRRR(52.5%),WWWR(50.6%),0.0524,8,0.0381,39,0.4432,0.119
+2061000212,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,RRRR(52.5%),RRRW(50.5%),0.0737,9,0.0297,40,0.2297,0.3508
+2061000213,W,R,W,W,WRWW,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000214,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000215,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000216,W,W,W,W,WWWW,WWWW,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000217,R,R,W,R,RRWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000218,W,W,W,R,WWWR,,ODD,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000219,R,R,W,W,RRWW,,EVEN,Not Predicted,,,,,0.0,0,0.0,0,0.0,0.0
+2061000220,W,R,W,R,WRWR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000221,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000222,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000223,R,R,R,R,RRRR,RRRR,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000224,W,R,R,R,WRRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000225,W,W,W,W,WWWW,WWWW,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000226,R,R,W,W,RRWW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000227,R,R,R,R,RRRR,RRRR,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000228,W,R,R,R,WRRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000229,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000230,W,W,R,W,WWRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000231,R,R,R,R,RRRR,RRRR,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000232,R,W,W,W,RWWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000233,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000234,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000235,R,R,W,W,RRWW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000236,W,R,W,R,WRWR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000237,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000238,R,W,W,W,RWWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000239,W,W,R,W,WWRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000240,R,W,W,R,RWWR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000241,R,R,R,R,RRRR,RRRR,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000242,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000243,R,W,R,R,RWRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000244,W,R,W,R,WRWR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000245,R,W,R,R,RWRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000246,R,W,R,W,RWRW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000247,W,W,R,W,WWRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000248,W,W,W,W,WWWW,WWWW,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000249,R,W,W,W,RWWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000250,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000251,W,R,W,R,WRWR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000252,R,W,W,R,RWWR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000253,W,W,R,W,WWRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000254,W,W,R,R,WWRR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000255,R,W,R,W,RWRW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000256,R,R,W,W,RRWW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000257,W,R,W,R,WRWR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000258,R,R,W,R,RRWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000259,R,W,W,R,RWWR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000260,R,R,W,R,RRWR,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000261,R,W,R,W,RWRW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000262,R,W,R,R,RWRR,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000263,R,W,R,R,RWRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000264,R,W,R,R,RWRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000265,R,R,W,R,RRWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000266,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000267,W,W,R,R,WWRR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000268,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000269,R,W,R,W,RWRW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000270,W,W,W,R,WWWR,,ODD,LOSS,EVEN,0,RRRR(47.4%),RRRW(50.5%),0.0519,21,0.0565,28,0.1941,0.3925
+2061000271,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000272,W,W,R,R,WWRR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000273,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000274,W,R,R,R,WRRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000275,R,W,R,W,RWRW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000276,R,R,W,W,RRWW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000277,W,W,W,W,WWWW,WWWW,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000278,R,R,R,W,RRRW,,ODD,WIN,ODD,0,RRRR(52.4%),WWWR(50.6%),0.0577,0,0.0417,36,0.3851,0.4319
+2061000279,W,W,W,W,WWWW,WWWW,EVEN,WIN,EVEN,0,RRRR(52.4%),RRRW(50.2%),0.0717,1,0.0348,37,0.054,0.5312
+2061000280,W,W,R,R,WWRR,,EVEN,LOSS,ODD,0,RRRR(53.3%),RRRW(50.2%),0.0577,0,0.045,38,0.2417,0.0893
+2061000281,R,R,R,W,RRRW,,ODD,WIN,ODD,0,RRRR(49.4%),RRRW(50.2%),0.0727,1,0.0377,39,0.5051,0.3001
+2061000282,W,R,W,W,WRWW,,ODD,WIN,ODD,0,RRRR(49.4%),WWWR(50.2%),0.0635,2,0.0294,40,0.5081,0.2287
+2061000283,R,W,W,W,RWWW,,ODD,WIN,ODD,0,RRRR(49.4%),RRRW(50.4%),0.0386,3,0.0202,41,0.5197,0.1164
+2061000284,R,R,W,R,RRWR,,ODD,LOSS,EVEN,0,RRRR(49.4%),WWWR(50.3%),0.0429,4,0.0722,42,0.5786,0.2469
+2061000285,R,W,R,W,RWRW,,EVEN,WIN,EVEN,0,RRRR(49.4%),WWWR(50.5%),0.0679,5,0.0222,43,0.0954,0.1747
+2061000286,W,R,R,R,WRRR,,ODD,LOSS,EVEN,0,RRRR(55.2%),WWWR(50.5%),0.0496,6,0.0341,44,0.2888,0.1681
+2061000287,W,R,W,R,WRWR,,EVEN,WIN,EVEN,0,RRRR(55.2%),RRRW(50.3%),0.0587,7,0.0471,45,0.1448,0.3175
+2061000288,W,W,R,W,WWRW,,ODD,LOSS,EVEN,0,RRRR(54.4%),RRRW(50.3%),0.0537,8,0.0494,46,0.1484,0.5015
+2061000289,R,R,W,R,RRWR,,ODD,LOSS,EVEN,0,RRRR(54.4%),RRRW(50.4%),0.0733,9,0.013,47,0.2692,0.3615
+2061000290,R,R,R,R,RRRR,RRRR,EVEN,WIN,EVEN,0,RRRR(54.4%),WWWR(50.5%),0.0455,10,0.0526,48,0.2667,0.1275
+2061000291,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,RRRR(51.4%),WWWR(50.5%),0.0455,11,0.0667,0,0.6199,0.1797
+2061000292,W,W,W,W,WWWW,WWWW,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000293,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000294,W,R,R,W,WRRW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000295,R,W,W,R,RWWR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000296,W,W,W,W,WWWW,WWWW,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000297,R,R,W,W,RRWW,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000298,W,W,R,W,WWRW,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000299,W,R,R,R,WRRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000300,W,W,R,R,WWRR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000301,W,R,R,R,WRRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000302,W,R,W,R,WRWR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000303,W,R,R,W,WRRW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000304,W,W,R,R,WWRR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000305,R,R,W,W,RRWW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000306,W,W,R,W,WWRW,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000307,W,W,W,R,WWWR,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000308,W,W,W,R,WWWR,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000309,W,W,W,W,WWWW,WWWW,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000310,R,R,W,W,RRWW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000311,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000312,R,W,W,W,RWWW,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000313,R,R,R,R,RRRR,RRRR,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000314,W,W,W,W,WWWW,WWWW,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000315,W,W,R,R,WWRR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000316,W,W,R,W,WWRW,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000317,R,R,W,R,RRWR,,ODD,WIN,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000318,W,R,R,W,WRRW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000319,W,W,R,R,WWRR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000320,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000321,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000322,W,R,R,R,WRRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000323,W,W,R,R,WWRR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000324,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000325,R,R,W,W,RRWW,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000326,R,W,W,W,RWWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000327,R,W,W,R,RWWR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000328,W,W,R,R,WWRR,,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000329,W,R,W,W,WRWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000330,R,W,R,R,RWRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000331,W,W,W,R,WWWR,,ODD,WIN,ODD,0,RRRR(48.7%),WWWR(50.4%),0.0693,16,0.0673,17,0.2575,0.2922
+2061000332,R,R,R,R,RRRR,RRRR,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000333,W,R,W,W,WRWW,,ODD,WIN,ODD,0,RRRR(51.3%),RRRW(50.4%),0.0498,18,0.0666,0,0.4142,0.2151
+2061000334,W,R,W,R,WRWR,,EVEN,WIN,EVEN,0,RRRR(51.3%),WWWR(50.3%),0.0557,19,0.064,1,0.2352,0.2795
+2061000335,R,W,R,W,RWRW,,EVEN,WIN,EVEN,0,RRRR(49.9%),WWWR(50.3%),0.059,20,0.0673,2,0.3584,0.1377
+2061000336,R,W,W,R,RWWR,,EVEN,LOSS,ODD,0,RRRR(50.4%),WWWR(50.3%),0.0517,21,0.0781,3,0.3494,0.1142
+2061000337,W,W,R,R,WWRR,,EVEN,LOSS,ODD,0,RRRR(49.3%),WWWR(50.3%),0.0428,22,0.0652,4,0.1614,0.2578
+2061000338,W,W,W,W,WWWW,WWWW,EVEN,WIN,EVEN,0,RRRR(48.5%),WWWR(50.3%),0.0447,23,0.0809,5,0.1703,0.3302
+2061000339,R,R,W,W,RRWW,,EVEN,WIN,EVEN,0,RRRR(47.1%),WWWR(50.3%),0.0574,0,0.0637,6,0.237,0.192
+2061000340,W,W,W,W,WWWW,WWWW,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000341,R,W,W,R,RWWR,,EVEN,WIN,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000342,R,W,W,W,RWWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000343,R,W,R,R,RWRR,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000344,R,W,W,W,RWWW,,ODD,LOSS,EVEN,0,,,0.0,0,0.0,0,0.0,0.0
+2061000345,R,R,R,R,RRRR,RRRR,EVEN,LOSS,ODD,0,,,0.0,0,0.0,0,0.0,0.0
+2061000346,R,W,R,R,RWRR,,ODD,LOSS,EVEN,0,RRRR(51.3%),RRRW(50.4%),0.0676,5,0.0665,0,0.4646,0.0886
+2061000347,W,R,W,R,WRWR,,EVEN,WIN,EVEN,0,RRRR(51.3%),WWWR(50.5%),0.0494,6,0.0639,1,0.22,0.1703
+2061000348,R,W,W,W,RWWW,,ODD,LOSS,EVEN,0,RRRR(49.8%),WWWR(50.5%),0.0584,7,0.0672,2,0.2551,0.2636
+2061000349,W,W,R,W,WWRW,,ODD,LOSS,EVEN,0,RRRR(49.8%),RRRW(50.4%),0.0534,8,0.078,3,0.0853,0.0511
+2061000350,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,RRRR(49.8%),WWWR(50.4%),0.0729,9,0.0651,4,0.2269,0.222
+2061000351,R,W,R,R,RWRR,,ODD,LOSS,EVEN,0,RRRR(49.8%),WWWR(50.5%),0.0452,10,0.0808,5,0.2633,0.0373
+2061000352,W,W,R,R,WWRR,,EVEN,WIN,EVEN,0,RRRR(49.8%),RRRW(50.3%),0.0453,11,0.0636,6,0.2833,0.1151
+2061000353,R,R,R,R,RRRR,RRRR,EVEN,WIN,EVEN,0,RRRR(50.3%),RRRW(50.3%),0.0603,12,0.0485,7,0.1657,0.3862
+2061000354,W,W,W,R,WWWR,,ODD,WIN,ODD,0,RRRR(51.3%),RRRW(50.3%),0.0619,13,0.0665,0,0.3785,0.1955
+2061000355,R,W,R,W,RWRW,,EVEN,WIN,EVEN,0,RRRR(51.3%),RRRW(50.4%),0.0562,14,0.0639,1,0.1187,0.3168
+2061000356,R,R,W,W,RRWW,,EVEN,WIN,EVEN,0,RRRR(49.9%),RRRW(50.4%),0.0622,15,0.0671,2,0.1918,0.4318
+2061000357,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,RRRR(50.4%),RRRW(50.4%),0.0691,16,0.0779,3,0.288,0.1086
+2061000358,R,W,R,R,RWRR,,ODD,LOSS,EVEN,0,RRRR(50.4%),WWWR(50.5%),0.0445,17,0.065,4,0.4656,0.4266
+2061000359,R,R,R,W,RRRW,,ODD,LOSS,EVEN,0,RRRR(50.4%),RRRW(50.2%),0.0497,18,0.0807,5,0.231,0.2042
+2061000360,W,R,R,R,WRRR,,ODD,LOSS,EVEN,0,RRRR(50.4%),WWWR(50.3%),0.0556,19,0.0635,6,0.3487,0.3268
+2061000361,R,W,R,R,RWRR,,ODD,LOSS,EVEN,0,RRRR(50.4%),WWWR(54.1%),0.0588,20,0.0501,7,0.5117,0.1092
+2061000362,R,R,R,R,RRRR,RRRR,EVEN,LOSS,ODD,0,RRRR(50.4%),WWWR(54.5%),0.0515,21,0.0255,8,0.2478,0.2961
+2061000363,W,W,R,W,WWRW,,ODD,WIN,ODD,0,RRRR(51.4%),WWWR(54.5%),0.0426,22,0.0664,0,0.4666,0.1477
+2061000364,W,W,R,W,WWRW,,ODD,WIN,ODD,0,RRRR(51.4%),RRRW(50.4%),0.0486,23,0.0638,1,0.1594,0.3578
+2061000365,R,R,W,R,RRWR,,ODD,WIN,ODD,0,RRRR(51.4%),WWWR(50.3%),0.0511,24,0.067,2,0.1026,0.1858
+2061000366,R,R,W,W,RRWW,,EVEN,LOSS,ODD,0,RRRR(51.4%),WWWR(50.5%),0.0493,25,0.0778,3,0.2171,0.0713
+2061000367,R,R,R,W,RRRW,,ODD,WIN,ODD,0,RRRR(49.9%),WWWR(50.5%),0.0425,26,0.0649,4,0.5024,0.0909
+2061000368,R,R,R,R,RRRR,RRRR,EVEN,LOSS,ODD,0,RRRR(49.9%),RRRW(50.3%),0.0493,27,0.0806,5,0.0835,0.7137
+2061000369,W,W,R,R,WWRR,,EVEN,LOSS,ODD,0,RRRR(51.4%),RRRW(50.3%),0.0518,28,0.0663,0,0.3944,0.0857
+2061000370,W,W,R,W,WWRW,,ODD,WIN,ODD,0,RRRR(50.0%),RRRW(50.3%),0.0765,29,0.0637,1,0.3577,0.3738
+2061000371,W,W,W,R,WWWR,,ODD,WIN,ODD,0,RRRR(50.0%),RRRW(50.4%),0.0237,30,0.067,2,0.1698,0.4149

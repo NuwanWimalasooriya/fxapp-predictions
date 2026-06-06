@@ -842712,9 +842712,84 @@
       "seq_pred": "green",
       "seq_conf": 0.6
     },
+    "actual": "green",
+    "actual_number": 3,
+    "actual_purple": false,
+    "timestamp": "2026-06-07T00:00:10.502942"
+  },
+  "2061000372": {
+    "pred_color": "green",
+    "p_red": 0.35,
+    "confidence": 0.65,
+    "bet": true,
+    "pred_number": 1,
+    "number_conf": 0.268,
+    "number_signals": {
+      "hot_num": 7,
+      "hot_cnt": 3,
+      "seq_num": 1,
+      "seq_conf": 0.5,
+      "wc_num": 9,
+      "wc_conf": 0.6,
+      "run_num": null,
+      "run_conf": 0.0,
+      "ranked": [
+        [
+          1,
+          0.268
+        ],
+        [
+          9,
+          0.245
+        ],
+        [
+          7,
+          0.18
+        ],
+        [
+          3,
+          0.153
+        ],
+        [
+          5,
+          0.153
+        ]
+      ],
+      "probs": {
+        "1": 0.268,
+        "3": 0.153,
+        "5": 0.153,
+        "7": 0.18,
+        "9": 0.245
+      }
+    },
+    "pred_purple": false,
+    "purple_conf": 0.2,
+    "purple_signals": {
+      "gap_since_last": 1,
+      "recent30_freq": 0.2,
+      "seq_p": null,
+      "p_purple": 0.2
+    },
+    "signals": {
+      "cur_val": "green",
+      "cur_run": 3,
+      "prev_val": "red",
+      "prev_run": 1,
+      "alt_run": 0,
+      "dom_r8": 0.125,
+      "rule": "rule1_medium_streak",
+      "loss_streak": 0,
+      "low_streak_regime": false,
+      "maj6": "green",
+      "mirror_info": null,
+      "sym_block_info": null,
+      "seq_pred": "green",
+      "seq_conf": 0.714
+    },
     "actual": null,
     "actual_number": null,
     "actual_purple": null,
-    "timestamp": "2026-06-07T00:00:10.502942"
+    "timestamp": "2026-06-07T00:03:10.395933"
   }
 }

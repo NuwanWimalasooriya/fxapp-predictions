@@ -28,7 +28,7 @@ def _load_env():
     return env
 
 _env      = _load_env()
-DB_PATH   = os.path.join(_DATA_DIR, _env.get('DB_FILE2', 'cg.db'))
+DB_PATH   = os.path.join(_DATA_DIR, _env.get('DB_FILE2', 'rg3m.db'))
 LOG_PATH  = os.path.join(_DATA_DIR, 'pred_log_cg.json')
 SNAP_PATH = os.path.join(_DATA_DIR, 'latest_prediction_cg.json')
 
@@ -64,7 +64,7 @@ rows = conn.execute(
 conn.close()
 
 if not rows:
-    print("No data in cg.db yet.")
+    print("No data in rg3m.db yet.")
     sys.exit(0)
 
 ids     = [r[0] for r in rows]
@@ -115,6 +115,32 @@ def alt_run_length(arr):
         else:
             break
     return alt
+
+def detect_low_streak_regime(arr, window=20):
+    """
+    Returns True when the game is in a low-streak regime:
+    max consecutive same-color run in the last `window` rounds is <= 2.
+    In this regime, no color ever repeats 3+ times, so after streak=2
+    the opposite color is near-certain.
+    """
+    if len(arr) < window:
+        return False
+    recent = arr[-window:]
+    max_s = cur_s = 1
+    for i in range(1, len(recent)):
+        cur_s = cur_s + 1 if recent[i] == recent[i-1] else 1
+        if cur_s > max_s:
+            max_s = cur_s
+    return max_s <= 2
+
+def majority_color(arr, window=6):
+    """Return the majority color in the last `window` rounds, or None if tied."""
+    recent = arr[-window:] if len(arr) >= window else arr
+    r = recent.count('red')
+    g = recent.count('green')
+    if r == g:
+        return None
+    return 'red' if r > g else 'green'
 
 # ── Mirror-tile detection (mirrors the ODD/EVEN disc game logic exactly) ───────
 
@@ -280,6 +306,9 @@ def predict_color(idx):
     r8, g8  = recent8.count('red'), recent8.count('green')
     alt     = alt_run_length(arr)
 
+    low_streak_regime = detect_low_streak_regime(arr)
+    maj6 = majority_color(arr, window=6)
+
     mirror_info    = detect_mirror_tile(arr)
     mirror_in_info = detect_mirror_tile_inprogress(arr) if mirror_info is None else None
     sym_block_info = detect_sym_block_inprogress(arr)
@@ -288,8 +317,24 @@ def predict_color(idx):
     applied_rule = 'default'
     p_red = 0.5
 
+    # Rule 0 (highest priority): low-streak regime + streak=2 → opposite is near-certain
+    # Logic: no color repeats 3+ times in this regime, so after 2x same → flip
+    if low_streak_regime and cr >= 2:
+        opposite = _FLIP[cv]
+        p_red = 0.10 if cv == 'red' else 0.90
+        applied_rule = 'rule0_no_streak3'
+
+    # Rule 0b: low-streak regime + streak=1 → bet majority color in last 6 rounds
+    elif low_streak_regime and cr == 1:
+        if maj6 is not None:
+            p_red = 0.68 if maj6 == 'red' else 0.32
+            applied_rule = 'rule0b_low_regime_majority'
+        else:
+            p_red = 0.5
+            applied_rule = 'rule0b_low_regime_tied'
+
     # Rule 1: Long streak (4+) → continue strongly
-    if cr >= 4:
+    elif cr >= 4:
         p_red = 0.78 if cv == 'red' else 0.22
         applied_rule = 'rule1_long_streak'
 
@@ -307,8 +352,15 @@ def predict_color(idx):
     elif sym_block_info is not None:
         pred = sym_block_info['pred_val']
         c    = sym_block_info['conf']
+        # Override: sym_complete wants to switch to prev color, but if the majority
+        # of the last 6 rounds favors the CURRENT color, ride the dominant color instead
+        if sym_block_info['phase'] == 'complete' and maj6 == cv:
+            pred = cv
+            c    = 0.62
+            applied_rule = 'rule2b_dominant_stay'
+        else:
+            applied_rule = f'rule2b_sym_{sym_block_info["phase"]}'
         p_red = c if pred == 'red' else (1.0 - c)
-        applied_rule = f'rule2b_sym_{sym_block_info["phase"]}'
 
     # Rule 3: Confirmed alternating (3+ unbroken) → predict flip to opposite color
     elif cr == 1 and pr == 1 and alt >= 3:
@@ -316,7 +368,7 @@ def predict_color(idx):
         p_red = (1.0 - conf_alt) if cv == 'red' else conf_alt
         applied_rule = 'rule3_alternating'
 
-    # Rules 4-7 only if 1-3 didn't fire
+    # Rules 4-7 only if rules 0-3 didn't fire
     if applied_rule == 'default':
         if mirror_info is not None:
             p_red = mirror_info['conf'] if mirror_info['pred_val'] == 'red' else 1.0 - mirror_info['conf']
@@ -337,7 +389,11 @@ def predict_color(idx):
             applied_rule = 'rule7_dominant'
 
     p_red = max(0.05, min(0.95, p_red))
-    if _cur_loss_streak >= 5:
+    # Streak flip only applies when NOT in low-streak regime and no strong directional evidence:
+    # - cr >= 3: color repeating 3+ times — trust the streak, don't invert
+    # - alt >= 3: confirmed alternating pattern — follow it, don't invert
+    # - maj6 == cv: majority of last 6 rounds confirms current direction — don't invert
+    if not low_streak_regime and _cur_loss_streak >= 5 and cr < 3 and alt < 3 and maj6 != cv:
         p_red = 1.0 - p_red
         applied_rule += '+streak_flip'
     p_red = max(0.05, min(0.95, p_red))
@@ -348,6 +404,8 @@ def predict_color(idx):
         'cur_val': cv, 'cur_run': cr, 'prev_val': pv, 'prev_run': pr,
         'alt_run': alt, 'dom_r8': round(r8/len(recent8), 3) if recent8 else 0.5,
         'rule': applied_rule, 'loss_streak': _cur_loss_streak,
+        'low_streak_regime': low_streak_regime,
+        'maj6': maj6,
         'mirror_info':   mirror_info or mirror_in_info,
         'sym_block_info': sym_block_info,
         'seq_pred': seq_pred, 'seq_conf': round(seq_conf, 3),

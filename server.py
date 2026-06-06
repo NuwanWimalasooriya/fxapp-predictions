@@ -35,7 +35,7 @@ DB_NEW_PATH    = os.path.join(_DATA_DIR, 'ds3m_new.db')
 # Color game paths
 SNAP_CG_PATH   = os.path.join(_DATA_DIR, 'latest_prediction_cg.json')
 LOG_CG_PATH    = os.path.join(_DATA_DIR, 'pred_log_cg.json')
-DB_CG_PATH     = os.path.join(_DATA_DIR, _env.get('DB_FILE2', 'cg.db'))
+DB_CG_PATH     = os.path.join(_DATA_DIR, _env.get('DB_FILE2', 'rg3m.db'))
 
 app = Flask(__name__, static_folder=os.path.join(_BASE, 'static'))
 app.secret_key = _env.get('SECRET_KEY') or secrets.token_hex(32)
@@ -631,7 +631,7 @@ def _db_watcher():
 if __name__ == '__main__':
     _ensure_config()
     if not _load_credentials():
-        print("  ⚠  No credentials found. Run: python create_credentials.py")
+        print("  [!]  No credentials found. Run: python create_credentials.py")
     threading.Thread(target=_db_watcher, daemon=True).start()
     print(f"  Starting DS3M dashboard on http://0.0.0.0:{PORT}")
     app.run(host='0.0.0.0', port=PORT, debug=False)

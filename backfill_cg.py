@@ -1,6 +1,6 @@
 """
 Historical backfill for Color Game (RG3M).
-Fetches all available history pages and inserts into cg.db.
+Fetches all available history pages and inserts into rg3m.db.
 Usage: python backfill_cg.py
 """
 import os, sys, json, time, ssl, sqlite3, csv, urllib.request, urllib.error
@@ -30,7 +30,7 @@ BASE_URL   = _env.get('BASE_URL',   'https://m.fxpro1.net')
 GAME2_NAME = _env.get('GAME2_NAME', 'RG3M')
 GAME2_URL  = _env.get('GAME2_URL',  f'{BASE_URL}/openHistory?gameName={GAME2_NAME}')
 API_URL    = f'{BASE_URL}/api/rocket-api/game/issue-result/page'
-DB_PATH    = os.path.join(_DATA_DIR, _env.get('DB_FILE2', 'cg.db'))
+DB_PATH    = os.path.join(_DATA_DIR, _env.get('DB_FILE2', 'rg3m.db'))
 CSV_PATH   = os.path.join(_DATA_DIR, 'cg.csv')
 CHROME     = _env.get('CHROME', '')
 PAGE_SIZE  = 100
@@ -201,7 +201,7 @@ def capture_auth_headers():
 def main():
     ensure_table()
     known = existing_ids()
-    print(f"  DB currently has {len(known)} records in cg.db.")
+    print(f"  DB currently has {len(known)} records in rg3m.db.")
 
     headers = capture_auth_headers()
     if not headers:
@@ -306,7 +306,7 @@ def main():
         print(f"  ({errors} pages failed with network errors)")
     with get_conn() as conn:
         total = conn.execute('SELECT COUNT(*) FROM rounds').fetchone()[0]
-    print(f"cg.db now has {total} total records.")
+    print(f"rg3m.db now has {total} total records.")
 
     sync_csv()
 

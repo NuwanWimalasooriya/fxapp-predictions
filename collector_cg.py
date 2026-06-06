@@ -1,5 +1,5 @@
 """
-Color Game Collector — polls for new rounds every cycle, stores in cg.db, runs predictor.
+Color Game Collector — polls for new rounds every cycle, stores in rg3m.db, runs predictor.
 
 Color rules:
   0,2,4,6,8  → red    (even)
@@ -71,7 +71,7 @@ GAME2_URL  = _env.get('GAME2_URL',  f'{BASE_URL}/openHistory?gameName={GAME2_NAM
 API_URL    = f'{BASE_URL}/api/rocket-api/game/issue-result/page'
 CHROME     = _env.get('CHROME', '')
 
-DB_PATH      = os.path.join(_DATA_DIR, _env.get('DB_FILE2', 'cg.db'))
+DB_PATH      = os.path.join(_DATA_DIR, _env.get('DB_FILE2', 'rg3m.db'))
 LOG_PATH     = os.path.join(_DATA_DIR, 'pred_log_cg.json')
 CSV_PATH     = os.path.join(_DATA_DIR, 'cg.csv')
 PREDICT_CG   = os.path.join(_BASE, 'predict_cg.py')
