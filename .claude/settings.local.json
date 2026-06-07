@@ -20,7 +20,8 @@
       "PowerShell(pip install flask)",
       "PowerShell(Copy-Item \"c:\\\\NuwanWimalasooriya\\\\fxapp-predictions\\\\data\\\\cg.db\" \"c:\\\\NuwanWimalasooriya\\\\fxapp-predictions\\\\data\\\\rg3m.db\" -Force)",
       "PowerShell(python -c \"import urllib.request,json; r=urllib.request.urlopen\\('http://127.0.0.1:5050/api/cg/data?size=1'\\); d=json.loads\\(r.read\\(\\)\\); print\\('total:', d['total'], 'rows:', d['rows']\\)\")",
-      "PowerShell(python -c \"import urllib.request; r=urllib.request.urlopen\\('http://127.0.0.1:5050/login'\\); print\\('Status:', r.status, '- Server is up'\\)\")"
+      "PowerShell(python -c \"import urllib.request; r=urllib.request.urlopen\\('http://127.0.0.1:5050/login'\\); print\\('Status:', r.status, '- Server is up'\\)\")",
+      "Bash(python -c ' *)"
     ]
   }
 }

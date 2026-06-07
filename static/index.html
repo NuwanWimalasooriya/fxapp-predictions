@@ -980,32 +980,30 @@ function renderNewModel(p, paged, stats) {
       <div class="row"><span class="key">Target WR</span><span class="val" style="color:#3b82f6">65% (real betting)</span></div>
     </div>
 
-    <!-- HISTORY -->
-    <div class="card" style="grid-column:1/-1">
-      <h2>All rounds — New Model</h2>
+    <!-- ACCURACY STATS TILE -->
+    <div class="card">
+      <h2>Win Rate</h2>
       ${(() => {
         const wrC = wr => wr == null ? 'var(--muted)' : wr >= 0.65 ? '#22c55e' : wr >= 0.53 ? 'var(--green)' : wr >= 0.47 ? 'var(--yellow)' : 'var(--red)';
         const cell = (label, wr, n, wins) => `
-          <div style="text-align:center;padding:5px 12px;border-right:1px solid var(--border)">
-            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px">${label}</div>
-            <div style="font-size:15px;font-weight:700;color:${wrC(wr)}">${wr != null ? (wr*100).toFixed(1)+'%' : '—'}</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:1px">${n != null ? `${wins != null ? wins+'W · ' : ''}n=${n}` : 'no data'}</div>
+          <div style="margin-bottom:12px">
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">${label}</div>
+            <div style="font-size:22px;font-weight:700;color:${wrC(wr)}">${wr != null ? (wr*100).toFixed(1)+'%' : '—'}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">${n != null ? `${wins != null ? wins+'W · ' : ''}n=${n}` : 'no data'}</div>
           </div>`;
-        return `<div style="display:flex;background:rgba(255,255,255,.03);border-radius:8px;margin-bottom:10px;overflow:hidden">
+        return `
           ${cell('Last 100', s1.wr, s1.n, s1.win)}
           ${cell('Last 200', s2.wr, s2.n, s2.win)}
-          <div style="text-align:center;padding:8px 16px;border-right:1px solid var(--border)">
-            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Total Predicted</div>
-            <div style="font-size:20px;font-weight:700">${stats.total_predicted ?? '—'}</div>
-            <div style="font-size:11px;color:var(--muted);margin-top:2px">rounds scored</div>
-          </div>
-          <div style="display:flex;align-items:center;padding:8px 20px;flex-direction:column;justify-content:center">
-            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Target</div>
-            <div style="font-size:18px;font-weight:700;color:#3b82f6">65%</div>
-            <div style="font-size:10px;color:var(--muted)">for real betting</div>
-          </div>
-        </div>`;
+          <div style="border-top:1px solid var(--border);padding-top:10px;margin-top:4px">
+            <div class="row"><span class="key">Total scored</span><span class="val">${stats.total_predicted ?? '—'} rounds</span></div>
+            <div class="row"><span class="key">Target</span><span class="val" style="color:#3b82f6;font-weight:700">65%</span></div>
+          </div>`;
       })()}
+    </div>
+
+    <!-- HISTORY -->
+    <div class="card" style="grid-column:1/-1">
+      <h2>All rounds — New Model</h2>
       <div class="data-toolbar" style="padding:0 0 8px">
         <input id="new-search-input" type="text" placeholder="Search round ID, ODD/EVEN, WIN/LOSS…"
                oninput="onNewSearch(this.value)">
@@ -1026,7 +1024,6 @@ function renderNewModel(p, paged, stats) {
         <tbody id="new-hist-body"><tr><td colspan="7" style="color:var(--muted);padding:12px">Loading…</td></tr></tbody>
       </table>
       <div class="pagination" id="new-hist-pager"></div>
-    </div>
 
   </div>`;
   renderNewModelData(paged);

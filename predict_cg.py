@@ -348,6 +348,12 @@ def predict_color(idx):
         p_red = 0.72 if cv == 'red' else 0.28
         applied_rule = 'rule2_post_long'
 
+    # Rule 1a: Short streak (2) with no long previous run → continue same direction
+    # cr==2 has no explicit rule; without this it falls to rule6_seq_dom which can flip wrong
+    elif cr == 2:
+        p_red = 0.58 if cv == 'red' else 0.42
+        applied_rule = 'rule1a_short_streak'
+
     # Rule 2b: Symmetric block in progress (GGGRRR / GGRRRR pattern)
     elif sym_block_info is not None:
         pred = sym_block_info['pred_val']
@@ -393,7 +399,7 @@ def predict_color(idx):
     # - cr >= 3: color repeating 3+ times — trust the streak, don't invert
     # - alt >= 3: confirmed alternating pattern — follow it, don't invert
     # - maj6 == cv: majority of last 6 rounds confirms current direction — don't invert
-    if not low_streak_regime and _cur_loss_streak >= 5 and cr < 3 and alt < 3 and maj6 != cv:
+    if not low_streak_regime and _cur_loss_streak >= 5 and cr < 3 and alt < 3 and maj6 is not None and maj6 != cv:
         p_red = 1.0 - p_red
         applied_rule += '+streak_flip'
     p_red = max(0.05, min(0.95, p_red))
