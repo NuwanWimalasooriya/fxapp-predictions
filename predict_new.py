@@ -814,31 +814,49 @@ def predict_new(oe_arr, idx):
         p_odd       = mi_conf if pred_odd_mi else (1.0 - mi_conf)
         applied_rule = f'rule9_{mirror_in_info["pattern_name"]}'
 
-    # Rule 1: Inside long block (run >= 4) → lock current direction
+    # Rule 1: Inside long block (run >= 4)
+    # Data (15985 rounds): run=4→52% stay, run=5→52% stay, run=6+→53% switch.
+    # Old code used 0.82 confidence which is far too aggressive for a ~52% signal.
+    # Now blend with XGBoost; slightly lean stay for run=4-5, lean switch for run=6+.
     elif cur_run >= 4:
-        p_odd = 0.82 if cur_val == 'ODD' else 0.18
+        if cur_run <= 5:
+            block_p = 0.60 if cur_val == 'ODD' else 0.40  # weak stay lean
+        else:
+            block_p = 0.44 if cur_val == 'ODD' else 0.56  # run>=6: lean switch
+        p_odd = 0.55 * block_p + 0.45 * p_xgb
         applied_rule = 'rule1_long_block'
 
-    # Rule 1b: Medium streak (run == 3) → continue with moderate confidence
+    # Rule 1b: Medium streak (run == 3)
+    # Data: 53.4% probability of switch after exactly 3 consecutive same.
+    # Old code predicted STAY (0.67) — opposite of what data shows.
     elif cur_run == 3:
-        p_odd = 0.67 if cur_val == 'ODD' else 0.33
-        applied_rule = 'rule1_medium_block'
+        switch_p = 0.46 if cur_val == 'ODD' else 0.54  # lean switch
+        p_odd = 0.55 * switch_p + 0.45 * p_xgb
+        applied_rule = 'rule1b_switch'
 
     # Rule 3: Confirmed alternating (3+ unbroken single-round runs) → predict flip
+    # Only override when XGBoost confirms same direction; otherwise use XGBoost alone.
+    # Analysis showed 38% WR when XGBoost disagreed — rule3 was anti-predictive then.
     elif alt_confirmed and cur_run == 1 and prev_run == 1:
-        conf_alt = round(0.65 + min(0.10, (alt_run - 3) * 0.025), 3)
-        p_odd    = (1.0 - conf_alt) if cur_val == 'ODD' else conf_alt
+        conf_alt  = round(0.62 + min(0.08, (alt_run - 3) * 0.02), 3)
+        p_flip    = (1.0 - conf_alt) if cur_val == 'ODD' else conf_alt
+        flip_is_odd = (cur_val == 'EVEN')
+        xgb_agrees  = (p_xgb > 0.5) == flip_is_odd
+        if xgb_agrees:
+            p_odd = 0.65 * p_flip + 0.35 * p_xgb
+        else:
+            p_odd = p_xgb  # XGBoost disagrees: ignore rule3, use XGBoost directly
         applied_rule = 'rule3_alternating'
 
     # Rule 6: EOE return — after a run of 3+, a single-round switch is a blip, original returns.
     # Confidence scales with run length: longer run = more certain the original direction resumes.
     elif cur_run == 1 and prev_run >= 3:
         if prev_run >= 5:
-            eoe_conf = 0.68
-        elif prev_run == 4:
             eoe_conf = 0.65
-        else:  # prev_run == 3
+        elif prev_run == 4:
             eoe_conf = 0.62
+        else:  # prev_run == 3
+            eoe_conf = 0.58
         p_odd = eoe_conf if prev_val == 'ODD' else (1.0 - eoe_conf)
         applied_rule = 'rule6_eoe_return'
 
@@ -872,15 +890,19 @@ def predict_new(oe_arr, idx):
         p_odd       = kt_conf if pred_odd_kt else (1.0 - kt_conf)
         applied_rule = f'rule11_{known_tile_info["pattern_name"]}'
 
-    # Rule 4: No confirmed pattern → blend dominant direction with XGBoost
-    elif o8 != e8:
-        dom_p = 0.72 if o8 > e8 else 0.28
-        p_odd = 0.35 * dom_p + 0.65 * p_xgb
-        applied_rule = 'rule4_dom_blend'
-
+    # Rule 4: No confirmed pattern → pure XGBoost.
+    # Analysis of 15985 rounds: 8-round window majority gives exactly 50.0% accuracy.
+    # Removed dom_p component — it adds noise, not signal.
     # else: pure XGBoost (rule = 'xgb')
 
     p_odd = max(0.05, min(0.95, p_odd))
+
+    # When no structural pattern was detected (xgb or rule4 fallback) and XGBoost is
+    # very uncertain (within ±5% of 50%), apply a slight EVEN bias.
+    # Basis: EVEN is 50.1% of all rounds; in uncertain conditions defaulting EVEN
+    # avoids the over-aggressive ODD signals that caused 30% ODD precision.
+    if applied_rule in ('xgb', 'rule4_dom_blend') and abs(p_odd - 0.5) < 0.05:
+        p_odd = 0.47
 
     # Rule 5: Hard streak breaker (5+ consecutive losses → flip)
     if _cur_loss_streak >= 5:
