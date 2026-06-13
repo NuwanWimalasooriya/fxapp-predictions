@@ -139,12 +139,14 @@
 
 <div class="tabs">
   <div class="tab active" id="tab-new"  onclick="switchTab('new')">3MDiscs-Hot</div>
+  <div class="tab" id="tab-ds1m" onclick="switchTab('ds1m')">1MDiscs-Hot</div>
   <div class="tab" id="tab-cg"   onclick="switchTab('cg')">3MRedGreen</div>
 </div>
 
 <div id="root" style="display:none"></div>
 <div id="new-panel"></div>
-<div id="cg-panel"  style="display:none"></div>
+<div id="ds1m-panel" style="display:none"></div>
+<div id="cg-panel"   style="display:none"></div>
 
 <script>
 async function load() {
@@ -576,15 +578,16 @@ function render(p, stats = {}, cfg = {}) {
 // Poll /api/status every 10 s.
 // Old model: refresh when snapshot mtime changes (new prediction written).
 // New model: refresh only when last_id_new changes (new round actually arrived, ~3 min cycle).
-let _lastMtime = 0, _lastIdNew = 0, _lastMtimeCg = 0;
+let _lastMtime = 0, _lastIdNew = 0, _lastMtimeCg = 0, _lastIdDs1m = 0;
 async function pollStatus() {
   try {
     const res = await fetch('/api/status');
     if (!res.ok) return;
     const data = await res.json();
-    const mtime    = data.mtime       ?? 0;
-    const idNew    = data.last_id_new ?? 0;
-    const mtimeCg  = data.mtime_cg    ?? 0;
+    const mtime      = data.mtime        ?? 0;
+    const idNew      = data.last_id_new  ?? 0;
+    const mtimeCg    = data.mtime_cg     ?? 0;
+    const idDs1m     = data.last_id_ds1m ?? 0;
 
     if (mtime !== _lastMtime) {
       _lastMtime = mtime;
@@ -598,17 +601,24 @@ async function pollStatus() {
       _lastMtimeCg = mtimeCg;
       if (document.getElementById('cg-panel').style.display !== 'none') { _cg.page = 1; loadColorGame(); }
     }
+    if (idDs1m !== 0 && idDs1m !== _lastIdDs1m) {
+      _lastIdDs1m = idDs1m;
+      if (document.getElementById('ds1m-panel').style.display !== 'none') { _ds1m.page = 1; loadDs1m(); }
+    }
   } catch(e) {}
 }
 
 // ── Tab switching ─────────────────────────────────────────────────────────────
 function switchTab(tab) {
-  document.getElementById('tab-new').classList.toggle('active', tab === 'new');
-  document.getElementById('tab-cg').classList.toggle('active',  tab === 'cg');
-  document.getElementById('new-panel').style.display = tab === 'new' ? '' : 'none';
-  document.getElementById('cg-panel').style.display  = tab === 'cg'  ? '' : 'none';
-  if (tab === 'new') loadNewModel();
-  if (tab === 'cg')  loadColorGame();
+  document.getElementById('tab-new').classList.toggle('active',  tab === 'new');
+  document.getElementById('tab-ds1m').classList.toggle('active', tab === 'ds1m');
+  document.getElementById('tab-cg').classList.toggle('active',   tab === 'cg');
+  document.getElementById('new-panel').style.display  = tab === 'new'  ? '' : 'none';
+  document.getElementById('ds1m-panel').style.display = tab === 'ds1m' ? '' : 'none';
+  document.getElementById('cg-panel').style.display   = tab === 'cg'   ? '' : 'none';
+  if (tab === 'new')  loadNewModel();
+  if (tab === 'ds1m') loadDs1m();
+  if (tab === 'cg')   loadColorGame();
 }
 
 // ── New model pagination state ─────────────────────────────────────────────────
@@ -619,6 +629,32 @@ let _newFirstPredId = null;
 loadNewModel();
 loadConfig();
 setInterval(pollStatus, 10000);
+
+// ── Countdown timers ──────────────────────────────────────────────────────────
+function _secsUntilNext(intervalSecs, fetchSecond) {
+  const now = Date.now() / 1000;
+  const slot = Math.floor(now / intervalSecs) * intervalSecs;
+  let next = slot + intervalSecs + fetchSecond;
+  if (next - now < 2) next += intervalSecs;
+  return Math.max(0, Math.round(next - now));
+}
+function _fmtCountdown(secs) {
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return m > 0 ? `${m}:${String(s).padStart(2,'0')}` : `${s}s`;
+}
+function tickTimers() {
+  const t3 = _secsUntilNext(180, 5);
+  const t1 = _secsUntilNext(60, 5);
+  const elNew  = document.getElementById('timer-new');
+  const elDs1m = document.getElementById('timer-ds1m');
+  const elCg   = document.getElementById('timer-cg');
+  if (elNew)  elNew.textContent  = _fmtCountdown(t3);
+  if (elDs1m) elDs1m.textContent = _fmtCountdown(t1);
+  if (elCg)   elCg.textContent   = _fmtCountdown(t3);
+}
+setInterval(tickTimers, 1000);
+tickTimers();
 
 function goNewPage(p)       { _newDb.page = p; loadNewModelData(); }
 function onNewSizeChange(v) { _newDb.size = parseInt(v); _newDb.page = 1; loadNewModelData(); }
@@ -860,6 +896,7 @@ function renderNewModel(p, paged, stats) {
           ${dirLbl} ${pct(isOdd ? p_odd : p_even)}
         </div>
         <div class="bet-round" style="margin-top:6px">Round ${p.next_round_id}${streakBadge}${ruleBadge}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">Next: <span id="timer-new" style="font-weight:700;font-size:12px;color:#00ffcc;text-shadow:0 0 8px #00ffcc,0 0 16px #00ffcc88">—</span></div>
       </div>
       <div class="divider"></div>
       <div>
@@ -1029,6 +1066,226 @@ function renderNewModel(p, paged, stats) {
   renderNewModelData(paged);
 }
 
+// ── DS1M (1-Minute Discs) tab ──────────────────────────────────────────────────
+let _ds1m = { page: 1, size: 50, search: '' };
+let _ds1mSearchTimer = null;
+let _ds1mFirstPredId = null;
+
+async function loadDs1m() {
+  const panel = document.getElementById('ds1m-panel');
+  panel.innerHTML = '<p style="padding:20px;color:var(--muted)">Loading DS1M data…</p>';
+  try {
+    const [predRes, dataRes, statsRes] = await Promise.all([
+      fetch('/api/ds1m/prediction'),
+      fetch(`/api/ds1m/data?page=${_ds1m.page}&size=${_ds1m.size}&search=${encodeURIComponent(_ds1m.search)}`),
+      fetch('/api/ds1m/stats'),
+    ]);
+    if (!predRes.ok) {
+      const err = predRes.ok ? {} : await predRes.json().catch(() => ({}));
+      panel.innerHTML = `<p class="error-msg" style="padding:20px">${err.error || 'No DS1M data yet. Run predict_ds1m.py first.'}</p>`;
+      return;
+    }
+    const p     = await predRes.json();
+    const paged = dataRes.ok  ? await dataRes.json().catch(() => ({rows:[],total:0,page:1,pages:1})) : {rows:[],total:0,page:1,pages:1};
+    const stats = statsRes.ok ? await statsRes.json().catch(() => ({})) : {};
+    renderDs1m(p, paged, stats);
+  } catch(e) {
+    panel.innerHTML = `<p class="error-msg" style="padding:20px">Error loading DS1M: ${e.message}</p>`;
+  }
+}
+
+async function loadDs1mData() {
+  const res = await fetch(`/api/ds1m/data?page=${_ds1m.page}&size=${_ds1m.size}&search=${encodeURIComponent(_ds1m.search)}`);
+  if (!res.ok) return;
+  renderDs1mData(await res.json());
+}
+
+function onDs1mSearch(val) {
+  _ds1m.search = val; _ds1m.page = 1;
+  clearTimeout(_ds1mSearchTimer);
+  _ds1mSearchTimer = setTimeout(loadDs1mData, 300);
+}
+
+function onDs1mSizeChange(val) { _ds1m.size = +val; _ds1m.page = 1; loadDs1mData(); }
+
+function renderDs1mData(paged) {
+  const body  = document.getElementById('ds1m-hist-body');
+  const info  = document.getElementById('ds1m-hist-info');
+  const pager = document.getElementById('ds1m-hist-pager');
+  if (!body) return;
+  _ds1m.page = paged.page;
+  if (info) info.textContent = `${paged.total} records`;
+  const wrC = wr => wr == null ? '' : wr >= 0.65 ? 'color:#22c55e' : wr >= 0.53 ? 'color:var(--green)' : wr >= 0.47 ? 'color:var(--yellow)' : 'color:var(--red)';
+  const tableRows = (paged.rows || []).map(r => {
+    const isFirst = _ds1mFirstPredId && r.round_id == _ds1mFirstPredId;
+    const wr = r.signals?.wr_at_pred;
+    const isBet  = r.confidence >= 0.65;
+    const betLbl = isBet ? `<span style="color:var(--green);font-weight:700">BET</span>` : `<span style="color:var(--muted)">-</span>`;
+    const resCol = r.result === 'WIN' ? 'color:var(--green)' : r.result === 'LOSS' ? 'color:var(--red)' : 'color:var(--muted)';
+    const oeCol  = r.pred_oe === 'ODD' ? 'color:var(--yellow)' : 'color:var(--accent)';
+    const isRRRR = r.actual === 'RRRR';
+    const isWWWW = r.actual === 'WWWW';
+    const rowStyle = isFirst
+      ? 'border-top:2px solid var(--accent);' : '';
+    const rowBg = isRRRR
+      ? 'background:rgba(239,68,68,0.12);'
+      : isWWWW ? 'background:rgba(148,163,184,0.12);' : '';
+    return `<tr style="${rowBg}${rowStyle}">
+      <td style="font-size:11px;color:var(--muted)">${r.round_id}${isRRRR ? ' <span style="color:#ef4444;font-size:10px;font-weight:700">RRRR</span>' : isWWWW ? ' <span style="color:#94a3b8;font-size:10px;font-weight:700">WWWW</span>' : ''}</td>
+      <td style="${wr!=null?wrC(wr):''}">${wr!=null?(wr*100).toFixed(0)+'%':'—'}</td>
+      <td>${betLbl}</td>
+      <td>${miniDiscs(r.actual)}</td>
+      <td style="font-weight:700;${oeCol}">${r.pred_oe||'—'}</td>
+      <td style="color:${r.oe==='ODD'?'var(--yellow)':'var(--accent)'}">${r.oe||'—'}</td>
+      <td style="font-weight:600;${resCol}">${r.result||'—'}</td>
+    </tr>`;
+  }).join('');
+  body.innerHTML = tableRows || '<tr><td colspan="7" style="color:var(--muted);padding:12px">No records found</td></tr>';
+  if (pager) {
+    const btns = [];
+    if (paged.page > 1) btns.push(`<button onclick="_ds1m.page=${paged.page-1};loadDs1mData()">&#8592;</button>`);
+    btns.push(`<span style="padding:0 8px;font-size:12px">${paged.page}/${paged.pages}</span>`);
+    if (paged.page < paged.pages) btns.push(`<button onclick="_ds1m.page=${paged.page+1};loadDs1mData()">&#8594;</button>`);
+    pager.innerHTML = btns.join('');
+  }
+}
+
+function renderDs1m(p, paged, stats) {
+  _ds1mFirstPredId = p.first_pred_id ?? null;
+  const sigs   = p.signals || {};
+  const isOdd  = p.pred_oe === 'ODD';
+  const conf   = p.confidence ?? 0;
+  const p_odd  = p.p_oe_odd ?? (isOdd ? conf : 1 - conf);
+  const p_even = 1 - p_odd;
+  const streak = p.loss_streak ?? 0;
+  const isBet  = conf >= 0.65;
+  const s1     = stats.last100 || {};
+  const s2     = stats.last200 || {};
+  const dirLbl = isOdd ? 'ODD' : 'EVEN';
+
+  const wrColor = wr => wr == null ? 'var(--muted)' : wr >= 0.65 ? '#22c55e' : wr >= 0.53 ? 'var(--green)' : wr >= 0.47 ? 'var(--yellow)' : 'var(--red)';
+  const streakBadge = streak >= 3 ? `<span class="streak-badge">STREAK-${streak}</span>` : '';
+  const ruleDisplay = sigs.rule && sigs.rule.startsWith('rule7_')
+    ? `${sigs.cycle_pattern ?? sigs.rule} p${sigs.cycle_period}×${sigs.cycle_cycles}`
+    : (sigs.rule || '');
+  const ruleBadge = ruleDisplay
+    ? `<span class="mode-badge" style="font-size:10px">${ruleDisplay}</span>` : '';
+
+  document.getElementById('ds1m-panel').innerHTML = `
+  <div class="grid" style="align-items:start">
+
+    <!-- BET BANNER -->
+    <div class="bet-banner ${isBet ? 'yes' : 'no'}" style="padding:7px 12px">
+      <div>
+        <div class="bet-label ${isBet ? 'yes' : 'no'}" style="font-size:24px">${isBet ? 'BET' : 'NO BET'}</div>
+        <div class="bet-conf" style="margin-top:2px">
+          ${isBet
+            ? `Model conf <strong style="color:var(--green)">${pct(conf)}</strong> ≥ 65% threshold`
+            : `Model conf <strong style="color:#64748b">${pct(conf)}</strong> below 65% — skip this round`}
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div>
+        <div class="bet-direction ${isBet ? (dirLbl==='ODD'?'odd':'even') : ''}"
+             style="${isBet ? 'font-size:18px' : 'color:#475569;font-size:18px'}">
+          ${dirLbl} ${pct(isOdd ? p_odd : p_even)}
+        </div>
+        <div class="bet-round" style="margin-top:4px">Round ${p.next_round_id}${streakBadge}${ruleBadge}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px">Next: <span id="timer-ds1m" style="font-weight:700;font-size:12px;color:#00ffcc;text-shadow:0 0 8px #00ffcc,0 0 16px #00ffcc88">—</span></div>
+      </div>
+      <div class="divider"></div>
+      <div>
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">XGBoost signal</div>
+        <div style="font-size:14px;font-weight:700;color:${sigs.xgb > 0.5 ? '#a78bfa' : '#60a5fa'}">${sigs.xgb != null ? (sigs.xgb > 0.5 ? 'ODD ' + pct(sigs.xgb) : 'EVEN ' + pct(1-sigs.xgb)) : '—'}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">raw ML signal</div>
+      </div>
+      <div class="divider"></div>
+      <div>
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Run state</div>
+        <div style="font-size:13px;font-weight:700">${sigs.cur_val || '—'} × ${sigs.cur_run ?? '—'}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">prev: ${sigs.prev_run ?? '—'} · alt: ${sigs.alt_run ?? '—'}</div>
+      </div>
+      <div class="divider"></div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Last round ${p.last_id}</div>
+        ${discDots(p.last_discs)}
+        <div style="margin-top:4px;color:var(--muted);font-size:12px">${p.last_oe}</div>
+      </div>
+    </div>
+
+    <!-- WIN RATE TILE -->
+    <div class="card">
+      <h2>Win Rate — 1M</h2>
+      ${(() => {
+        const wrC = wr => wr == null ? 'var(--muted)' : wr >= 0.65 ? '#22c55e' : wr >= 0.53 ? 'var(--green)' : wr >= 0.47 ? 'var(--yellow)' : 'var(--red)';
+        const cell = (label, wr, n, wins) => `
+          <div style="margin-bottom:6px">
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px">${label}</div>
+            <div style="font-size:17px;font-weight:700;color:${wrC(wr)}">${wr != null ? (wr*100).toFixed(1)+'%' : '—'}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:1px">${n != null ? `${wins != null ? wins+'W · ' : ''}n=${n}` : 'no data'}</div>
+          </div>`;
+        return `
+          ${cell('Last 100', s1.wr, s1.n, s1.win)}
+          ${cell('Last 200', s2.wr, s2.n, s2.win)}
+          <div style="border-top:1px solid var(--border);padding-top:6px;margin-top:4px">
+            <div class="row"><span class="key">Total scored</span><span class="val">${stats.total_predicted ?? '—'} rounds</span></div>
+            <div class="row"><span class="key">Target</span><span class="val" style="color:#3b82f6;font-weight:700">65%</span></div>
+          </div>`;
+      })()}
+    </div>
+
+    <!-- ODD / EVEN TILE -->
+    <div class="card">
+      <h2>ODD / EVEN — 1M</h2>
+      <div style="display:flex;gap:16px;margin-bottom:6px">
+        <div>
+          <div class="big odd" style="font-size:22px">${fmt(p_odd)}<span style="font-size:14px">%</span></div>
+          <div class="label">ODD</div>
+        </div>
+        <div>
+          <div class="big even" style="font-size:22px">${fmt(p_even)}<span style="font-size:14px">%</span></div>
+          <div class="label">EVEN</div>
+        </div>
+      </div>
+      <div style="border-top:1px solid var(--border);margin-top:5px;padding-top:5px">
+        <div class="row"><span class="key">Current run</span><span class="val">${sigs.cur_val || '—'} × ${sigs.cur_run ?? '—'}</span></div>
+        <div class="row"><span class="key">Previous run</span><span class="val">${sigs.prev_run ?? '—'} rounds</span></div>
+        <div class="row"><span class="key">Alt run</span><span class="val">${sigs.alt_run ?? '—'}</span></div>
+        <div class="row"><span class="key">Applied rule</span><span class="val" style="font-size:11px;color:var(--muted)">${sigs.rule || '—'}</span></div>
+        <div class="row"><span class="key">Loss streak</span>
+          <span class="val" style="color:${streak >= 5 ? 'var(--red)' : streak >= 3 ? 'var(--yellow)' : 'var(--green)'}">${streak}</span></div>
+      </div>
+    </div>
+
+    <!-- HISTORY TABLE (full width) -->
+    <div class="card" style="grid-column:1/-1">
+      <h2>All rounds — 1M Model</h2>
+      <div class="data-toolbar" style="padding:0 0 8px">
+        <input id="ds1m-search-input" type="text" placeholder="Search round ID, ODD/EVEN, WIN/LOSS…"
+               oninput="onDs1mSearch(this.value)">
+        <select onchange="onDs1mSizeChange(this.value)">
+          ${[25,50,100,200].map(n=>`<option value="${n}" ${n===_ds1m.size?'selected':''}>${n} / page</option>`).join('')}
+        </select>
+        <span id="ds1m-hist-info" style="font-size:11px;color:var(--muted);margin-left:auto"></span>
+      </div>
+      <table>
+        <colgroup>
+          <col style="width:24%"><col style="width:7%"><col style="width:7%">
+          <col style="width:18%"><col style="width:18%"><col style="width:14%"><col style="width:12%">
+        </colgroup>
+        <thead><tr>
+          <th>Round</th><th>WR</th><th>Bet</th>
+          <th>Actual discs</th><th>Pred OE</th><th>Actual OE</th><th>Result</th>
+        </tr></thead>
+        <tbody id="ds1m-hist-body"><tr><td colspan="7" style="color:var(--muted);padding:12px">Loading…</td></tr></tbody>
+      </table>
+      <div class="pagination" id="ds1m-hist-pager"></div>
+    </div>
+
+  </div>`;
+  renderDs1mData(paged);
+}
+
 // ── Color Game tab ─────────────────────────────────────────────────────────────
 let _cg = { page: 1, size: 50, search: '', sort: 'id', dir: 'desc' };
 
@@ -1187,6 +1444,7 @@ function renderColorGame(snap, stats, paged) {
           ${pnum!=null?pnum:'?'}
         </div>
         <div class="bet-round" style="margin-top:4px">Round ${snap.next_id??'—'}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">Next: <span id="timer-cg" style="font-weight:700;font-size:12px;color:#00ffcc;text-shadow:0 0 8px #00ffcc,0 0 16px #00ffcc88">—</span></div>
       </div>
       <div class="divider"></div>
       <div>

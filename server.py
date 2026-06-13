@@ -36,6 +36,10 @@ DB_NEW_PATH    = os.path.join(_DATA_DIR, 'ds3m_new.db')
 SNAP_CG_PATH   = os.path.join(_DATA_DIR, 'latest_prediction_cg.json')
 LOG_CG_PATH    = os.path.join(_DATA_DIR, 'pred_log_cg.json')
 DB_CG_PATH     = os.path.join(_DATA_DIR, _env.get('DB_FILE2', 'rg3m.db'))
+# DS1M (1-minute) paths
+SNAP_DS1M_PATH = os.path.join(_DATA_DIR, 'latest_prediction_ds1m.json')
+LOG_DS1M_PATH  = os.path.join(_DATA_DIR, 'pred_log_ds1m.json')
+DB_DS1M_PATH   = os.path.join(_DATA_DIR, _env.get('DB_FILE_DS1M', 'ds1m.db'))
 
 app = Flask(__name__, static_folder=os.path.join(_BASE, 'static'))
 app.secret_key = _env.get('SECRET_KEY') or secrets.token_hex(32)
@@ -78,8 +82,9 @@ def _load_credentials():
     except Exception:
         return None
 
-_predict_lock     = threading.Lock()
-_predict_new_lock = threading.Lock()
+_predict_lock      = threading.Lock()
+_predict_new_lock  = threading.Lock()
+_predict_ds1m_lock = threading.Lock()
 
 def _run_predict():
     predict_py = os.path.join(_BASE, 'predict.py')
@@ -96,6 +101,14 @@ def _run_predict_new():
             subprocess.run([sys.executable, predict_new_py], capture_output=True)
         finally:
             _predict_new_lock.release()
+
+def _run_predict_ds1m():
+    predict_ds1m_py = os.path.join(_BASE, 'predict_ds1m.py')
+    if _predict_ds1m_lock.acquire(blocking=False):
+        try:
+            subprocess.run([sys.executable, predict_ds1m_py], capture_output=True)
+        finally:
+            _predict_ds1m_lock.release()
 
 # ── auth guard ─────────────────────────────────────────────────────────────────
 
@@ -242,11 +255,16 @@ def api_status():
     if snap_new:
         last_id_new = snap_new.get('last_id', 0) or 0
     mtime_cg    = os.path.getmtime(SNAP_CG_PATH) if os.path.exists(SNAP_CG_PATH) else 0
+    last_id_ds1m = 0
+    snap_ds1m = _load_json(SNAP_DS1M_PATH)
+    if snap_ds1m:
+        last_id_ds1m = snap_ds1m.get('last_id', 0) or 0
     return _no_cache(jsonify({
-        'mtime':       mtime,
-        'mtime_new':   mtime_new,
-        'last_id_new': last_id_new,
-        'mtime_cg':    mtime_cg,
+        'mtime':        mtime,
+        'mtime_new':    mtime_new,
+        'last_id_new':  last_id_new,
+        'mtime_cg':     mtime_cg,
+        'last_id_ds1m': last_id_ds1m,
     }))
 
 @app.route('/api/data')
@@ -364,8 +382,9 @@ def api_config_set():
 
 @app.route('/api/refresh', methods=['POST'])
 def api_refresh():
-    threading.Thread(target=_run_predict,     daemon=True).start()
-    threading.Thread(target=_run_predict_new, daemon=True).start()
+    threading.Thread(target=_run_predict,      daemon=True).start()
+    threading.Thread(target=_run_predict_new,  daemon=True).start()
+    threading.Thread(target=_run_predict_ds1m, daemon=True).start()
     return jsonify({'status': 'running'})
 
 @app.route('/api/new/prediction')
@@ -488,6 +507,92 @@ def api_new_stats():
         'last100': {'win': w100, 'n': n100, 'wr': round(w100 / n100, 4) if n100 else None},
         'last200': {'win': w200, 'n': n200, 'wr': round(w200 / n200, 4) if n200 else None},
         'bet_only': {'win': 0, 'n': 0, 'wr': None},
+    }))
+
+# ── DS1M API ───────────────────────────────────────────────────────────────────
+
+@app.route('/api/ds1m/prediction')
+def api_ds1m_prediction():
+    snap = _load_json(SNAP_DS1M_PATH)
+    if snap is None:
+        return jsonify({'error': 'No DS1M data yet. Run predict_ds1m.py first.'}), 404
+    return _no_cache(jsonify(snap))
+
+@app.route('/api/ds1m/data')
+def api_ds1m_data():
+    page      = max(1, int(request.args.get('page', 1)))
+    page_size = min(200, max(10, int(request.args.get('size', 50))))
+    search    = request.args.get('search', '').strip()
+    if not os.path.exists(DB_DS1M_PATH):
+        return _no_cache(jsonify({'total': 0, 'page': 1, 'pages': 1, 'rows': []}))
+    try:
+        conn = sqlite3.connect(DB_DS1M_PATH, timeout=5)
+        conn.execute('PRAGMA journal_mode=WAL')
+        base   = "pred_oe != ''"
+        params = []
+        if search:
+            s_up = search.upper()
+            if s_up == 'BET':
+                base += " AND confidence >= 0.65"
+            elif s_up == 'SKIP':
+                base += " AND confidence >= 0.60 AND confidence < 0.65"
+            elif s_up == 'AVOID':
+                base += " AND confidence > 0 AND confidence < 0.60"
+            else:
+                base += (" AND (CAST(id AS TEXT) LIKE ? OR pred_oe LIKE ?"
+                         " OR oe LIKE ? OR result LIKE ?)")
+                params = [f'%{search}%'] * 4
+        total  = conn.execute(f"SELECT COUNT(*) FROM rounds WHERE {base}", params).fetchone()[0]
+        offset = (page - 1) * page_size
+        rows   = conn.execute(
+            f"SELECT id, pred_oe, confidence, disc1||disc2||disc3||disc4, oe, result "
+            f"FROM rounds WHERE {base} ORDER BY id DESC LIMIT ? OFFSET ?",
+            params + [page_size, offset]
+        ).fetchall()
+        conn.close()
+    except Exception as e:
+        return _no_cache(jsonify({'error': str(e)})), 500
+    pages   = max(1, (total + page_size - 1) // page_size)
+    log     = _load_json(LOG_DS1M_PATH) or {}
+    entries = []
+    for r in rows:
+        e = {'round_id': str(r[0]), 'pred_oe': r[1], 'confidence': r[2],
+             'actual': r[3], 'oe': r[4], 'result': r[5]}
+        le = log.get(str(r[0]))
+        if le:
+            e['signals'] = le.get('signals', {})
+        entries.append(e)
+    return _no_cache(jsonify({'total': total, 'page': page, 'pages': pages, 'rows': entries}))
+
+@app.route('/api/ds1m/stats')
+def api_ds1m_stats():
+    if not os.path.exists(DB_DS1M_PATH):
+        return _no_cache(jsonify({}))
+    try:
+        conn = sqlite3.connect(DB_DS1M_PATH, timeout=5)
+        conn.execute('PRAGMA journal_mode=WAL')
+        total_pred = conn.execute(
+            "SELECT COUNT(*) FROM rounds WHERE pred_oe != '' AND result IN ('WIN','LOSS')"
+        ).fetchone()[0]
+        last100 = conn.execute(
+            "SELECT result FROM rounds WHERE pred_oe != '' AND result IN ('WIN','LOSS') "
+            "ORDER BY id DESC LIMIT 100"
+        ).fetchall()
+        w100 = sum(1 for r in last100 if r[0] == 'WIN')
+        n100 = len(last100)
+        last200 = conn.execute(
+            "SELECT result FROM rounds WHERE pred_oe != '' AND result IN ('WIN','LOSS') "
+            "ORDER BY id DESC LIMIT 200"
+        ).fetchall()
+        w200 = sum(1 for r in last200 if r[0] == 'WIN')
+        n200 = len(last200)
+        conn.close()
+    except Exception as e:
+        return _no_cache(jsonify({'error': str(e)})), 500
+    return _no_cache(jsonify({
+        'total_predicted': total_pred,
+        'last100': {'win': w100, 'n': n100, 'wr': round(w100 / n100, 4) if n100 else None},
+        'last200': {'win': w200, 'n': n200, 'wr': round(w200 / n200, 4) if n200 else None},
     }))
 
 # ── Color Game API ─────────────────────────────────────────────────────────────

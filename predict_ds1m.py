@@ -1,7 +1,7 @@
 """
-DS3M New Prediction Engine — XGBoost + Domain Rules
-Separate from predict.py for comparison purposes.
-Reads historical data from ds3m.db (read-only), writes to ds3m_new.db / pred_log_new.json.
+DS1M Prediction Engine — XGBoost + Domain Rules
+
+Reads and writes to ds1m.db / pred_log_ds1m.json.
 
 Domain rules (6):
   1. Long block (run >= 4) → lock current direction
@@ -25,13 +25,13 @@ warnings.filterwarnings('ignore')
 _BASE     = os.path.dirname(os.path.abspath(__file__))
 _DATA_DIR = os.path.join(_BASE, 'data')
 
-DB_SRC_PATH    = os.path.join(_DATA_DIR, 'ds3m.db')
-DB_NEW_PATH    = os.path.join(_DATA_DIR, 'ds3m_new.db')
-CSV_NEW_PATH   = os.path.join(_DATA_DIR, '3min-discs-new.csv')
-LOG_NEW_PATH   = os.path.join(_DATA_DIR, 'pred_log_new.json')
-SNAP_NEW_PATH  = os.path.join(_DATA_DIR, 'latest_prediction_new.json')
-XGB_MODEL_PATH = os.path.join(_DATA_DIR, 'xgb_model_new.pkl')
-XGB_META_PATH  = os.path.join(_DATA_DIR, 'xgb_meta_new.json')
+DB_SRC_PATH    = os.path.join(_DATA_DIR, 'ds1m.db')
+DB_NEW_PATH    = os.path.join(_DATA_DIR, 'ds1m.db')
+CSV_NEW_PATH   = os.path.join(_DATA_DIR, '1min-discs.csv')
+LOG_NEW_PATH   = os.path.join(_DATA_DIR, 'pred_log_ds1m.json')
+SNAP_NEW_PATH  = os.path.join(_DATA_DIR, 'latest_prediction_ds1m.json')
+XGB_MODEL_PATH = os.path.join(_DATA_DIR, 'xgb_model_ds1m.pkl')
+XGB_META_PATH  = os.path.join(_DATA_DIR, 'xgb_meta_ds1m.json')
 
 RETRAIN_EVERY = 50
 
@@ -612,13 +612,13 @@ def _train():
     joblib.dump(model, XGB_MODEL_PATH)
     with open(XGB_META_PATH, 'w') as f:
         json.dump({'trained_on': n_rows, 'n_samples': len(X)}, f)
-    print(f'  XGBoost (new) trained on {len(X)} samples', flush=True)
+    print(f'  XGBoost (DS1M) trained on {len(X)} samples', flush=True)
     return model
 
 
 xgb_model = None
 if _need_retrain():
-    print('  Training XGBoost (new)...', flush=True)
+    print('  Training XGBoost (DS1M)...', flush=True)
     xgb_model = _train()
 else:
     if os.path.exists(XGB_MODEL_PATH):
@@ -699,7 +699,7 @@ _cur_loss_streak = _loss_streak(log_new)
 
 
 # ── Main predict function ───────────────────────────────────────────────────────
-def predict_new(oe_arr, idx):
+def predict_ds1m(oe_arr, idx):
     """
     Predict ODD/EVEN for position idx+1.
     Returns (pred_oe, p_odd, signal_info).
@@ -904,21 +904,10 @@ def predict_new(oe_arr, idx):
     if applied_rule in ('xgb', 'rule4_dom_blend') and abs(p_odd - 0.5) < 0.05:
         p_odd = 0.47
 
-    # Regime bias: if last 15 rounds are heavily skewed (>72% one side),
-    # apply a gentle pull (max 0.04) toward the dominant outcome.
-    # Only when prediction confidence is low (<0.62) to avoid overriding
-    # strong structural signals. Helps adapt to OE regime shifts.
-    _recent15 = arr[max(0, idx - 14):idx]
-    if len(_recent15) >= 8:
-        _e_ratio = sum(1 for x in _recent15 if x == 'EVEN') / len(_recent15)
-        _conf_now = max(p_odd, 1.0 - p_odd)
-        if _conf_now < 0.62:
-            if _e_ratio >= 0.72:
-                _pull = min(0.04, (_e_ratio - 0.62) * 0.20)
-                p_odd = max(0.05, p_odd - _pull)
-            elif _e_ratio <= 0.28:
-                _pull = min(0.04, (0.38 - _e_ratio) * 0.20)
-                p_odd = min(0.95, p_odd + _pull)
+    # Rule 5: Hard streak breaker (5+ consecutive losses → flip)
+    if _cur_loss_streak >= 5:
+        p_odd = 1.0 - p_odd
+        applied_rule += '+streak_flip'
 
     p_odd = max(0.05, min(0.95, p_odd))
 
@@ -953,7 +942,7 @@ def predict_new(oe_arr, idx):
 
 # ── Gap-fill: ensure every round in the last 300 has a prediction ───────────────
 # Range includes n_rows-1 (last record) so the most recent round always gets pred_oe.
-# Uses context up to _bi-1 (predict_new(oe_list, _bi-1)) to predict round _bi — no future leak.
+# Uses context up to _bi-1 (predict_ds1m(oe_list, _bi-1)) to predict round _bi — no future leak.
 _GF_WINDOW = 300
 _gf_start  = max(11, n_rows - _GF_WINDOW)
 _missing   = [
@@ -965,7 +954,7 @@ if _missing:
     print(f'  Filling {len(_missing)} missing predictions (last {_GF_WINDOW} rounds)…', flush=True)
     for _bi in _missing:
         _rid_b = str(int(df.iloc[_bi]['id']))
-        _pe_b, _pp_b, _si_b = predict_new(oe_list, _bi - 1)
+        _pe_b, _pp_b, _si_b = predict_ds1m(oe_list, _bi - 1)
         if _pe_b is None:
             continue
         _conf_b = max(_pp_b, 1.0 - _pp_b)
@@ -992,7 +981,7 @@ _cur_loss_streak = _loss_streak(log_new)
 
 # ── Run prediction ──────────────────────────────────────────────────────────────
 sig_idx  = len(oe_list) - 1
-pred_oe, p_odd, sinfo = predict_new(oe_list, sig_idx)
+pred_oe, p_odd, sinfo = predict_ds1m(oe_list, sig_idx)
 conf     = max(p_odd, 1.0 - p_odd)
 next_rid = last_id + 1
 
@@ -1021,27 +1010,9 @@ if _log_changed:
 # ── Update new DB + CSV ─────────────────────────────────────────────────────────
 def _update_new_db():
     # Sync any new rounds from source DB
-    src  = _sqlite3.connect(DB_SRC_PATH, timeout=10)
-    src.execute('PRAGMA journal_mode=WAL')
-    src_rows = src.execute(
-        'SELECT id, disc1, disc2, disc3, disc4, '
-        'disc1||disc2||disc3||disc4 AS pattern, '
-        "(CASE WHEN (LENGTH(disc1||disc2||disc3||disc4) - LENGTH(REPLACE(disc1||disc2||disc3||disc4,'R',''))) % 2 = 1 "
-        "THEN 'ODD' ELSE 'EVEN' END) AS oe "
-        'FROM rounds ORDER BY id'
-    ).fetchall()
-    src.close()
-
+    # DS1M: source and destination are the same DB — no sync needed
     conn = _sqlite3.connect(DB_NEW_PATH, timeout=10)
     conn.execute('PRAGMA journal_mode=WAL')
-
-    existing = {r[0] for r in conn.execute('SELECT id FROM rounds').fetchall()}
-    new_rows = [r for r in src_rows if r[0] not in existing]
-    if new_rows:
-        conn.executemany(
-            'INSERT OR IGNORE INTO rounds(id,disc1,disc2,disc3,disc4,pattern,oe) VALUES(?,?,?,?,?,?,?)',
-            new_rows
-        )
 
     # Write predictions from log
     pred_updates = []
@@ -1167,7 +1138,7 @@ with open(_tmp, 'w') as f:
 os.replace(_tmp, SNAP_NEW_PATH)
 
 print(
-    f'  New model: Round {next_rid} → {pred_oe} '
+    f'  DS1M: Round {next_rid} → {pred_oe} '
     f'(conf={conf:.1%}, rule={sinfo["rule"]}, streak={_cur_loss_streak})',
     flush=True
 )

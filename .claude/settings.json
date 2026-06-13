@@ -1,7 +1,18 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python -c \"import predict; print\\('OK'\\)\")"
+      "Bash(python -c \"import predict; print\\('OK'\\)\")",
+      "Bash(python -c ' *)",
+      "Bash(python predict_ds1m.py)",
+      "Bash(python -c \"import server; print\\('server.py OK'\\)\")",
+      "Bash(python -c \"import server; print\\('OK'\\)\")",
+      "Bash(python -c \"import os; files = [f for f in os.listdir\\('.'\\) if f.endswith\\('.py'\\)]; print\\(files\\)\")",
+      "Bash(netstat -ano)",
+      "Bash(findstr \":5050\")",
+      "PowerShell(wmic process where \"ProcessId=52352 or ProcessId=25456\" get ProcessId,CommandLine 2>$null)",
+      "PowerShell(Get-CimInstance Win32_Process | Where-Object {$_.ProcessId -in @\\(52352,25456\\)} | Select-Object ProcessId,CommandLine | Format-List)",
+      "PowerShell(Get-CimInstance Win32_Process | Where-Object {$_.ProcessId -in @\\(52352, 25456\\)} | Select-Object ProcessId, CommandLine, ExecutablePath | Format-List)",
+      "Bash(python server.py)"
     ]
   }
 }
