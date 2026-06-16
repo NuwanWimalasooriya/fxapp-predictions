@@ -37,9 +37,13 @@ SNAP_CG_PATH   = os.path.join(_DATA_DIR, 'latest_prediction_cg.json')
 LOG_CG_PATH    = os.path.join(_DATA_DIR, 'pred_log_cg.json')
 DB_CG_PATH     = os.path.join(_DATA_DIR, _env.get('DB_FILE2', 'rg3m.db'))
 # DS1M (1-minute) paths
-SNAP_DS1M_PATH = os.path.join(_DATA_DIR, 'latest_prediction_ds1m.json')
-LOG_DS1M_PATH  = os.path.join(_DATA_DIR, 'pred_log_ds1m.json')
-DB_DS1M_PATH   = os.path.join(_DATA_DIR, _env.get('DB_FILE_DS1M', 'ds1m.db'))
+SNAP_DS1M_PATH  = os.path.join(_DATA_DIR, 'latest_prediction_ds1m.json')
+LOG_DS1M_PATH   = os.path.join(_DATA_DIR, 'pred_log_ds1m.json')
+DB_DS1M_PATH    = os.path.join(_DATA_DIR, _env.get('DB_FILE_DS1M', 'ds1m.db'))
+# FST1M (1-minute 4-Star Lottery) paths
+SNAP_FST1M_PATH = os.path.join(_DATA_DIR, 'latest_prediction_fst1m.json')
+LOG_FST1M_PATH  = os.path.join(_DATA_DIR, 'pred_log_fst1m.json')
+DB_FST1M_PATH   = os.path.join(_DATA_DIR, _env.get('DB_FILE_FST1M', 'fst1m.db'))
 
 app = Flask(__name__, static_folder=os.path.join(_BASE, 'static'))
 app.secret_key = _env.get('SECRET_KEY') or secrets.token_hex(32)
@@ -82,9 +86,10 @@ def _load_credentials():
     except Exception:
         return None
 
-_predict_lock      = threading.Lock()
-_predict_new_lock  = threading.Lock()
-_predict_ds1m_lock = threading.Lock()
+_predict_lock       = threading.Lock()
+_predict_new_lock   = threading.Lock()
+_predict_ds1m_lock  = threading.Lock()
+_predict_fst1m_lock = threading.Lock()
 
 def _run_predict():
     predict_py = os.path.join(_BASE, 'predict.py')
@@ -109,6 +114,14 @@ def _run_predict_ds1m():
             subprocess.run([sys.executable, predict_ds1m_py], capture_output=True)
         finally:
             _predict_ds1m_lock.release()
+
+def _run_predict_fst1m():
+    predict_fst1m_py = os.path.join(_BASE, 'predict_fst1m.py')
+    if _predict_fst1m_lock.acquire(blocking=False):
+        try:
+            subprocess.run([sys.executable, predict_fst1m_py], capture_output=True)
+        finally:
+            _predict_fst1m_lock.release()
 
 # ── auth guard ─────────────────────────────────────────────────────────────────
 
@@ -259,12 +272,17 @@ def api_status():
     snap_ds1m = _load_json(SNAP_DS1M_PATH)
     if snap_ds1m:
         last_id_ds1m = snap_ds1m.get('last_id', 0) or 0
+    last_id_fst1m = 0
+    snap_fst1m = _load_json(SNAP_FST1M_PATH)
+    if snap_fst1m:
+        last_id_fst1m = snap_fst1m.get('last_id', 0) or 0
     return _no_cache(jsonify({
-        'mtime':        mtime,
-        'mtime_new':    mtime_new,
-        'last_id_new':  last_id_new,
-        'mtime_cg':     mtime_cg,
-        'last_id_ds1m': last_id_ds1m,
+        'mtime':         mtime,
+        'mtime_new':     mtime_new,
+        'last_id_new':   last_id_new,
+        'mtime_cg':      mtime_cg,
+        'last_id_ds1m':  last_id_ds1m,
+        'last_id_fst1m': last_id_fst1m,
     }))
 
 @app.route('/api/data')
@@ -382,9 +400,10 @@ def api_config_set():
 
 @app.route('/api/refresh', methods=['POST'])
 def api_refresh():
-    threading.Thread(target=_run_predict,      daemon=True).start()
-    threading.Thread(target=_run_predict_new,  daemon=True).start()
-    threading.Thread(target=_run_predict_ds1m, daemon=True).start()
+    threading.Thread(target=_run_predict,       daemon=True).start()
+    threading.Thread(target=_run_predict_new,   daemon=True).start()
+    threading.Thread(target=_run_predict_ds1m,  daemon=True).start()
+    threading.Thread(target=_run_predict_fst1m, daemon=True).start()
     return jsonify({'status': 'running'})
 
 @app.route('/api/new/prediction')
@@ -703,6 +722,171 @@ def api_cg_stats():
         'last100':  {'win': w100, 'n': n100, 'wr': round(w100/n100, 4) if n100 else None},
         'last200':  {'win': w200, 'n': n200, 'wr': round(w200/n200, 4) if n200 else None},
         'bet_only': {'win': wb,   'n': nb,   'wr': round(wb/nb,   4) if nb   else None},
+    }))
+
+
+# ── FST1M API ──────────────────────────────────────────────────────────────────
+
+@app.route('/api/fst1m/prediction')
+def api_fst1m_prediction():
+    snap = _load_json(SNAP_FST1M_PATH)
+    if snap is None:
+        return jsonify({'error': 'No FST1M data yet. Run predict_fst1m.py first.'}), 404
+    # Augment with hot sums from last 30 completed rounds
+    try:
+        conn = sqlite3.connect(DB_FST1M_PATH, timeout=5)
+        rows = conn.execute(
+            'SELECT total FROM rounds ORDER BY id DESC LIMIT 30'
+        ).fetchall()
+        conn.close()
+        from collections import Counter
+        counts = Counter(r[0] for r in rows)
+        hot = sorted(counts.items(), key=lambda x: -x[1])[:5]
+        snap['hot_sums'] = [{'sum': s, 'count': c} for s, c in hot]
+    except Exception:
+        snap['hot_sums'] = []
+    return _no_cache(jsonify(snap))
+
+@app.route('/api/fst1m/data')
+def api_fst1m_data():
+    page      = max(1, int(request.args.get('page', 1)))
+    page_size = min(200, max(10, int(request.args.get('size', 50))))
+    search    = request.args.get('search', '').strip()
+    if not os.path.exists(DB_FST1M_PATH):
+        return _no_cache(jsonify({'total': 0, 'page': 1, 'pages': 1, 'rows': []}))
+    try:
+        conn = sqlite3.connect(DB_FST1M_PATH, timeout=5)
+        conn.execute('PRAGMA journal_mode=WAL')
+        # Safe column migration
+        existing = {r[1] for r in conn.execute('PRAGMA table_info(rounds)').fetchall()}
+        for col, defn in [('pred_oe','TEXT DEFAULT ""'), ('conf_oe','REAL DEFAULT 0'),
+                          ('result_oe','TEXT DEFAULT "Not Predicted"'), ('bet_oe','INTEGER DEFAULT 0'),
+                          ('pred_sum_val','INTEGER DEFAULT 0'), ('pred_sum_zone','TEXT DEFAULT ""'),
+                          ('pred_hot_sums','TEXT DEFAULT "[]"')]:
+            if col not in existing:
+                conn.execute(f'ALTER TABLE rounds ADD COLUMN {col} {defn}')
+        conn.commit()
+
+        base   = "1=1"
+        params = []
+        if search:
+            s_up = search.upper()
+            if s_up in ('BIG', 'SMALL'):
+                base += " AND big_small=?"; params.append(s_up)
+            elif s_up in ('ODD', 'EVEN'):
+                base += " AND odd_even=?"; params.append(s_up)
+            elif s_up in ('WIN', 'LOSS'):
+                base += " AND result=?"; params.append(s_up)
+            elif s_up == 'WIN-OE':
+                base += " AND result_oe='WIN'"
+            elif s_up == 'LOSS-OE':
+                base += " AND result_oe='LOSS'"
+            elif s_up == 'BET':
+                base += " AND bet=1"
+            elif s_up == 'BET-OE':
+                base += " AND bet_oe=1"
+            elif s_up == 'SKIP':
+                base += " AND confidence >= 0.55 AND bet=0"
+            elif s_up in ('LOW', 'MID', 'HIGH'):
+                base += " AND pred_sum_zone=?"; params.append(s_up)
+            else:
+                base += " AND CAST(id AS TEXT) LIKE ?"; params.append(f'%{search}%')
+
+        total  = conn.execute(f"SELECT COUNT(*) FROM rounds WHERE {base}", params).fetchone()[0]
+        offset = (page - 1) * page_size
+        rows   = conn.execute(
+            f"SELECT id,n1,n2,n3,n4,total,big_small,odd_even,"
+            f"result,pred_bs,confidence,bet,"
+            f"pred_oe,conf_oe,result_oe,bet_oe,pred_sum_val,pred_sum_zone,pred_hot_sums "
+            f"FROM rounds WHERE {base} ORDER BY id DESC LIMIT ? OFFSET ?",
+            params + [page_size, offset]
+        ).fetchall()
+        conn.close()
+    except Exception as e:
+        return _no_cache(jsonify({'error': str(e)})), 500
+
+    pages   = max(1, (total + page_size - 1) // page_size)
+    log     = _load_json(LOG_FST1M_PATH) or {}
+    import json as _json
+    entries = []
+    for r in rows:
+        db_hot_sums = []
+        try:
+            db_hot_sums = _json.loads(r[18] or "[]")
+        except Exception:
+            pass
+        e = {
+            'round_id':      str(r[0]),
+            'n1': r[1], 'n2': r[2], 'n3': r[3], 'n4': r[4],
+            'total':         r[5],
+            'big_small':     r[6],
+            'odd_even':      r[7],
+            'result':        r[8],
+            'pred_bs':       r[9],
+            'confidence':    r[10],
+            'bet':           r[11],
+            'pred_oe':       r[12] or '',
+            'conf_oe':       r[13] or 0,
+            'result_oe':     r[14] or 'Not Predicted',
+            'bet_oe':        r[15] or 0,
+            'pred_sum_val':  r[16] or 0,
+            'pred_sum_zone': r[17] or '',
+            'pred_hot_sums': db_hot_sums,
+        }
+        le = log.get(str(r[0]))
+        if le:
+            sigs = le.get('signals', {})
+            e['signals'] = sigs
+            if not db_hot_sums and sigs.get('pred_hot_sums'):
+                e['pred_hot_sums'] = sigs['pred_hot_sums']
+        entries.append(e)
+    return _no_cache(jsonify({'total': total, 'page': page, 'pages': pages, 'rows': entries}))
+
+@app.route('/api/fst1m/stats')
+def api_fst1m_stats():
+    if not os.path.exists(DB_FST1M_PATH):
+        return _no_cache(jsonify({}))
+    try:
+        conn = sqlite3.connect(DB_FST1M_PATH, timeout=5)
+        conn.execute('PRAGMA journal_mode=WAL')
+        # BIG/SMALL stats
+        total_pred = conn.execute(
+            "SELECT COUNT(*) FROM rounds WHERE pred_bs != '' AND result IN ('WIN','LOSS')"
+        ).fetchone()[0]
+        last100 = conn.execute(
+            "SELECT result FROM rounds WHERE pred_bs != '' AND result IN ('WIN','LOSS') "
+            "ORDER BY id DESC LIMIT 100"
+        ).fetchall()
+        w100 = sum(1 for r in last100 if r[0] == 'WIN'); n100 = len(last100)
+        last200 = conn.execute(
+            "SELECT result FROM rounds WHERE pred_bs != '' AND result IN ('WIN','LOSS') "
+            "ORDER BY id DESC LIMIT 200"
+        ).fetchall()
+        w200 = sum(1 for r in last200 if r[0] == 'WIN'); n200 = len(last200)
+        bet_rows = conn.execute(
+            "SELECT result FROM rounds WHERE bet=1 AND result IN ('WIN','LOSS')"
+        ).fetchall()
+        wb = sum(1 for r in bet_rows if r[0] == 'WIN'); nb = len(bet_rows)
+        # ODD/EVEN stats
+        oe100 = conn.execute(
+            "SELECT result_oe FROM rounds WHERE pred_oe != '' AND result_oe IN ('WIN','LOSS') "
+            "ORDER BY id DESC LIMIT 100"
+        ).fetchall()
+        oe_w100 = sum(1 for r in oe100 if r[0] == 'WIN'); oe_n100 = len(oe100)
+        bet_oe_rows = conn.execute(
+            "SELECT result_oe FROM rounds WHERE bet_oe=1 AND result_oe IN ('WIN','LOSS')"
+        ).fetchall()
+        oe_wb = sum(1 for r in bet_oe_rows if r[0] == 'WIN'); oe_nb = len(bet_oe_rows)
+        conn.close()
+    except Exception as e:
+        return _no_cache(jsonify({'error': str(e)})), 500
+    return _no_cache(jsonify({
+        'total_predicted': total_pred,
+        'last100':   {'win': w100,    'n': n100,    'wr': round(w100/n100,    4) if n100    else None},
+        'last200':   {'win': w200,    'n': n200,    'wr': round(w200/n200,    4) if n200    else None},
+        'bet_only':  {'win': wb,      'n': nb,      'wr': round(wb/nb,        4) if nb      else None},
+        'oe_last100':{'win': oe_w100, 'n': oe_n100, 'wr': round(oe_w100/oe_n100, 4) if oe_n100 else None},
+        'oe_bet':    {'win': oe_wb,   'n': oe_nb,   'wr': round(oe_wb/oe_nb,  4) if oe_nb  else None},
     }))
 
 

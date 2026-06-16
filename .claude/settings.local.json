@@ -21,7 +21,13 @@
       "PowerShell(Copy-Item \"c:\\\\NuwanWimalasooriya\\\\fxapp-predictions\\\\data\\\\cg.db\" \"c:\\\\NuwanWimalasooriya\\\\fxapp-predictions\\\\data\\\\rg3m.db\" -Force)",
       "PowerShell(python -c \"import urllib.request,json; r=urllib.request.urlopen\\('http://127.0.0.1:5050/api/cg/data?size=1'\\); d=json.loads\\(r.read\\(\\)\\); print\\('total:', d['total'], 'rows:', d['rows']\\)\")",
       "PowerShell(python -c \"import urllib.request; r=urllib.request.urlopen\\('http://127.0.0.1:5050/login'\\); print\\('Status:', r.status, '- Server is up'\\)\")",
-      "Bash(python -c ' *)"
+      "Bash(python -c ' *)",
+      "WebFetch(domain:m.fxpro-usdt.vip)",
+      "PowerShell(Get-Process python -ErrorAction SilentlyContinue | Select-Object Id, @{N='CMD';E={$_.CommandLine}})",
+      "PowerShell(Stop-Process -Id 25540 -Force -ErrorAction SilentlyContinue)",
+      "PowerShell(Start-Process -FilePath \"python\" -ArgumentList \"server.py\" -WorkingDirectory \"c:\\\\NuwanWimalasooriya\\\\fxapp-predictions\" -WindowStyle Hidden)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5050/api/fst1m/prediction -H \"Cookie: session=invalid\")",
+      "Bash(python -c \"import json; d=json.load\\(open\\('c:/NuwanWimalasooriya/fxapp-predictions/data/latest_prediction_fst1m.json'\\)\\); print\\(list\\(d.keys\\(\\)\\)\\)\")"
     ]
   }
 }

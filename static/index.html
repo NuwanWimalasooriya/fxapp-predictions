@@ -138,15 +138,17 @@
 </header>
 
 <div class="tabs">
-  <div class="tab active" id="tab-new"  onclick="switchTab('new')">3MDiscs-Hot</div>
-  <div class="tab" id="tab-ds1m" onclick="switchTab('ds1m')">1MDiscs-Hot</div>
-  <div class="tab" id="tab-cg"   onclick="switchTab('cg')">3MRedGreen</div>
+  <div class="tab active" id="tab-new"   onclick="switchTab('new')">3MDiscs-Hot</div>
+  <div class="tab" id="tab-ds1m"  onclick="switchTab('ds1m')">1MDiscs-Hot</div>
+  <div class="tab" id="tab-cg"    onclick="switchTab('cg')">3MRedGreen</div>
+  <div class="tab" id="tab-fst1m" onclick="switchTab('fst1m')">1M-4Star</div>
 </div>
 
 <div id="root" style="display:none"></div>
 <div id="new-panel"></div>
-<div id="ds1m-panel" style="display:none"></div>
-<div id="cg-panel"   style="display:none"></div>
+<div id="ds1m-panel"  style="display:none"></div>
+<div id="cg-panel"    style="display:none"></div>
+<div id="fst1m-panel" style="display:none"></div>
 
 <script>
 async function load() {
@@ -578,16 +580,17 @@ function render(p, stats = {}, cfg = {}) {
 // Poll /api/status every 10 s.
 // Old model: refresh when snapshot mtime changes (new prediction written).
 // New model: refresh only when last_id_new changes (new round actually arrived, ~3 min cycle).
-let _lastMtime = 0, _lastIdNew = 0, _lastMtimeCg = 0, _lastIdDs1m = 0;
+let _lastMtime = 0, _lastIdNew = 0, _lastMtimeCg = 0, _lastIdDs1m = 0, _lastIdFst1m = 0;
 async function pollStatus() {
   try {
     const res = await fetch('/api/status');
     if (!res.ok) return;
     const data = await res.json();
-    const mtime      = data.mtime        ?? 0;
-    const idNew      = data.last_id_new  ?? 0;
-    const mtimeCg    = data.mtime_cg     ?? 0;
-    const idDs1m     = data.last_id_ds1m ?? 0;
+    const mtime       = data.mtime         ?? 0;
+    const idNew       = data.last_id_new   ?? 0;
+    const mtimeCg     = data.mtime_cg      ?? 0;
+    const idDs1m      = data.last_id_ds1m  ?? 0;
+    const idFst1m     = data.last_id_fst1m ?? 0;
 
     if (mtime !== _lastMtime) {
       _lastMtime = mtime;
@@ -605,20 +608,27 @@ async function pollStatus() {
       _lastIdDs1m = idDs1m;
       if (document.getElementById('ds1m-panel').style.display !== 'none') { _ds1m.page = 1; loadDs1m(); }
     }
+    if (idFst1m !== 0 && idFst1m !== _lastIdFst1m) {
+      _lastIdFst1m = idFst1m;
+      if (document.getElementById('fst1m-panel').style.display !== 'none') { _fst1m.page = 1; loadFst1m(); }
+    }
   } catch(e) {}
 }
 
 // ── Tab switching ─────────────────────────────────────────────────────────────
 function switchTab(tab) {
-  document.getElementById('tab-new').classList.toggle('active',  tab === 'new');
-  document.getElementById('tab-ds1m').classList.toggle('active', tab === 'ds1m');
-  document.getElementById('tab-cg').classList.toggle('active',   tab === 'cg');
-  document.getElementById('new-panel').style.display  = tab === 'new'  ? '' : 'none';
-  document.getElementById('ds1m-panel').style.display = tab === 'ds1m' ? '' : 'none';
-  document.getElementById('cg-panel').style.display   = tab === 'cg'   ? '' : 'none';
-  if (tab === 'new')  loadNewModel();
-  if (tab === 'ds1m') loadDs1m();
-  if (tab === 'cg')   loadColorGame();
+  document.getElementById('tab-new').classList.toggle('active',   tab === 'new');
+  document.getElementById('tab-ds1m').classList.toggle('active',  tab === 'ds1m');
+  document.getElementById('tab-cg').classList.toggle('active',    tab === 'cg');
+  document.getElementById('tab-fst1m').classList.toggle('active', tab === 'fst1m');
+  document.getElementById('new-panel').style.display   = tab === 'new'   ? '' : 'none';
+  document.getElementById('ds1m-panel').style.display  = tab === 'ds1m'  ? '' : 'none';
+  document.getElementById('cg-panel').style.display    = tab === 'cg'    ? '' : 'none';
+  document.getElementById('fst1m-panel').style.display = tab === 'fst1m' ? '' : 'none';
+  if (tab === 'new')   loadNewModel();
+  if (tab === 'ds1m')  loadDs1m();
+  if (tab === 'cg')    loadColorGame();
+  if (tab === 'fst1m') loadFst1m();
 }
 
 // ── New model pagination state ─────────────────────────────────────────────────
@@ -646,12 +656,14 @@ function _fmtCountdown(secs) {
 function tickTimers() {
   const t3 = _secsUntilNext(180, 5);
   const t1 = _secsUntilNext(60, 5);
-  const elNew  = document.getElementById('timer-new');
-  const elDs1m = document.getElementById('timer-ds1m');
-  const elCg   = document.getElementById('timer-cg');
-  if (elNew)  elNew.textContent  = _fmtCountdown(t3);
-  if (elDs1m) elDs1m.textContent = _fmtCountdown(t1);
-  if (elCg)   elCg.textContent   = _fmtCountdown(t3);
+  const elNew   = document.getElementById('timer-new');
+  const elDs1m  = document.getElementById('timer-ds1m');
+  const elCg    = document.getElementById('timer-cg');
+  const elFst1m = document.getElementById('timer-fst1m');
+  if (elNew)   elNew.textContent   = _fmtCountdown(t3);
+  if (elDs1m)  elDs1m.textContent  = _fmtCountdown(t1);
+  if (elCg)    elCg.textContent    = _fmtCountdown(t3);
+  if (elFst1m) elFst1m.textContent = _fmtCountdown(t1);
 }
 setInterval(tickTimers, 1000);
 tickTimers();
@@ -896,7 +908,7 @@ function renderNewModel(p, paged, stats) {
           ${dirLbl} ${pct(isOdd ? p_odd : p_even)}
         </div>
         <div class="bet-round" style="margin-top:6px">Round ${p.next_round_id}${streakBadge}${ruleBadge}</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:4px">Next: <span id="timer-new" style="font-weight:700;font-size:12px;color:#00ffcc;text-shadow:0 0 8px #00ffcc,0 0 16px #00ffcc88">—</span></div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">Next: <span id="timer-new" style="font-weight:700;font-size:12px;color:#00ffcc;text-shadow:0 0 6px #00ffcc">—</span></div>
       </div>
       <div class="divider"></div>
       <div>
@@ -1191,7 +1203,7 @@ function renderDs1m(p, paged, stats) {
           ${dirLbl} ${pct(isOdd ? p_odd : p_even)}
         </div>
         <div class="bet-round" style="margin-top:4px">Round ${p.next_round_id}${streakBadge}${ruleBadge}</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:3px">Next: <span id="timer-ds1m" style="font-weight:700;font-size:12px;color:#00ffcc;text-shadow:0 0 8px #00ffcc,0 0 16px #00ffcc88">—</span></div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px">Next: <span id="timer-ds1m" style="font-weight:700;font-size:12px;color:#00ffcc;text-shadow:0 0 6px #00ffcc">—</span></div>
       </div>
       <div class="divider"></div>
       <div>
@@ -1425,7 +1437,7 @@ function renderColorGame(snap, stats, paged) {
   };
 
   document.getElementById('cg-panel').innerHTML = `
-  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:8px;padding:10px">
+  <div class="grid" style="gap:8px;padding:10px">
 
     <!-- BET BANNER -->
     <div class="bet-banner ${isBet ? 'yes' : 'no'}">
@@ -1444,7 +1456,7 @@ function renderColorGame(snap, stats, paged) {
           ${pnum!=null?pnum:'?'}
         </div>
         <div class="bet-round" style="margin-top:4px">Round ${snap.next_id??'—'}</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:4px">Next: <span id="timer-cg" style="font-weight:700;font-size:12px;color:#00ffcc;text-shadow:0 0 8px #00ffcc,0 0 16px #00ffcc88">—</span></div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">Next: <span id="timer-cg" style="font-weight:700;font-size:12px;color:#00ffcc;text-shadow:0 0 6px #00ffcc">—</span></div>
       </div>
       <div class="divider"></div>
       <div>
@@ -1639,6 +1651,414 @@ function sortCg(col) {
   else { _cg.sort = col; _cg.dir = 'desc'; }
   _cg.page = 1;
   loadColorGame();
+}
+
+// ── FST1M (1-Minute 4-Star Lottery) tab ───────────────────────────────────────
+let _fst1m = { page: 1, size: 50, search: '' };
+let _fst1mSearchTimer = null;
+
+async function loadFst1m() {
+  const panel = document.getElementById('fst1m-panel');
+  panel.innerHTML = '<p style="padding:20px;color:var(--muted)">Loading FST1M data…</p>';
+  try {
+    const [predRes, dataRes, statsRes] = await Promise.all([
+      fetch('/api/fst1m/prediction'),
+      fetch(`/api/fst1m/data?page=${_fst1m.page}&size=${_fst1m.size}&search=${encodeURIComponent(_fst1m.search)}`),
+      fetch('/api/fst1m/stats'),
+    ]);
+    if (!predRes.ok) {
+      const err = await predRes.json().catch(() => ({}));
+      panel.innerHTML = `<p class="error-msg" style="padding:20px">${err.error || 'No FST1M data yet. Run collector_fst1m.py first.'}</p>`;
+      return;
+    }
+    const p     = await predRes.json();
+    const paged = dataRes.ok  ? await dataRes.json().catch(() => ({rows:[],total:0,page:1,pages:1})) : {rows:[],total:0,page:1,pages:1};
+    const stats = statsRes.ok ? await statsRes.json().catch(() => ({})) : {};
+    renderFst1m(p, paged, stats);
+  } catch(e) {
+    document.getElementById('fst1m-panel').innerHTML = `<p class="error-msg" style="padding:20px">Error: ${e.message}</p>`;
+  }
+}
+
+async function loadFst1mData() {
+  const res = await fetch(`/api/fst1m/data?page=${_fst1m.page}&size=${_fst1m.size}&search=${encodeURIComponent(_fst1m.search)}`);
+  if (!res.ok) return;
+  renderFst1mData(await res.json());
+}
+
+function onFst1mSearch(val) {
+  _fst1m.search = val; _fst1m.page = 1;
+  clearTimeout(_fst1mSearchTimer);
+  _fst1mSearchTimer = setTimeout(loadFst1mData, 300);
+}
+function onFst1mSizeChange(val) { _fst1m.size = +val; _fst1m.page = 1; loadFst1mData(); }
+
+function renderFst1mData(paged) {
+  const body  = document.getElementById('fst1m-hist-body');
+  const info  = document.getElementById('fst1m-hist-info');
+  const pager = document.getElementById('fst1m-hist-pager');
+  if (!body) return;
+  _fst1m.page = paged.page;
+  if (info) info.textContent = `${paged.total} records`;
+
+  const rows = (paged.rows || []).map(r => {
+    const sigs     = r.signals  || {};
+    const isBig    = r.big_small === 'BIG';
+    const isBet    = r.bet === 1;
+    const isBetOe  = (r.bet_oe === 1) || (sigs.is_bet_oe === true);
+    const predBs   = r.pred_bs  || sigs.pred_bs  || '';
+    const predOe   = r.pred_oe  || sigs.pred_oe  || '';
+    const conf     = r.confidence ?? sigs.confidence ?? 0;
+    const confOe   = r.conf_oe  ?? sigs.conf_oe  ?? 0;
+    const zone     = r.pred_sum_zone || '—';
+    const sumNums  = (r.signals && r.signals.pred_sum_nums) ? r.signals.pred_sum_nums : [];
+    const actualSum= r.total ?? null;
+
+    // Compute results client-side so old rows are covered
+    const bsResult = predBs && r.big_small
+      ? (predBs === r.big_small ? 'WIN' : 'LOSS')
+      : (r.result && r.result !== 'Not Predicted' ? r.result : '');
+    const oeResult = predOe && r.odd_even
+      ? (predOe === r.odd_even ? 'WIN' : 'LOSS')
+      : (r.result_oe && r.result_oe !== 'Not Predicted' ? r.result_oe
+        : sigs.result_oe && sigs.result_oe !== 'Not Predicted' ? sigs.result_oe : '');
+    const rowHotSums = r.pred_hot_sums || (sigs.pred_hot_sums || []);
+    const hdSumHit  = sumNums.length && actualSum !== null && sumNums.some(([v]) => v === actualSum);
+    const hotSumHit = actualSum !== null && rowHotSums.length > 0 && rowHotSums.includes(actualSum);
+
+    const resClr  = v => v === 'WIN' ? '#22c55e' : v === 'LOSS' ? '#f87171' : '#64748b';
+    const bsClr   = isBig ? 'color:#f97316;font-weight:700' : 'color:#60a5fa;font-weight:700';
+    const predBsClr= predBs === 'BIG' ? '#f97316' : predBs === 'SMALL' ? '#60a5fa' : '#64748b';
+    const predOeClr= predOe === 'ODD' ? '#a78bfa' : predOe === 'EVEN'  ? '#60a5fa' : '#64748b';
+    const oeClr   = r.odd_even === 'ODD' ? 'color:#a78bfa' : 'color:#60a5fa';
+    const confStr  = conf   ? ` <span style="color:#3b82f6;font-size:10px">${(conf*100).toFixed(0)}%</span>`   : '';
+    const confOeStr= confOe ? ` <span style="color:#7c3aed;font-size:10px">${(confOe*100).toFixed(0)}%</span>` : '';
+    const betBsLbl = isBet   ? `<span style="color:var(--green);font-weight:700;font-size:10px">BS</span>` : '';
+    const betOeLbl = isBetOe ? `<span style="color:#a78bfa;font-weight:700;font-size:10px">OE</span>`     : '';
+    const betCell  = (betBsLbl || betOeLbl) ? `${betBsLbl}${betBsLbl && betOeLbl ? ' ' : ''}${betOeLbl}` : `<span style="color:var(--muted)">—</span>`;
+    const numsStr  = [r.n1, r.n2, r.n3, r.n4].map(n => `<span style="display:inline-block;width:13px;height:13px;border-radius:50%;background:rgba(255,255,255,.1);font-size:9px;font-weight:700;text-align:center;line-height:13px">${n}</span>`).join(' ');
+
+    // Sum chips — green if hit, amber if top pick
+    const maxP     = sumNums.length ? Math.max(...sumNums.map(x => x[1])) : 0;
+    const sumChips = sumNums.length
+      ? sumNums.map(([v, pc]) => {
+          const hit = actualSum !== null && v === actualSum;
+          const top = pc === maxP;
+          const bg  = hit ? '#22c55e' : top ? '#f59e0b' : 'rgba(255,255,255,.07)';
+          const clr = (hit || top) ? '#000' : '#cbd5e1';
+          return `<span style="display:inline-block;width:20px;height:20px;border-radius:50%;background:${bg};font-size:10px;font-weight:800;text-align:center;line-height:20px;color:${clr};margin:1px">${v}</span>`;
+        }).join('')
+      : `<span style="font-size:10px;color:var(--muted)">${zone}</span>`;
+
+    // Result cell: WIN/B, WIN/S, WIN/O, WIN/E, SUM-HIT
+    const bsSuffix = predBs === 'BIG' ? 'B' : predBs === 'SMALL' ? 'S' : '';
+    const oeSuffix = predOe === 'ODD' ? 'O' : predOe === 'EVEN'  ? 'E' : '';
+    const bsPart  = (bsResult && bsSuffix) ? `<span style="font-weight:700;color:${resClr(bsResult)}">${bsResult}/${bsSuffix}</span>` : '';
+    const oePart  = (oeResult && oeSuffix) ? `<span style="font-weight:700;color:${resClr(oeResult)}">${oeResult}/${oeSuffix}</span>` : '';
+    const hdSumPart  = hdSumHit  ? `<span style="font-weight:700;color:#22c55e">HIT-HD SUM</span>`  : '';
+    const hotSumPart = hotSumHit ? `<span style="font-weight:700;color:#f59e0b">HIT-HOT SUM</span>` : '';
+
+    return `<tr>
+      <td style="font-size:11px;color:var(--muted)">${r.round_id}</td>
+      <td style="font-size:12px">${numsStr}</td>
+      <td style="font-size:13px;font-weight:700">${actualSum ?? '—'}</td>
+      <td style="${bsClr}">${r.big_small || '—'}</td>
+      <td style="${oeClr}">${r.odd_even || '—'}</td>
+      <td style="white-space:nowrap">${sumChips}</td>
+      <td style="white-space:nowrap">${(() => {
+        if (!rowHotSums.length) return '<span style="color:var(--muted);font-size:10px">—</span>';
+        return rowHotSums.map(s => {
+          const hit = actualSum !== null && s === actualSum;
+          const bg  = hit ? '#22c55e' : 'rgba(255,255,255,.07)';
+          const clr = hit ? '#000' : s >= 18 ? '#f97316' : '#60a5fa';
+          const bdr = hit ? '2px solid #22c55e' : `1px solid ${s >= 18 ? '#f9731640' : '#60a5fa40'}`;
+          return `<span style="display:inline-block;width:20px;height:20px;border-radius:50%;background:${bg};border:${bdr};font-size:10px;font-weight:800;text-align:center;line-height:20px;color:${clr};margin:1px">${s}</span>`;
+        }).join('');
+      })()}</td>
+      <td>${betCell}</td>
+      <td style="font-weight:700;font-size:10px;color:${predBsClr}">${predBs || '—'}${confStr}</td>
+      <td style="font-weight:700;font-size:10px;color:${predOeClr}">${predOe || '—'}${confOeStr}</td>
+      <td style="white-space:nowrap">${[bsPart,oePart,hdSumPart,hotSumPart].filter(Boolean).join(' ')}</td>
+    </tr>`;
+  }).join('');
+
+  body.innerHTML = rows || '<tr><td colspan="11" style="color:var(--muted);padding:12px">No records found</td></tr>';
+
+  if (pager) {
+    const p = paged.page, pages = paged.pages;
+    const btns = [];
+    if (p > 1) btns.push(`<button onclick="_fst1m.page=${p-1};loadFst1mData()">&#8592;</button>`);
+    btns.push(`<span style="padding:0 8px;font-size:12px">${p}/${pages}</span>`);
+    if (p < pages) btns.push(`<button onclick="_fst1m.page=${p+1};loadFst1mData()">&#8594;</button>`);
+    pager.innerHTML = btns.join('');
+  }
+}
+
+function renderFst1m(p, paged, stats) {
+  const sigs    = p.signals    || {};
+  const isBig   = p.pred_bs   === 'BIG';
+  const conf    = p.confidence ?? 0;
+  const isBet   = p.is_bet    ?? (conf >= 0.60);
+  const isBetOe = p.is_bet_oe ?? false;
+  const streak  = p.loss_streak ?? 0;
+  const s1      = stats.last100    || {};
+  const s2      = stats.last200    || {};
+  const sb      = stats.bet_only   || {};
+  const soe1    = stats.oe_last100 || {};
+  const soeB    = stats.oe_bet     || {};
+  const predOe  = p.pred_oe       ?? sigs.pred_oe      ?? '—';
+  const confOe  = p.conf_oe       ?? sigs.conf_oe      ?? 0;
+  const ruleOe  = p.rule_oe       ?? sigs.rule_oe      ?? '—';
+  const pOdd    = p.p_odd         ?? sigs.p_odd         ?? 0.5;
+  const avgS    = p.avg_sum_10    ?? sigs.avg_sum_10    ?? 0;
+  const lastS   = p.last_sum      ?? sigs.last_sum      ?? 0;
+  const sumVal  = p.pred_sum_val  ?? sigs.pred_sum_val  ?? 18;
+  const sumZone = p.pred_sum_zone ?? sigs.pred_sum_zone ?? '—';
+  const confSum = p.conf_sum      ?? sigs.conf_sum      ?? 0;
+
+  const wrColor     = wr => wr == null ? 'var(--muted)' : wr >= 0.65 ? '#22c55e' : wr >= 0.53 ? 'var(--green)' : wr >= 0.47 ? 'var(--yellow)' : 'var(--red)';
+  const streakBadge = streak >= 3 ? `<span class="streak-badge">STREAK-${streak}</span>` : '';
+  const ruleBadge   = sigs.rule ? `<span class="mode-badge" style="font-size:10px">${sigs.rule}</span>` : '';
+  const bsDirClr    = isBig ? '#f97316' : '#60a5fa';
+  const zoneClr     = sumZone === 'LOW' ? '#60a5fa' : sumZone === 'HIGH' ? '#f97316' : '#94a3b8';
+
+  document.getElementById('fst1m-panel').innerHTML = `
+  <div class="grid" style="align-items:start">
+
+    <!-- BET BANNER -->
+    <div class="bet-banner ${isBet || isBetOe ? 'yes' : 'no'}" style="padding:7px 12px">
+      <div>
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px">Big/Small</div>
+        <div class="bet-label ${isBet ? 'yes' : 'no'}" style="font-size:22px">${isBet ? 'BET' : 'SKIP'}</div>
+        <div style="font-size:20px;font-weight:800;color:${isBet ? bsDirClr : '#475569'};margin-top:2px">${isBig ? 'BIG' : 'SMALL'} ${pct(conf)}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">${sigs.rule || ''}</div>
+      </div>
+      <div class="divider"></div>
+      <div>
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px">Odd/Even</div>
+        <div class="bet-label ${isBetOe ? 'yes' : 'no'}" style="font-size:22px">${isBetOe ? 'BET' : 'SKIP'}</div>
+        <div style="font-size:20px;font-weight:800;color:${isBetOe ? (predOe==='ODD'?'#a78bfa':'#60a5fa') : '#475569'};margin-top:2px">${predOe} ${pct(confOe)}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">${ruleOe}</div>
+      </div>
+      <div class="divider"></div>
+      <div>
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Sum — bet numbers</div>
+        ${(() => {
+          const nums = p.pred_sum_nums ?? sigs.pred_sum_nums ?? [];
+          const maxP = nums.length ? Math.max(...nums.map(n=>n[1])) : 1;
+          return nums.map(([v,pc])=>`<span style="display:inline-block;width:26px;height:26px;border-radius:50%;background:${pc===maxP?'#f59e0b':'rgba(255,255,255,.1)'};border:1px solid ${pc===maxP?'#f59e0b':'rgba(255,255,255,.2)'};font-size:11px;font-weight:800;text-align:center;line-height:26px;color:${pc===maxP?'#000':'#e2e8f0'};margin:1px">${v}</span>`).join('');
+        })()}
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">zone: ${sumZone}</div>
+      </div>
+      <div class="divider"></div>
+      <div>
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px">Last sum</div>
+        <div style="font-size:26px;font-weight:700;color:${lastS >= 18 ? '#f97316' : '#60a5fa'}">${lastS}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">${lastS >= 18 ? 'BIG' : 'SMALL'} · ${lastS % 2 === 0 ? 'EVEN' : 'ODD'}</div>
+        <div style="font-size:11px;margin-top:4px">avg10 <strong>${avgS.toFixed(1)}</strong></div>
+      </div>
+      <div class="divider"></div>
+      <div>
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px">Hot sums (last 30)</div>
+        ${(() => {
+          const hs = p.hot_sums || [];
+          if (!hs.length) return '<span style="font-size:10px;color:var(--muted)">—</span>';
+          const maxC = hs[0].count;
+          const rankClr = ['#f59e0b','#94a3b8','#cd7f32','#64748b','#64748b'];
+          return hs.map((h, i) => {
+            const bar = Math.round((h.count / maxC) * 28);
+            const clr = h.sum >= 18 ? '#f97316' : '#60a5fa';
+            return `<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px">
+              <span style="font-size:10px;color:${rankClr[i]};font-weight:700;width:10px">#${i+1}</span>
+              <span style="font-size:14px;font-weight:900;color:${clr};width:24px;text-align:right">${h.sum}</span>
+              <div style="width:${bar}px;height:6px;background:${clr};opacity:0.55;border-radius:3px"></div>
+              <span style="font-size:10px;color:var(--muted)">${h.count}x</span>
+            </div>`;
+          }).join('');
+        })()}
+      </div>
+      <div class="divider"></div>
+      <div>
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px">Hot digits (last 30)</div>
+        ${(() => {
+          const hd = p.hot_digits ?? sigs.hot_digits ?? [];
+          if (!hd.length) return '<span style="font-size:10px;color:var(--muted)">—</span>';
+          const labels  = ['D1','D2','D3','D4'];
+          const dColors = ['#f59e0b','#22d3ee','#a78bfa'];
+          const cColors = ['#b45309','#0891b2','#6d28d9'];
+          return hd.map((pairs, i) => {
+            const tokens = pairs.map((p_, rank) => {
+              const d   = Array.isArray(p_) ? p_[0] : p_;
+              const cnt = Array.isArray(p_) ? p_[1] : null;
+              const dc  = dColors[rank] ?? '#e2e8f0';
+              const cc  = cColors[rank] ?? '#94a3b8';
+              return cnt != null
+                ? `<span style="font-weight:800;font-size:12px;color:${dc}">${d}</span><span style="font-weight:600;font-size:10px;color:${cc}">×${cnt}</span>`
+                : `<span style="font-weight:800;font-size:12px;color:${dc}">${d}</span>`;
+            }).join('<span style="color:#334155;margin:0 3px">·</span>');
+            return `<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px">
+              <span style="font-size:10px;color:var(--muted);width:16px;flex-shrink:0">${labels[i]}</span>
+              <span>${tokens}</span>
+            </div>`;
+          }).join('');
+        })()}
+      </div>
+      <div class="divider"></div>
+      <div>
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px">Round</div>
+        <div class="bet-round">${p.next_round_id ?? '—'}${streakBadge}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">Next: <span id="timer-fst1m" style="font-weight:700;font-size:12px;color:#00ffcc;text-shadow:0 0 6px #00ffcc">—</span></div>
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">Run: ${sigs.cur_val||'—'}×${sigs.cur_run??'—'}</div>
+      </div>
+    </div>
+
+    <!-- BIG / SMALL TILE -->
+    <div class="card">
+      <h2>BIG / SMALL</h2>
+      <div style="display:flex;gap:20px;margin-bottom:12px">
+        <div>
+          <div class="big" style="color:#f97316;font-size:26px">${pct(isBig ? conf : 1-conf)}</div>
+          <div class="label" style="color:#f97316;margin-top:3px">BIG (sum ≥ 18)</div>
+        </div>
+        <div>
+          <div class="big" style="color:#60a5fa;font-size:26px">${pct(!isBig ? conf : 1-conf)}</div>
+          <div class="label" style="color:#60a5fa;margin-top:3px">SMALL (sum ≤ 17)</div>
+        </div>
+      </div>
+      <div style="border-top:1px solid var(--border);padding-top:8px">
+        <div class="row"><span class="key">Prediction</span>
+          <span class="val" style="color:${bsDirClr};font-weight:700">${isBig?'BIG':'SMALL'} — ${isBet?'BET':'SKIP'}</span></div>
+        <div class="row"><span class="key">Current run</span>
+          <span class="val" style="color:${sigs.cur_val==='BIG'?'#f97316':'#60a5fa'}">${sigs.cur_val||'—'} × ${sigs.cur_run??'—'}</span></div>
+        <div class="row"><span class="key">Previous run</span>
+          <span class="val" style="color:${sigs.prev_val==='BIG'?'#f97316':'#60a5fa'}">${sigs.prev_val||'—'} × ${sigs.prev_run??'—'}</span></div>
+        <div class="row"><span class="key">Maj (last 20)</span>
+          <span class="val">${sigs.maj20||'—'} (${((sigs.maj20_frac||0.5)*100).toFixed(0)}%)</span></div>
+        <div class="row"><span class="key">Rule</span>
+          <span class="val" style="font-size:11px;color:var(--muted)">${sigs.rule||'—'}</span></div>
+        <div class="row"><span class="key">XGB signal</span>
+          <span class="val">${sigs.p_xgb!=null?(sigs.p_xgb>0.5?'BIG ':'SMALL ')+pct(Math.max(sigs.p_xgb,1-sigs.p_xgb)):'—'}</span></div>
+        <div class="row"><span class="key">Loss streak</span>
+          <span class="val" style="color:${streak>=5?'var(--red)':streak>=3?'var(--yellow)':'var(--green)'}">${streak}</span></div>
+      </div>
+    </div>
+
+    <!-- ODD/EVEN TILE -->
+    <div class="card">
+      <h2>ODD / EVEN</h2>
+      <div style="display:flex;gap:20px;margin-bottom:12px">
+        <div>
+          <div class="big" style="color:#a78bfa;font-size:26px">${pct(predOe==='ODD' ? confOe : 1-confOe)}</div>
+          <div class="label" style="color:#a78bfa;margin-top:3px">ODD</div>
+        </div>
+        <div>
+          <div class="big" style="color:#60a5fa;font-size:26px">${pct(predOe==='EVEN' ? confOe : 1-confOe)}</div>
+          <div class="label" style="color:#60a5fa;margin-top:3px">EVEN</div>
+        </div>
+      </div>
+      <div style="border-top:1px solid var(--border);padding-top:8px">
+        <div class="row"><span class="key">Prediction</span>
+          <span class="val" style="color:${predOe==='ODD'?'#a78bfa':'#60a5fa'};font-weight:700">${predOe} — ${isBetOe?'BET':'SKIP'}</span></div>
+        <div class="row"><span class="key">Confidence</span>
+          <span class="val">${pct(confOe)} (p_odd=${pOdd.toFixed(2)})</span></div>
+        <div class="row"><span class="key">Rule</span>
+          <span class="val" style="font-size:11px;color:var(--muted)">${ruleOe}</span></div>
+        <div class="row"><span class="key">BET threshold</span>
+          <span class="val" style="color:#7c3aed;font-weight:700">58%</span></div>
+        <div style="border-top:1px solid var(--border);margin:8px 0;padding-top:8px">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">OE Win Rate</div>
+          <div style="font-size:18px;font-weight:700;color:${wrColor(soe1.wr)}">${soe1.wr!=null?(soe1.wr*100).toFixed(1)+'%':'—'}</div>
+          <div style="font-size:11px;color:var(--muted)">${soe1.n!=null?`last 100 · n=${soe1.n}`:'no data'}</div>
+          <div style="margin-top:4px;font-size:12px">BET-OE: <strong style="color:${wrColor(soeB.wr)}">${soeB.wr!=null?(soeB.wr*100).toFixed(1)+'%':'—'}</strong> (n=${soeB.n??0})</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUM PREDICTION TILE -->
+    <div class="card">
+      <h2>Sum — Bet Numbers</h2>
+      ${(() => {
+        const nums    = p.pred_sum_nums ?? sigs.pred_sum_nums ?? [];
+        const maxPct  = nums.length ? Math.max(...nums.map(n => n[1])) : 1;
+        const chips   = nums.map(([v, pct_]) => {
+          const isTop  = pct_ === maxPct;
+          const bg     = isTop ? '#f59e0b' : 'rgba(255,255,255,.08)';
+          const clr    = isTop ? '#000'    : '#e2e8f0';
+          const border = isTop ? '2px solid #f59e0b' : '1px solid rgba(255,255,255,.15)';
+          return `<div style="display:inline-flex;flex-direction:column;align-items:center;gap:2px;margin:3px">
+            <div style="width:38px;height:38px;border-radius:50%;background:${bg};border:${border};display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:${clr}">${v}</div>
+            <div style="font-size:10px;color:var(--muted)">${pct_}%</div>
+          </div>`;
+        }).join('');
+        return `
+          <div style="margin-bottom:10px">
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Suggested bet sums (top 5)</div>
+            <div style="display:flex;flex-wrap:wrap;gap:2px">${chips || '<span style="color:var(--muted)">—</span>'}</div>
+          </div>
+          <div style="border-top:1px solid var(--border);padding-top:8px">
+            <div class="row"><span class="key">Zone</span><span class="val" style="color:${zoneClr};font-weight:700">${sumZone} (~${sumVal})</span></div>
+            <div class="row"><span class="key">Last sum</span>
+              <span class="val" style="color:${lastS>=18?'#f97316':'#60a5fa'};font-weight:700">${lastS} (${lastS>=18?'BIG':'SMALL'} · ${lastS%2===0?'EVEN':'ODD'})</span></div>
+            <div class="row"><span class="key">Avg (last 10)</span><span class="val">${avgS.toFixed(1)}</span></div>
+            <div class="row"><span class="key">Trend</span>
+              <span class="val" style="color:${sumVal>avgS?'#f97316':sumVal<avgS?'#60a5fa':'#94a3b8'}">${sumVal>avgS?'Rising':sumVal<avgS?'Falling':'Flat'}</span></div>
+          </div>
+          `;
+      })()}
+    </div>
+
+    <!-- WIN RATE TILE -->
+    <div class="card">
+      <h2>Win Rate — BIG/SMALL</h2>
+      ${(() => {
+        const wrC = wr => wr == null ? 'var(--muted)' : wr >= 0.65 ? '#22c55e' : wr >= 0.53 ? 'var(--green)' : wr >= 0.47 ? 'var(--yellow)' : 'var(--red)';
+        const cell = (label, wr, n, wins) => `
+          <div style="margin-bottom:8px">
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px">${label}</div>
+            <div style="font-size:20px;font-weight:700;color:${wrC(wr)}">${wr != null ? (wr*100).toFixed(1)+'%' : '—'}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:1px">${n != null ? `${wins != null ? wins+'W · ' : ''}n=${n}` : 'no data'}</div>
+          </div>`;
+        return `
+          ${cell('Last 100', s1.wr, s1.n, s1.win)}
+          ${cell('Last 200', s2.wr, s2.n, s2.win)}
+          ${cell('BET-only', sb.wr, sb.n, sb.win)}
+          <div style="border-top:1px solid var(--border);padding-top:6px;margin-top:4px">
+            <div class="row"><span class="key">Total scored</span><span class="val">${stats.total_predicted ?? '—'} rounds</span></div>
+            <div class="row"><span class="key">BET threshold</span><span class="val" style="color:#3b82f6;font-weight:700">60%</span></div>
+          </div>`;
+      })()}
+    </div>
+
+    <!-- HISTORY TABLE (full width) -->
+    <div class="card" style="grid-column:1/-1">
+      <h2>All rounds — FST1M (1-min 4-Star Lottery)</h2>
+      <div class="data-toolbar" style="padding:0 0 8px">
+        <input id="fst1m-search-input" type="text" placeholder="Search ID, BIG, SMALL, ODD, EVEN, LOW, MID, HIGH, WIN, LOSS, BET…"
+               oninput="onFst1mSearch(this.value)">
+        <select onchange="onFst1mSizeChange(this.value)">
+          ${[25,50,100,200].map(n=>`<option value="${n}" ${n===_fst1m.size?'selected':''}>${n} / page</option>`).join('')}
+        </select>
+        <span id="fst1m-hist-info" style="font-size:11px;color:var(--muted);margin-left:auto"></span>
+      </div>
+      <table>
+        <colgroup>
+          <col style="width:12%"><col style="width:9%"><col style="width:4%">
+          <col style="width:7%"><col style="width:6%"><col style="width:8%">
+          <col style="width:10%"><col style="width:5%"><col style="width:7%">
+          <col style="width:7%"><col style="width:25%">
+        </colgroup>
+        <thead><tr>
+          <th>Round</th><th>Numbers</th><th>Sum</th>
+          <th>Big/Small</th><th>Odd/Even</th><th>Pred HD Sum</th><th>Pred HOT Sum</th><th>Bet</th>
+          <th>Pred BS</th><th>Pred OE</th><th>Result</th>
+        </tr></thead>
+        <tbody id="fst1m-hist-body"><tr><td colspan="10" style="color:var(--muted);padding:12px">Loading…</td></tr></tbody>
+      </table>
+      <div class="pagination" id="fst1m-hist-pager"></div>
+    </div>
+
+  </div>`;
+  renderFst1mData(paged);
 }
 </script>
 </body>

@@ -12,7 +12,11 @@
       "PowerShell(wmic process where \"ProcessId=52352 or ProcessId=25456\" get ProcessId,CommandLine 2>$null)",
       "PowerShell(Get-CimInstance Win32_Process | Where-Object {$_.ProcessId -in @\\(52352,25456\\)} | Select-Object ProcessId,CommandLine | Format-List)",
       "PowerShell(Get-CimInstance Win32_Process | Where-Object {$_.ProcessId -in @\\(52352, 25456\\)} | Select-Object ProcessId, CommandLine, ExecutablePath | Format-List)",
-      "Bash(python server.py)"
+      "Bash(python server.py)",
+      "Bash(python predict_cg.py)",
+      "Bash(Get-Process python *)",
+      "Bash(Select-Object Id, ProcessName, CPU, StartTime)",
+      "PowerShell(Stop-Process -Id 18288 -Force)"
     ]
   }
 }

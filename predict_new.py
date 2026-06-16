@@ -340,6 +340,30 @@ def detect_sym_tile(oe_arr, idx, tile_size=6):
     }
 
 
+# ── Exact 3+3 block pattern (EEEOOO / OOOEEE) ─────────────────────────────────
+
+def detect_exact_3block_pattern(cur_run, cur_val, prev_run):
+    """
+    Detects when we are 1 or 2 rounds into the SECOND half of an exact 3+3 block.
+    Pattern: EEEOOO (exactly 3 EVEN → ODD block just started) or OOOEEE.
+
+    Fires ONLY when:
+      - prev_run == 3 exactly (first half is precisely 3, not 4 or more)
+      - cur_run is 1 or 2 (we are inside the second half, not yet at 3)
+
+    Predicts: continue current direction (second block will complete to 3).
+    Kept completely separate — no interaction with any other rule.
+
+    Returns (detected: bool, pred_val: str|None, conf: float)
+    """
+    if cur_run < 1 or cur_run > 2:
+        return False, None, 0.0
+    if prev_run != 3:
+        return False, None, 0.0
+    conf = 0.66 if cur_run == 1 else 0.70
+    return True, cur_val, conf
+
+
 # ── Post-symmetric tile in-progress detection ───────────────────────────────────
 # After EEEOOO or OOOEEE (symmetric tile), the next tile is OOEEOE ~63-75% of the time.
 # detect_sym_tile handles the first round at the boundary.
@@ -788,6 +812,9 @@ def predict_new(oe_arr, idx):
     # Symmetric tile in-progress (used by Rule 6b) — inside OOO phase of EEEOOO
     sym_in_info = detect_sym_tile_inprogress(oe_arr, idx)
 
+    # Exact 3+3 block (EEEOOO / OOOEEE) — only fires when prev_run == 3 exactly
+    exact3_det, exact3_pred, exact3_conf = detect_exact_3block_pattern(cur_run, cur_val, prev_run)
+
     # Symmetric tile precursor (used by Rule 10)
     sym_info = detect_sym_tile(oe_arr, idx) if (mirror_info is None and mirror_in_info is None and sym_in_info is None) else None
 
@@ -826,13 +853,11 @@ def predict_new(oe_arr, idx):
         p_odd = 0.55 * block_p + 0.45 * p_xgb
         applied_rule = 'rule1_long_block'
 
-    # Rule 1b: Medium streak (run == 3)
-    # Data: 53.4% probability of switch after exactly 3 consecutive same.
-    # Old code predicted STAY (0.67) — opposite of what data shows.
+    # Rule 1b: Medium streak (run == 3) — after 3 consecutive same, continue the streak.
     elif cur_run == 3:
-        switch_p = 0.46 if cur_val == 'ODD' else 0.54  # lean switch
-        p_odd = 0.55 * switch_p + 0.45 * p_xgb
-        applied_rule = 'rule1b_switch'
+        stay_p = 0.60 if cur_val == 'ODD' else 0.40  # lean stay: continue current streak
+        p_odd = 0.55 * stay_p + 0.45 * p_xgb
+        applied_rule = 'rule1b_stay'
 
     # Rule 3: Confirmed alternating (3+ unbroken single-round runs) → predict flip
     # Only override when XGBoost confirms same direction; otherwise use XGBoost alone.
@@ -848,9 +873,17 @@ def predict_new(oe_arr, idx):
             p_odd = p_xgb  # XGBoost disagrees: ignore rule3, use XGBoost directly
         applied_rule = 'rule3_alternating'
 
-    # Rule 6: EOE return — after a run of 3+, a single-round switch is a blip, original returns.
-    # Confidence scales with run length: longer run = more certain the original direction resumes.
-    elif cur_run == 1 and prev_run >= 3:
+    # Rule 6a: Exact 3+3 block pattern — EEEOOO / OOOEEE.
+    # Previous block was EXACTLY 3 rounds; we are 1 or 2 rounds into the second block.
+    # Predicts: continue current direction (the second block will also reach 3).
+    # Takes priority over Rule 6 (trend_persist) for this specific case only.
+    elif exact3_det:
+        p_odd        = exact3_conf if exact3_pred == 'ODD' else (1.0 - exact3_conf)
+        applied_rule = f'rule6a_exact3block_{cur_val[:1]}{cur_run}'
+
+    # Rule 6: Trend persist — after a dominant run (3+), stay on previous direction
+    # until the counter reaches 3 consecutive. 1 or 2 counter-rounds are not a reversal.
+    elif cur_run <= 2 and prev_run >= 3:
         if prev_run >= 5:
             eoe_conf = 0.65
         elif prev_run == 4:
@@ -858,7 +891,7 @@ def predict_new(oe_arr, idx):
         else:  # prev_run == 3
             eoe_conf = 0.58
         p_odd = eoe_conf if prev_val == 'ODD' else (1.0 - eoe_conf)
-        applied_rule = 'rule6_eoe_return'
+        applied_rule = 'rule6_trend_persist'
 
     # Rule 7: Cyclic block pattern (period 2/4/6)
     elif cycle_info is not None:
@@ -890,6 +923,16 @@ def predict_new(oe_arr, idx):
         p_odd       = kt_conf if pred_odd_kt else (1.0 - kt_conf)
         applied_rule = f'rule11_{known_tile_info["pattern_name"]}'
 
+    # Rule Maj20: Oscillating regime (cur_run ≤ 2, no structural pattern detected).
+    # When no streak of 3 is developing, predict the majority of the last 20 rounds.
+    elif cur_run <= 2:
+        _r20  = arr[max(0, idx - 19): idx + 1]
+        _odd20 = _r20.count('ODD')
+        _n20   = len(_r20)
+        _p_maj = _odd20 / _n20
+        p_odd  = 0.60 * _p_maj + 0.40 * p_xgb
+        applied_rule = 'rule_maj20'
+
     # Rule 4: No confirmed pattern → pure XGBoost.
     # Analysis of 15985 rounds: 8-round window majority gives exactly 50.0% accuracy.
     # Removed dom_p component — it adds noise, not signal.
@@ -901,7 +944,9 @@ def predict_new(oe_arr, idx):
     # very uncertain (within ±5% of 50%), apply a slight EVEN bias.
     # Basis: EVEN is 50.1% of all rounds; in uncertain conditions defaulting EVEN
     # avoids the over-aggressive ODD signals that caused 30% ODD precision.
-    if applied_rule in ('xgb', 'rule4_dom_blend') and abs(p_odd - 0.5) < 0.05:
+    # Exception: skip when cur_run >= 2 — an active 2+ streak is evidence that
+    # should not be flattened by the generic EVEN default.
+    if applied_rule in ('xgb', 'rule4_dom_blend') and abs(p_odd - 0.5) < 0.05 and cur_run < 2:
         p_odd = 0.47
 
     # Regime bias: if last 15 rounds are heavily skewed (>72% one side),

@@ -230,6 +230,55 @@ def _loss_streak():
 
 _cur_loss_streak = _loss_streak()
 
+# ── Alternating block pattern (GGGRRR / RRRGGG — exactly 3+ of each) ─────────
+
+def detect_alternating_block_pattern(arr, min_block=3):
+    """
+    Detects GGGRRR / RRRGGG style patterns where BOTH the current run and the
+    previous run are >= min_block long.
+
+    After GGGRRR → predict GREEN (the previous color resumes).
+    After RRRGGG → predict RED.
+
+    Only fires when the current block has just reached min_block (cr == 3 when
+    min_block=3).  Larger streaks (cr>=4) are handled by Rule 1 before this
+    function is ever called.
+
+    Does NOT fire if the current block has grown 1.5× larger than the previous
+    block — in that case the pattern is broken and the streak should continue.
+
+    Returns (detected, pred_color, conf, info_dict).
+    """
+    if len(arr) < min_block * 2:
+        return False, None, 0.5, {}
+
+    runs = build_runs(arr)
+    if len(runs) < 2:
+        return False, None, 0.5, {}
+
+    cur_val,  cur_run  = runs[-1]
+    prev_val, prev_run = runs[-2]
+
+    if cur_run < min_block or prev_run < min_block:
+        return False, None, 0.5, {}
+
+    # Pattern is considered broken if current block has grown much longer than prev
+    if cur_run > prev_run * 1.5:
+        return False, None, 0.5, {}
+
+    # Confidence scales with block symmetry (balanced 3-3 → highest, skewed → lower)
+    balance = min(cur_run, prev_run) / max(cur_run, prev_run)
+    conf    = round(min(0.72, 0.63 + 0.09 * balance), 3)
+
+    return True, prev_val, conf, {
+        'prev_color': prev_val,
+        'prev_run':   prev_run,
+        'cur_color':  cur_val,
+        'cur_run':    cur_run,
+        'pattern':    f'{prev_val[0].upper()}x{prev_run}_{cur_val[0].upper()}x{cur_run}',
+    }
+
+
 # ── Symmetric block detection (GGGRRR / GGRRRR patterns) ─────────────────────
 
 def detect_sym_block_inprogress(arr, min_prev=2):
@@ -309,57 +358,83 @@ def predict_color(idx):
     low_streak_regime = detect_low_streak_regime(arr)
     maj6 = majority_color(arr, window=6)
 
+    # Short-window alternating chaos: flip_rate ≥65% AND max_run ≤2 in last 8 rounds.
+    # Detects rapid oscillation regime that the 20-round low_streak_regime misses when
+    # a long earlier streak is still inside its window.
+    _rc8 = arr[-8:] if len(arr) >= 8 else arr
+    if len(_rc8) >= 6:
+        _fl8 = sum(1 for i in range(1, len(_rc8)) if _rc8[i] != _rc8[i-1])
+        _fr8 = _fl8 / (len(_rc8) - 1)
+        _mr8 = 1; _cr8 = 1
+        for i in range(1, len(_rc8)):
+            _cr8 = _cr8 + 1 if _rc8[i] == _rc8[i-1] else 1
+            _mr8 = max(_mr8, _cr8)
+        alt_chaos_regime = _fr8 >= 0.75 and _mr8 <= 2
+    else:
+        alt_chaos_regime = False
+
     mirror_info    = detect_mirror_tile(arr)
     mirror_in_info = detect_mirror_tile_inprogress(arr) if mirror_info is None else None
     sym_block_info = detect_sym_block_inprogress(arr)
     seq_pred, seq_conf = color_sequence_signal(arr)
+    alt_blk_det, alt_blk_pred, alt_blk_conf, alt_blk_info = detect_alternating_block_pattern(arr)
 
     applied_rule = 'default'
     p_red = 0.5
 
-    # Rule 0 (highest priority): low-streak regime + streak=2 → opposite is near-certain
-    # Logic: no color repeats 3+ times in this regime, so after 2x same → flip
-    if low_streak_regime and cr >= 2:
-        opposite = _FLIP[cv]
-        p_red = 0.10 if cv == 'red' else 0.90
-        applied_rule = 'rule0_no_streak3'
+    # Rule 0c: Alternating chaos (flip_rate ≥ 0.75, max_run ≤ 2 in last 8) — highest priority.
+    # Strictly alternating pattern → predict opposite of current color.
+    if alt_chaos_regime:
+        p_red = 0.20 if cv == 'red' else 0.80
+        applied_rule = 'rule0c_alt_chaos'
 
-    # Rule 0b: low-streak regime + streak=1 → bet majority color in last 6 rounds
-    elif low_streak_regime and cr == 1:
-        if maj6 is not None:
-            p_red = 0.68 if maj6 == 'red' else 0.32
-            applied_rule = 'rule0b_low_regime_majority'
+    # Rule 0: Low-streak regime (max run ≤ 2 in last 20) — predict majority of last 20 rounds.
+    # In oscillating patterns (RGRG, RRGG, RRGGRR...) with no streak of 3, follow
+    # whichever color has appeared more in the last 20 rounds.
+    elif low_streak_regime:
+        _r20  = arr[-20:] if len(arr) >= 20 else arr
+        _rc20 = _r20.count('red')
+        _p_maj = _rc20 / len(_r20)
+        if _p_maj >= 0.55:
+            p_red = 0.65
+        elif _p_maj <= 0.45:
+            p_red = 0.35
         else:
             p_red = 0.5
-            applied_rule = 'rule0b_low_regime_tied'
+        applied_rule = 'rule0_low_regime_maj20'
 
     # Rule 1: Long streak (4+) → continue strongly
     elif cr >= 4:
         p_red = 0.78 if cv == 'red' else 0.22
         applied_rule = 'rule1_long_streak'
 
-    # Rule 1b: Medium streak (3) → continue with moderate confidence
+    # Rule 1_alt_block: Alternating block pattern (GGGRRR / RRRGGG).
+    # Both the current run and previous run are >= 3 — the alternating cycle
+    # has completed and the previous color is expected to resume.
+    # Checked BEFORE Rule 1b so cr==3 does not blindly continue the streak.
+    elif alt_blk_det:
+        p_red = alt_blk_conf if alt_blk_pred == 'red' else 1.0 - alt_blk_conf
+        applied_rule = f'rule1_alt_block_{alt_blk_info["pattern"]}'
+
+    # Rule 1b: Medium streak (3) with no alternating block pattern → continue
     elif cr == 3:
         p_red = 0.65 if cv == 'red' else 0.35
         applied_rule = 'rule1_medium_streak'
 
-    # Rule 2: Just switched from long streak → stay on new direction
-    elif pr >= 4 and cr <= 2:
-        p_red = 0.72 if cv == 'red' else 0.28
-        applied_rule = 'rule2_post_long'
+    # Rule 2: After dominant run (3+), stay on previous trend until counter reaches 3.
+    # 1 or 2 counter-rounds are NOT a confirmed reversal — hold previous direction.
+    # This must come BEFORE sym_block so a dominant trend (G×4 → R×1) is not
+    # mis-classified as a "building" symmetric block that predicts continuation of Red.
+    elif pr >= 3 and cr <= 2:
+        conf = 0.75 if pr >= 6 else (0.70 if pr >= 4 else 0.65)
+        p_red = conf if pv == 'red' else (1.0 - conf)
+        applied_rule = 'rule2_trend_persist'
 
-    # Rule 1a: Short streak (2) with no long previous run → continue same direction
-    # cr==2 has no explicit rule; without this it falls to rule6_seq_dom which can flip wrong
-    elif cr == 2:
-        p_red = 0.58 if cv == 'red' else 0.42
-        applied_rule = 'rule1a_short_streak'
-
-    # Rule 2b: Symmetric block in progress (GGGRRR / GGRRRR pattern)
+    # Rule 2b: Symmetric block in progress (GGGRRR / RRRGGG pattern).
+    # Only reached when prev_run < 3 (small symmetric cycles, not dominant trends).
     elif sym_block_info is not None:
         pred = sym_block_info['pred_val']
         c    = sym_block_info['conf']
-        # Override: sym_complete wants to switch to prev color, but if the majority
-        # of the last 6 rounds favors the CURRENT color, ride the dominant color instead
         if sym_block_info['phase'] == 'complete' and maj6 == cv:
             pred = cv
             c    = 0.62
@@ -367,6 +442,11 @@ def predict_color(idx):
         else:
             applied_rule = f'rule2b_sym_{sym_block_info["phase"]}'
         p_red = c if pred == 'red' else (1.0 - c)
+
+    # Rule 1a: Short streak (2) with no dominant previous run (pr < 3)
+    elif cr == 2:
+        p_red = 0.58 if cv == 'red' else 0.42
+        applied_rule = 'rule1a_short_streak'
 
     # Rule 3: Confirmed alternating (3+ unbroken) → predict flip to opposite color
     elif cr == 1 and pr == 1 and alt >= 3:
@@ -394,12 +474,23 @@ def predict_color(idx):
             p_red = 0.65 if r8 > g8 else 0.35
             applied_rule = 'rule7_dominant'
 
+        # Rule 8: trend-20 fallback when last-8 is tied — follow dominant in last 20
+        else:
+            _r20 = arr[-20:] if len(arr) >= 20 else arr
+            _rc20 = _r20.count('red'); _gc20 = _r20.count('green')
+            if _rc20 / len(_r20) >= 0.60:
+                p_red = 0.60
+                applied_rule = 'rule8_trend20'
+            elif _gc20 / len(_r20) >= 0.60:
+                p_red = 0.40
+                applied_rule = 'rule8_trend20'
+
     p_red = max(0.05, min(0.95, p_red))
     # Streak flip only applies when NOT in low-streak regime and no strong directional evidence:
     # - cr >= 3: color repeating 3+ times — trust the streak, don't invert
     # - alt >= 3: confirmed alternating pattern — follow it, don't invert
     # - maj6 == cv: majority of last 6 rounds confirms current direction — don't invert
-    if not low_streak_regime and _cur_loss_streak >= 5 and cr < 3 and alt < 3 and maj6 is not None and maj6 != cv:
+    if not low_streak_regime and not alt_chaos_regime and _cur_loss_streak >= 5 and cr < 3 and alt < 3 and maj6 is not None and maj6 != cv:
         p_red = 1.0 - p_red
         applied_rule += '+streak_flip'
     p_red = max(0.05, min(0.95, p_red))
@@ -410,10 +501,11 @@ def predict_color(idx):
         'cur_val': cv, 'cur_run': cr, 'prev_val': pv, 'prev_run': pr,
         'alt_run': alt, 'dom_r8': round(r8/len(recent8), 3) if recent8 else 0.5,
         'rule': applied_rule, 'loss_streak': _cur_loss_streak,
-        'low_streak_regime': low_streak_regime,
+        'low_streak_regime': low_streak_regime, 'alt_chaos_regime': alt_chaos_regime,
         'maj6': maj6,
-        'mirror_info':   mirror_info or mirror_in_info,
+        'mirror_info':    mirror_info or mirror_in_info,
         'sym_block_info': sym_block_info,
+        'alt_blk_info':   alt_blk_info if alt_blk_det else None,
         'seq_pred': seq_pred, 'seq_conf': round(seq_conf, 3),
     }
 
