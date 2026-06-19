@@ -379,6 +379,104 @@ def hot_digits_per_position(hist, window=20, top_n=3):
         result.append([[d, c] for d, c in top])
     return result
 
+
+def filter_to_n(items, oe_filter, bs_filter, target_n=5):
+    """
+    Filter a list of sum values (or [(val, score), ...] tuples) down to target_n
+    by keeping values that match the current ODD/EVEN and BIG/SMALL predictions.
+    Always tries to fill up to target_n: starts with both filters, then relaxes
+    BS filter, then falls back to unfiltered, filling slots incrementally.
+    """
+    def val(item):
+        return item[0] if isinstance(item, (list, tuple)) else item
+
+    def oe_ok(item):
+        s = val(item)
+        if oe_filter == 'ODD':  return s % 2 == 1
+        if oe_filter == 'EVEN': return s % 2 == 0
+        return True
+
+    def bs_ok(item):
+        s = val(item)
+        if bs_filter == 'BIG':   return s > 18
+        if bs_filter == 'SMALL': return s <= 18
+        return True
+
+    seen = []
+    seen_vals = set()
+
+    def add_unique(candidates):
+        for x in candidates:
+            v = val(x)
+            if v not in seen_vals:
+                seen_vals.add(v)
+                seen.append(x)
+            if len(seen) >= target_n:
+                break
+
+    # Tier 1: both OE + BS match
+    add_unique(x for x in items if oe_ok(x) and bs_ok(x))
+    # Tier 2: OE only (BS relaxed)
+    if len(seen) < target_n:
+        add_unique(x for x in items if oe_ok(x))
+    # Tier 3: anything remaining (both filters relaxed)
+    if len(seen) < target_n:
+        add_unique(items)
+
+    return seen[:target_n]
+
+
+def filtered_hot_sums(hist, window=50, top_n=5, oe_filter=None, bs_filter=None):
+    """
+    Hot sums from last `window` rounds, narrowed to those matching the
+    current ODD/EVEN and BIG/SMALL pattern predictions.
+    Falls back gracefully (drops BS filter, then both) if too few candidates.
+    """
+    from collections import Counter
+    recent = hist[-window:] if len(hist) >= window else hist
+    counts = Counter(r['total'] for r in reversed(recent))
+    pool = [s for s, _ in sorted(counts.items(), key=lambda x: -x[1])[:max(top_n * 3, 15)]]
+    return filter_to_n(pool, oe_filter, bs_filter, target_n=top_n)
+
+
+def filtered_hot_digits_per_position(hist, window=50, top_n=3, oe_window=10):
+    """
+    Hot digits per position filtered by each position's recent odd/even trend.
+    Returns list of dicts: {pos, oe_trend, odd_frac, hot: [[digit, count], ...]}
+    """
+    recent_win = hist[-window:] if len(hist) >= window else hist
+    recent_oe  = hist[-oe_window:] if len(hist) >= oe_window else hist
+
+    result = []
+    for pos in ('n1', 'n2', 'n3', 'n4'):
+        vals_oe = [r[pos] for r in recent_oe]
+        odd_frac = sum(1 for d in vals_oe if d % 2 == 1) / len(vals_oe) if vals_oe else 0.5
+        pos_oe = 'ODD' if odd_frac >= 0.60 else ('EVEN' if odd_frac <= 0.40 else 'MIXED')
+
+        cnt = {}
+        for r in recent_win:
+            d = r[pos]
+            cnt[d] = cnt.get(d, 0) + 1
+        top_all = sorted(cnt.items(), key=lambda x: x[1], reverse=True)
+
+        if pos_oe != 'MIXED':
+            filtered = [(d, c) for d, c in top_all if (
+                (pos_oe == 'ODD' and d % 2 == 1) or
+                (pos_oe == 'EVEN' and d % 2 == 0)
+            )]
+            if len(filtered) < 2:
+                filtered = top_all
+        else:
+            filtered = top_all
+
+        result.append({
+            'pos':      pos,
+            'oe_trend': pos_oe,
+            'odd_frac': round(odd_frac, 3),
+            'hot':      [[d, c] for d, c in filtered[:top_n]],
+        })
+    return result
+
 def predict_sum_numbers(hist, n=5):
     """
     Predict the N most likely sum values for the next round.
@@ -534,9 +632,13 @@ def predict_fst1m(hist):
 
     # ── Sum prediction — specific numbers ──────────────────────────────────────
     pred_sum_val, pred_sum_zone, conf_sum = predict_sum(hist)
-    pred_sum_nums = predict_sum_numbers(hist, n=5)      # [(val, pct), ...]
-    hot_digits    = hot_digits_per_position(hist, window=30, top_n=3)
-    pred_hot_sums = hot_sums_from_history(hist, window=30, top_n=5)
+    pred_sum_nums = predict_sum_numbers(hist, n=6)      # [(val, pct), ...]
+    hot_digits    = hot_digits_per_position(hist, window=50, top_n=3)
+    pred_hot_sums = hot_sums_from_history(hist, window=50, top_n=6)
+    # Filter each 6-item list down to 5 using OE + BS pattern predictions
+    pred_sum_nums_filtered  = filter_to_n(pred_sum_nums, pred_oe, pred_bs, target_n=5)
+    pred_hot_sums_filtered  = filter_to_n(pred_hot_sums, pred_oe, pred_bs, target_n=5)
+    hot_digits_filtered     = filtered_hot_digits_per_position(hist, window=50, top_n=3)
 
     sums_last10 = [r['total'] for r in (hist[-10:] if len(hist) >= 10 else hist)]
     avg_sum     = sum(sums_last10) / len(sums_last10)
@@ -565,8 +667,11 @@ def predict_fst1m(hist):
         'pred_sum_zone': pred_sum_zone,
         'conf_sum':      conf_sum,
         'pred_sum_nums':  pred_sum_nums,
-        'hot_digits':     hot_digits,
-        'pred_hot_sums':  pred_hot_sums,
+        'hot_digits':              hot_digits,
+        'pred_hot_sums':           pred_hot_sums,
+        'pred_hot_sums_filtered':  pred_hot_sums_filtered,
+        'pred_sum_nums_filtered':  pred_sum_nums_filtered,
+        'hot_digits_filtered':     hot_digits_filtered,
         'avg_sum_10':     round(avg_sum, 1),
         'last_sum':      hist[-1]['total'],
     }
@@ -611,11 +716,14 @@ def main():
         'is_bet_oe':     sinfo['is_bet_oe'],
         'rule_oe':       sinfo['rule_oe'],
         # Sum numbers
-        'pred_sum_val':  sinfo['pred_sum_val'],
-        'pred_sum_zone': sinfo['pred_sum_zone'],
-        'conf_sum':      sinfo['conf_sum'],
-        'pred_sum_nums': sinfo['pred_sum_nums'],
-        'hot_digits':    sinfo['hot_digits'],
+        'pred_sum_val':           sinfo['pred_sum_val'],
+        'pred_sum_zone':          sinfo['pred_sum_zone'],
+        'conf_sum':               sinfo['conf_sum'],
+        'pred_sum_nums':          sinfo['pred_sum_nums'],
+        'hot_digits':             sinfo['hot_digits'],
+        'pred_hot_sums_filtered':  sinfo['pred_hot_sums_filtered'],
+        'pred_sum_nums_filtered':  sinfo['pred_sum_nums_filtered'],
+        'hot_digits_filtered':     sinfo['hot_digits_filtered'],
         # Shared stats
         'avg_sum_10':    sinfo['avg_sum_10'],
         'last_sum':      sinfo['last_sum'],

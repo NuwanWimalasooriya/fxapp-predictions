@@ -269,9 +269,19 @@ def api_status():
         last_id_new = snap_new.get('last_id', 0) or 0
     mtime_cg    = os.path.getmtime(SNAP_CG_PATH) if os.path.exists(SNAP_CG_PATH) else 0
     last_id_ds1m = 0
-    snap_ds1m = _load_json(SNAP_DS1M_PATH)
-    if snap_ds1m:
-        last_id_ds1m = snap_ds1m.get('last_id', 0) or 0
+    if os.path.exists(DB_DS1M_PATH):
+        try:
+            _c = sqlite3.connect(DB_DS1M_PATH, timeout=2)
+            _r = _c.execute("SELECT MAX(id) FROM rounds WHERE pred_oe != '' AND pred_oe IS NOT NULL").fetchone()
+            _c.close()
+            if _r and _r[0]:
+                last_id_ds1m = int(_r[0])
+        except Exception:
+            pass
+    if last_id_ds1m == 0:
+        snap_ds1m = _load_json(SNAP_DS1M_PATH)
+        if snap_ds1m:
+            last_id_ds1m = snap_ds1m.get('last_id', 0) or 0
     last_id_fst1m = 0
     snap_fst1m = _load_json(SNAP_FST1M_PATH)
     if snap_fst1m:
@@ -732,16 +742,16 @@ def api_fst1m_prediction():
     snap = _load_json(SNAP_FST1M_PATH)
     if snap is None:
         return jsonify({'error': 'No FST1M data yet. Run predict_fst1m.py first.'}), 404
-    # Augment with hot sums from last 30 completed rounds
+    # Augment with hot sums: last 50 completed rounds (inclusive of latest)
     try:
         conn = sqlite3.connect(DB_FST1M_PATH, timeout=5)
         rows = conn.execute(
-            'SELECT total FROM rounds ORDER BY id DESC LIMIT 30'
+            'SELECT total FROM rounds ORDER BY id DESC LIMIT 50'
         ).fetchall()
         conn.close()
         from collections import Counter
         counts = Counter(r[0] for r in rows)
-        hot = sorted(counts.items(), key=lambda x: -x[1])[:5]
+        hot = sorted(counts.items(), key=lambda x: -x[1])[:6]
         snap['hot_sums'] = [{'sum': s, 'count': c} for s, c in hot]
     except Exception:
         snap['hot_sums'] = []

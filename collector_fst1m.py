@@ -403,21 +403,17 @@ def save_records(new_items):
             rows
         )
         conn.commit()
-
-        # Compute pred_hot_sums: top 5 from 30 rounds BEFORE each new round
-        # (not including the round itself), read newest-first to match the
-        # 'Hot sums (last 30)' panel tie-breaking exactly.
+        # Compute pred_hot_sums: last 50 rounds including this round (inclusive).
+        # Matches the Hot sums (last 50) panel which also uses ORDER BY id DESC LIMIT 50.
         for issue, _ in new_items:
-            last30 = conn.execute(
-                'SELECT total FROM rounds WHERE id < ? ORDER BY id DESC LIMIT 30',
+            last50 = conn.execute(
+                'SELECT total FROM rounds WHERE id <= ? ORDER BY id DESC LIMIT 50',
                 (issue,)
             ).fetchall()
-            counts = Counter(r[0] for r in last30)
+            counts = Counter(r[0] for r in last50)
             hot = [s for s, _ in sorted(counts.items(), key=lambda x: -x[1])[:5]]
-            conn.execute(
-                'UPDATE rounds SET pred_hot_sums=? WHERE id=?',
-                (json.dumps(hot), issue)
-            )
+            conn.execute('UPDATE rounds SET pred_hot_sums=? WHERE id=?',
+                         (json.dumps(hot), issue))
         conn.commit()
     finally:
         conn.close()

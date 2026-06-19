@@ -383,9 +383,18 @@ def predict_color(idx):
     p_red = 0.5
 
     # Rule 0c: Alternating chaos (flip_rate ≥ 0.75, max_run ≤ 2 in last 8) — highest priority.
-    # Strictly alternating pattern → predict opposite of current color.
+    # In oscillating regime, commit to the majority direction of last 20 rounds rather
+    # than flipping every round — stays on the dominant trend.
     if alt_chaos_regime:
-        p_red = 0.20 if cv == 'red' else 0.80
+        _r20  = arr[-20:] if len(arr) >= 20 else arr
+        _rc20 = _r20.count('red')
+        _p_maj = _rc20 / len(_r20)
+        if _p_maj >= 0.55:
+            p_red = 0.65
+        elif _p_maj <= 0.45:
+            p_red = 0.35
+        else:
+            p_red = 0.5
         applied_rule = 'rule0c_alt_chaos'
 
     # Rule 0: Low-streak regime (max run ≤ 2 in last 20) — predict majority of last 20 rounds.

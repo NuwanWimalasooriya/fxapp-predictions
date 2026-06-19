@@ -1,8 +1,8 @@
 """
 Backfill pred_hot_sums for all rounds in fst1m.db.
 
-For each round X: top 5 from the 30 rounds BEFORE X (not including X),
-read newest-first so tie-breaking matches the 'Hot sums (last 30)' panel.
+For each round X: top 5 from the 50 rounds ending AT X (inclusive),
+newest-first -- matches the Hot sums (last 50) panel which uses ORDER BY id DESC LIMIT 50.
 """
 import sqlite3, json
 from collections import Counter
@@ -22,9 +22,9 @@ all_rounds = conn.execute('SELECT id, total FROM rounds ORDER BY id').fetchall()
 
 db_updates = []
 for idx, (round_id, _) in enumerate(all_rounds):
-    # 30 rounds BEFORE this round, read newest-first (matches server ORDER BY id DESC)
-    before = all_rounds[max(0, idx - 30):idx][::-1]
-    counts = Counter(r[1] for r in before)
+    # 50 rounds ending AT this round (inclusive), newest-first
+    window = all_rounds[max(0, idx - 49):idx + 1][::-1]
+    counts = Counter(r[1] for r in window)
     hot = [s for s, _ in sorted(counts.items(), key=lambda x: -x[1])[:5]]
     db_updates.append((json.dumps(hot), round_id))
 
