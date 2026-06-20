@@ -13,6 +13,7 @@ Press Ctrl+C to stop.
 import os, sys, json, time, subprocess, ssl, sqlite3, csv
 import urllib.request
 sys.stdout.reconfigure(encoding='utf-8')
+from license_manager import check_license
 
 _SSL_CTX = ssl.create_default_context()
 _SSL_CTX.check_hostname = False
@@ -394,6 +395,7 @@ def run_prediction():
 # ── Main loop ──────────────────────────────────────────────────────────────────
 
 def main():
+    check_license()
     print("=" * 55)
     print(f"  Color Game Collector  [{GAME2_NAME}]  (Ctrl+C to stop)")
     print("=" * 55)

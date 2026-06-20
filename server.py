@@ -6,6 +6,7 @@ import os, json, sqlite3, subprocess, sys, threading, secrets, hashlib
 from flask import (Flask, jsonify, send_from_directory, request,
                    session, redirect, url_for, render_template_string)
 from werkzeug.security import check_password_hash
+from license_manager import validate_key, _load_stored_key, _save_key
 
 def _load_env():
     env = {}
@@ -125,14 +126,14 @@ def _run_predict_fst1m():
 
 # ── auth guard ─────────────────────────────────────────────────────────────────
 
-_PUBLIC_PATHS = {'/login', '/logout'}
+_PUBLIC_PATHS = {'/login', '/logout', '/activate'}
 
 @app.before_request
 def _require_login():
     if request.path in _PUBLIC_PATHS:
         return
     if not session.get('logged_in'):
-        return redirect(url_for('login'))
+        return redirect(url_for('activate'))
 
 _LOGIN_HTML = """<!DOCTYPE html>
 <html lang="en">
@@ -196,7 +197,69 @@ def login():
 @app.route('/logout')
 def logout():
     session.clear()
-    return redirect(url_for('login'))
+    return redirect(url_for('activate'))
+
+_ACTIVATION_HTML = """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DS3M — User Access</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --border:#334155; --text:#e2e8f0;
+          --muted:#94a3b8; --accent:#3b82f6; --red:#ef4444; --green:#22c55e; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif;
+         min-height:100vh; display:flex; align-items:center; justify-content:center; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:12px;
+          padding:36px 40px; width:100%; max-width:420px; }
+  h1 { font-size:20px; font-weight:700; margin-bottom:6px; letter-spacing:.02em; }
+  .sub { font-size:12px; color:var(--muted); margin-bottom:28px; }
+  label { display:block; font-size:12px; color:var(--muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:.06em; }
+  input { width:100%; background:#0f172a; border:1px solid var(--border); border-radius:6px;
+          color:var(--text); font-size:14px; padding:10px 12px; outline:none; margin-bottom:16px;
+          font-family:monospace; letter-spacing:.06em; }
+  input:focus { border-color:var(--accent); }
+  input::placeholder { letter-spacing:normal; font-family:inherit; color:#475569; }
+  button { width:100%; background:#0f4c3a; color:#4ade80; border:1px solid #166534;
+           border-radius:6px; font-size:14px; font-weight:600; padding:11px; cursor:pointer; margin-top:4px; }
+  button:hover { background:#166534; }
+  .error { background:rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.3); border-radius:6px;
+           color:var(--red); font-size:13px; padding:10px 14px; margin-bottom:18px; }
+  .hint { font-size:11px; color:var(--muted); margin-top:18px; text-align:center; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>DS3M Predictor</h1>
+  <div class="sub">Enter your activation code to access the dashboard</div>
+  {% if error %}<div class="error">{{ error }}</div>{% endif %}
+  <form method="post" action="/activate">
+    <label>Activation Code</label>
+    <input type="text" name="code" placeholder="FXPRO-YYYYMMDD-XXXXXXXX"
+           autocomplete="off" autofocus spellcheck="false" required>
+    <button type="submit">Activate</button>
+  </form>
+  <div class="hint">Contact your administrator if you don't have an activation code.</div>
+</div>
+</body>
+</html>"""
+
+@app.route('/activate', methods=['GET', 'POST'])
+def activate():
+    if session.get('logged_in'):
+        return redirect(url_for('index'))
+    error = None
+    if request.method == 'POST':
+        code = request.form.get('code', '').strip()
+        valid, message = validate_key(code)
+        if valid:
+            _save_key(code)
+            session['logged_in'] = True
+            session.permanent = False
+            return redirect(url_for('index'))
+        error = message
+    return render_template_string(_ACTIVATION_HTML, error=error)
 
 # ── routes ─────────────────────────────────────────────────────────────────────
 
@@ -928,6 +991,9 @@ def _db_watcher():
 
 
 if __name__ == '__main__':
+    key = _load_stored_key()
+    valid, msg = validate_key(key) if key else (False, 'No activation code found.')
+    print(f'  [LICENSE] {msg}' if valid else f'  [LICENSE] {msg} — visit /activate in browser.')
     _ensure_config()
     if not _load_credentials():
         print("  [!]  No credentials found. Run: python create_credentials.py")
