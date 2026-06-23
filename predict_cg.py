@@ -234,39 +234,46 @@ _cur_loss_streak = _loss_streak()
 
 def detect_alternating_block_pattern(arr, min_block=3):
     """
-    Detects GGGRRR / RRRGGG style patterns where BOTH the current run and the
-    previous run are >= min_block long.
+    Detects A×n → B×m → A×n style alternating block patterns.
 
-    After GGGRRR → predict GREEN (the previous color resumes).
-    After RRRGGG → predict RED.
+    Requires ALL THREE of the most recent runs to be >= min_block so that a
+    single short interruption (e.g. G×1) or an asymmetric pair (R×5→G×3) does
+    not trigger a false flip prediction.
 
-    Only fires when the current block has just reached min_block (cr == 3 when
-    min_block=3).  Larger streaks (cr>=4) are handled by Rule 1 before this
-    function is ever called.
-
-    Does NOT fire if the current block has grown 1.5× larger than the previous
-    block — in that case the pattern is broken and the streak should continue.
-
-    Returns (detected, pred_color, conf, info_dict).
+    Specifically rejects:
+      - G×1→R×3→G×3  (G×1 is below min_block — not a real block)
+      - R×5→G×3→R×3  (R×5 is >1.5× G×3 — asymmetric, pattern not balanced)
     """
-    if len(arr) < min_block * 2:
+    if len(arr) < min_block * 3:
         return False, None, 0.5, {}
 
     runs = build_runs(arr)
-    if len(runs) < 2:
+    if len(runs) < 3:
         return False, None, 0.5, {}
 
     cur_val,  cur_run  = runs[-1]
     prev_val, prev_run = runs[-2]
+    pp_val,   pp_run   = runs[-3]
 
-    if cur_run < min_block or prev_run < min_block:
+    # All three blocks must reach the minimum size
+    if cur_run < min_block or prev_run < min_block or pp_run < min_block:
         return False, None, 0.5, {}
 
-    # Pattern is considered broken if current block has grown much longer than prev
+    # Run 2 steps back must be the same colour as current (A→B→A structure)
+    if pp_val != cur_val:
+        return False, None, 0.5, {}
+
+    # The block 2 steps back must not be much bigger than the middle block —
+    # if it is, the pattern is asymmetric (dominant run + short detour) rather
+    # than a true equal-sized alternation
+    if pp_run > prev_run * 1.5:
+        return False, None, 0.5, {}
+
+    # Current block must not have grown much larger than prev (still valid alternation)
     if cur_run > prev_run * 1.5:
         return False, None, 0.5, {}
 
-    # Confidence scales with block symmetry (balanced 3-3 → highest, skewed → lower)
+    # Confidence scales with block symmetry
     balance = min(cur_run, prev_run) / max(cur_run, prev_run)
     conf    = round(min(0.72, 0.63 + 0.09 * balance), 3)
 
@@ -275,7 +282,8 @@ def detect_alternating_block_pattern(arr, min_block=3):
         'prev_run':   prev_run,
         'cur_color':  cur_val,
         'cur_run':    cur_run,
-        'pattern':    f'{prev_val[0].upper()}x{prev_run}_{cur_val[0].upper()}x{cur_run}',
+        'pp_run':     pp_run,
+        'pattern':    f'{pp_val[0].upper()}x{pp_run}_{prev_val[0].upper()}x{prev_run}_{cur_val[0].upper()}x{cur_run}',
     }
 
 
@@ -432,12 +440,20 @@ def predict_color(idx):
 
     # Rule 2: After dominant run (3+), stay on previous trend until counter reaches 3.
     # 1 or 2 counter-rounds are NOT a confirmed reversal — hold previous direction.
-    # This must come BEFORE sym_block so a dominant trend (G×4 → R×1) is not
-    # mis-classified as a "building" symmetric block that predicts continuation of Red.
+    # EXCEPTION: skip when the run 2 steps back is the same colour as current AND at
+    # least as long as prev — this means the current colour was already dominant before
+    # the prev detour (e.g. R×5→G×3→R×2: the R×2 is resuming the earlier R×5 trend,
+    # not reverting to G×3).
     elif pr >= 3 and cr <= 2:
-        conf = 0.75 if pr >= 6 else (0.70 if pr >= 4 else 0.65)
-        p_red = conf if pv == 'red' else (1.0 - conf)
-        applied_rule = 'rule2_trend_persist'
+        _runs_full = build_runs(arr)
+        _ppv = _runs_full[-3][0] if len(_runs_full) >= 3 else None
+        _ppr = _runs_full[-3][1] if len(_runs_full) >= 3 else 0
+        if _ppv == cv and _ppr >= pr:
+            pass  # current colour was dominant 2 steps back — don't hold previous
+        else:
+            conf = 0.75 if pr >= 6 else (0.70 if pr >= 4 else 0.65)
+            p_red = conf if pv == 'red' else (1.0 - conf)
+            applied_rule = 'rule2_trend_persist'
 
     # Rule 2b: Symmetric block in progress (GGGRRR / RRRGGG pattern).
     # Only reached when prev_run < 3 (small symmetric cycles, not dominant trends).

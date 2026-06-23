@@ -27,7 +27,18 @@
       "PowerShell(Stop-Process -Id 25540 -Force -ErrorAction SilentlyContinue)",
       "PowerShell(Start-Process -FilePath \"python\" -ArgumentList \"server.py\" -WorkingDirectory \"c:\\\\NuwanWimalasooriya\\\\fxapp-predictions\" -WindowStyle Hidden)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5050/api/fst1m/prediction -H \"Cookie: session=invalid\")",
-      "Bash(python -c \"import json; d=json.load\\(open\\('c:/NuwanWimalasooriya/fxapp-predictions/data/latest_prediction_fst1m.json'\\)\\); print\\(list\\(d.keys\\(\\)\\)\\)\")"
+      "Bash(python -c \"import json; d=json.load\\(open\\('c:/NuwanWimalasooriya/fxapp-predictions/data/latest_prediction_fst1m.json'\\)\\); print\\(list\\(d.keys\\(\\)\\)\\)\")",
+      "Bash(python _debug_ds1m.py)",
+      "Bash(python _backfill_ds1m.py)",
+      "Bash(python -c \"import predict_ds1m; print\\('OK'\\)\")",
+      "WebFetch(domain:m.fxpro1.net)",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('collector_blk3m.py'\\).read\\(\\)\\); print\\('collector OK'\\)\")",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('predict_blk3m.py'\\).read\\(\\)\\); print\\('predictor OK'\\)\")",
+      "Bash(python -c \"import server; print\\('server OK'\\)\")",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('backfill_blk3m.py'\\).read\\(\\)\\); print\\('OK'\\)\")",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('backfill_blk3m.py'\\).read\\(\\)\\); print\\('backfill OK'\\)\")",
+      "Bash(python predict_blk3m.py)",
+      "Bash(python backfill_blk3m.py)"
     ]
   }
 }

@@ -363,6 +363,53 @@ def hot_sums_from_history(hist, window=30, top_n=5):
     return [s for s, _ in sorted(counts.items(), key=lambda x: -x[1])[:top_n]]
 
 
+def aligned_hot_sums(hist, window=50, top_n=10, target_n=6, oe_filter=None, bs_filter=None):
+    """
+    Pick target_n hot sums from the last `window` rounds that are maximally
+    aligned with the OE and BS predictions.
+
+    Strategy (tiered, all sorted by descending frequency):
+      Tier 1 — matches BOTH OE and BS  (best)
+      Tier 2 — matches OE only         (BS relaxed)
+      Tier 3 — matches BS only         (OE relaxed, last resort)
+      Tier 4 — anything remaining      (absolute fallback)
+
+    The full last-`window` frequency table is the search space so we never
+    run out of OE-aligned candidates just because the raw top-10 pool was
+    too narrow.
+    """
+    from collections import Counter
+    recent = hist[-window:] if len(hist) >= window else hist
+    counts = Counter(r['total'] for r in recent)
+    by_freq = sorted(counts.items(), key=lambda x: -x[1])   # (sum, count), hottest first
+
+    def oe_ok(s):
+        if oe_filter == 'ODD':  return s % 2 == 1
+        if oe_filter == 'EVEN': return s % 2 == 0
+        return True
+
+    def bs_ok(s):
+        if bs_filter == 'BIG':   return s > 18
+        if bs_filter == 'SMALL': return s <= 18
+        return True
+
+    tier1 = [s for s, _ in by_freq if oe_ok(s) and bs_ok(s)]   # both OE+BS match (best)
+    tier2 = [s for s, _ in by_freq if oe_ok(s) and not bs_ok(s)]  # OE only
+    tier3 = [s for s, _ in by_freq if not oe_ok(s) and bs_ok(s)]  # BS only
+    tier4 = [s for s, _ in by_freq if not oe_ok(s) and not bs_ok(s)]  # last resort
+
+    result, seen = [], set()
+    for tier in [tier1, tier2, tier3, tier4]:
+        for s in tier:
+            if s not in seen:
+                seen.add(s)
+                result.append(s)
+        if len(result) >= target_n:
+            break
+
+    return result[:target_n]
+
+
 def hot_digits_per_position(hist, window=20, top_n=3):
     """
     Return the top_n hottest digits for each of the 4 positions over the

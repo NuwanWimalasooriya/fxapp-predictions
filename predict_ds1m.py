@@ -395,6 +395,58 @@ def detect_post_sym_tile_inprogress(oe_arr, idx, tile_size=6):
     return None
 
 
+# ── Uniform-block alternating pattern ──────────────────────────────────────────
+def detect_uniform_block(all_blocks, min_len=2, max_len=6):
+    """
+    Detect a repeating uniform-length alternating block pattern, e.g. EEE|OOO|EEE|OOO.
+
+    Requires the last 2 COMPLETE blocks to have the same length L and alternate in value.
+    The current (partial) block must be the expected continuation (opposite of prev).
+
+    Returns a dict or None:
+      phase='in_progress'  → inside the expected block → predict CONTINUE (same as cur_val)
+      phase='at_boundary'  → cur_run just hit L        → predict SWITCH  (opposite of cur_val)
+    """
+    if len(all_blocks) < 3:
+        return None
+
+    cur_val, cur_run = all_blocks[-1][0], all_blocks[-1][1]
+    p_val,   p_len   = all_blocks[-2][0], all_blocks[-2][1]
+    pp_val,  pp_len  = all_blocks[-3][0], all_blocks[-3][1]
+
+    # Last 2 complete blocks must share the same length and alternate
+    if p_len != pp_len or p_val == pp_val:
+        return None
+
+    block_len = p_len
+    if not (min_len <= block_len <= max_len):
+        return None
+
+    # Current block must be the expected next value (opposite of prev)
+    if cur_val != _FLIP[p_val]:
+        return None
+
+    if cur_run < block_len:
+        conf = round(0.67 + min(0.08, (cur_run - 1) * 0.03), 3)
+        return {
+            'pred_val':     cur_val,           # continue current block
+            'conf':         conf,
+            'block_len':    block_len,
+            'pattern_name': f'uniform_blk_L{block_len}',
+            'phase':        'in_progress',
+        }
+    elif cur_run == block_len:
+        return {
+            'pred_val':     _FLIP[cur_val],    # switch to opposite
+            'conf':         0.70,
+            'block_len':    block_len,
+            'pattern_name': f'uniform_blk_L{block_len}',
+            'phase':        'at_boundary',
+        }
+    # cur_run > block_len — block is longer than pattern, no prediction
+    return None
+
+
 # ── Cycle detection ─────────────────────────────────────────────────────────────
 def detect_cycle(blocks_with_meta):
     """
@@ -781,6 +833,9 @@ def predict_ds1m(oe_arr, idx):
     all_blocks = _build_blocks(arr)
     cycle_info = detect_cycle(all_blocks) if len(all_blocks) >= 5 else None
 
+    # Uniform-block alternating detection (EEE|OOO|EEE|OOO etc.) — used by Rule UB
+    uniform_block_info = detect_uniform_block(all_blocks) if len(all_blocks) >= 3 else None
+
     # Mirror-tile detection (used by Rules 8 & 9)
     mirror_info    = detect_mirror_tile(oe_arr, idx)
     mirror_in_info = detect_mirror_tile_inprogress(oe_arr, idx) if mirror_info is None else None
@@ -814,22 +869,41 @@ def predict_ds1m(oe_arr, idx):
         p_odd       = mi_conf if pred_odd_mi else (1.0 - mi_conf)
         applied_rule = f'rule9_{mirror_in_info["pattern_name"]}'
 
+    # Rule UB: Uniform-block alternating pattern (EEE|OOO|EEE|OOO...)
+    # Must fire before Rule 1b (cur_run==3) so boundary switch takes priority over
+    # naive "continue streak" logic.
+    elif uniform_block_info is not None and mirror_info is None and mirror_in_info is None:
+        pred_odd_ub = (uniform_block_info['pred_val'] == 'ODD')
+        ub_conf     = uniform_block_info['conf']
+        p_odd       = ub_conf if pred_odd_ub else (1.0 - ub_conf)
+        applied_rule = f'rule_ub_{uniform_block_info["pattern_name"]}_{uniform_block_info["phase"]}'
+
     # Rule 1: Inside long block (run >= 4)
     # Data (15985 rounds): run=4→52% stay, run=5→52% stay, run=6+→53% switch.
     # Old code used 0.82 confidence which is far too aggressive for a ~52% signal.
-    # Now blend with XGBoost; slightly lean stay for run=4-5, lean switch for run=6+.
+    # Blend with XGBoost only when it agrees — disagreement means XGB is fighting a clear
+    # structural signal, so trust the run instead of letting XGB drag the score below 0.5.
     elif cur_run >= 4:
         if cur_run <= 5:
             block_p = 0.60 if cur_val == 'ODD' else 0.40  # weak stay lean
         else:
             block_p = 0.44 if cur_val == 'ODD' else 0.56  # run>=6: lean switch
-        p_odd = 0.55 * block_p + 0.45 * p_xgb
+        rule_is_odd = block_p > 0.5
+        if (p_xgb > 0.5) == rule_is_odd:
+            p_odd = 0.55 * block_p + 0.45 * p_xgb
+        else:
+            p_odd = block_p  # XGBoost disagrees with streak — trust the run
         applied_rule = 'rule1_long_block'
 
     # Rule 1b: Medium streak (run == 3) — after 3 consecutive same, continue the streak.
+    # Same XGBoost guard: an obvious 3-streak is not overridden by a contradicting model.
     elif cur_run == 3:
         stay_p = 0.60 if cur_val == 'ODD' else 0.40  # lean stay: continue current streak
-        p_odd = 0.55 * stay_p + 0.45 * p_xgb
+        rule_is_odd = stay_p > 0.5
+        if (p_xgb > 0.5) == rule_is_odd:
+            p_odd = 0.55 * stay_p + 0.45 * p_xgb
+        else:
+            p_odd = stay_p  # XGBoost disagrees with 3-streak — trust the streak
         applied_rule = 'rule1b_stay'
 
     # Rule 3: Confirmed alternating (3+ unbroken single-round runs) → predict flip
@@ -888,6 +962,19 @@ def predict_ds1m(oe_arr, idx):
         p_odd       = kt_conf if pred_odd_kt else (1.0 - kt_conf)
         applied_rule = f'rule11_{known_tile_info["pattern_name"]}'
 
+    # Rule 6b: Short counter lean — both current block and previous block are short (≤ 2 rounds).
+    # In a noisy oscillating regime with no dominant run, lean slightly toward the current
+    # 2-streak direction. A 2-streak with a short prior block is weakly predictive of
+    # continuation (~54%). XGBoost guard: if XGB disagrees, trust the lean (same policy as Rules 1/1b).
+    elif cur_run == 2 and 1 <= prev_run <= 2:
+        lean_p = 0.58 if cur_val == 'ODD' else 0.42
+        rule_is_odd = lean_p > 0.5
+        if (p_xgb > 0.5) == rule_is_odd:
+            p_odd = 0.55 * lean_p + 0.45 * p_xgb
+        else:
+            p_odd = lean_p  # XGBoost disagrees with 2-streak lean — trust the lean
+        applied_rule = 'rule6b_short_lean'
+
     # Rule Maj20: Oscillating regime (cur_run ≤ 2, no structural pattern detected).
     # When no streak of 3 is developing, predict the majority of the last 20 rounds.
     elif cur_run <= 2:
@@ -912,8 +999,12 @@ def predict_ds1m(oe_arr, idx):
     if applied_rule in ('xgb', 'rule4_dom_blend') and abs(p_odd - 0.5) < 0.05:
         p_odd = 0.47
 
-    # Rule 5: Hard streak breaker (5+ consecutive losses → flip)
-    if _cur_loss_streak >= 5:
+    # Rule 5: Hard streak breaker (5+ consecutive losses → flip).
+    # Only applies when no structural rule detected a clear pattern — flipping Rule 1/1b/6
+    # signals inverts correct predictions and extends the loss streak instead of breaking it.
+    _structural_prefixes = ('rule1_', 'rule1b_', 'rule3_', 'rule6_', 'rule6b_', 'rule7_',
+                            'rule8_', 'rule10_', 'rule10b_', 'rule11_')
+    if _cur_loss_streak >= 5 and not any(applied_rule.startswith(p) for p in _structural_prefixes):
         p_odd = 1.0 - p_odd
         applied_rule += '+streak_flip'
 
@@ -940,10 +1031,11 @@ def predict_ds1m(oe_arr, idx):
         'cycle_conf':      cycle_info['conf']         if cycle_info else None,
         'cycle_transition': cycle_info['is_transition'] if cycle_info else None,
         'cycle_exp_len':   cycle_info['exp_len']      if cycle_info else None,
-        'mirror_info':     (mirror_info or mirror_in_info),
-        'sym_info':        sym_info,
-        'post_sym_info':   post_sym_info,
-        'known_tile_info': known_tile_info,
+        'mirror_info':        (mirror_info or mirror_in_info),
+        'sym_info':           sym_info,
+        'post_sym_info':      post_sym_info,
+        'known_tile_info':    known_tile_info,
+        'uniform_block_info': uniform_block_info,
     }
     return pred_oe, p_odd, sinfo
 

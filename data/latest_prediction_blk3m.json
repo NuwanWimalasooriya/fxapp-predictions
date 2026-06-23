@@ -1,0 +1,52 @@
+{
+  "next_round_id": 2062700395,
+  "last_id": 2062700394,
+  "pred_bs": "BIG",
+  "confidence": 0.7,
+  "is_bet": true,
+  "pred_oe": "EVEN",
+  "conf_oe": 0.68,
+  "is_bet_oe": true,
+  "rule_oe": "oe_maj20",
+  "signals": {
+    "cur_val": "BIG",
+    "cur_run": 5,
+    "prev_val": "SMALL",
+    "prev_run": 1,
+    "maj20": "BIG",
+    "maj20_frac": 0.65,
+    "rule": "rule1_long_streak",
+    "pred_oe": "EVEN",
+    "conf_oe": 0.68,
+    "is_bet_oe": true,
+    "rule_oe": "oe_maj20",
+    "last10_bs": [
+      "BIG",
+      "BIG",
+      "SMALL",
+      "BIG",
+      "SMALL",
+      "BIG",
+      "BIG",
+      "BIG",
+      "BIG",
+      "BIG"
+    ],
+    "last10_oe": [
+      "ODD",
+      "EVEN",
+      "EVEN",
+      "EVEN",
+      "EVEN",
+      "EVEN",
+      "EVEN",
+      "ODD",
+      "ODD",
+      "EVEN"
+    ]
+  },
+  "last_total": 230,
+  "last_bs": "BIG",
+  "last_oe": "EVEN",
+  "timestamp": "2026-06-24T01:12:15.540706"
+}

@@ -45,6 +45,12 @@ DB_DS1M_PATH    = os.path.join(_DATA_DIR, _env.get('DB_FILE_DS1M', 'ds1m.db'))
 SNAP_FST1M_PATH = os.path.join(_DATA_DIR, 'latest_prediction_fst1m.json')
 LOG_FST1M_PATH  = os.path.join(_DATA_DIR, 'pred_log_fst1m.json')
 DB_FST1M_PATH   = os.path.join(_DATA_DIR, _env.get('DB_FILE_FST1M', 'fst1m.db'))
+# BLK3M (3-minute Blocks) paths
+SNAP_BLK3M_PATH = os.path.join(_DATA_DIR, 'latest_prediction_blk3m.json')
+LOG_BLK3M_PATH  = os.path.join(_DATA_DIR, 'pred_log_blk3m.json')
+DB_BLK3M_PATH   = os.path.join(_DATA_DIR, _env.get('DB_FILE_BLK3M', 'blk3m.db'))
+# Access log
+ACCESS_LOG_DB_PATH = os.path.join(_DATA_DIR, 'access_log.db')
 
 app = Flask(__name__, static_folder=os.path.join(_BASE, 'static'))
 app.secret_key = _env.get('SECRET_KEY') or secrets.token_hex(32)
@@ -64,6 +70,38 @@ def _no_cache(response):
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate'
     response.headers['Pragma'] = 'no-cache'
     return response
+
+def _init_access_log_db():
+    conn = sqlite3.connect(ACCESS_LOG_DB_PATH, timeout=10)
+    conn.execute('PRAGMA journal_mode=WAL')
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS ip_access_log (
+            id        INTEGER PRIMARY KEY AUTOINCREMENT,
+            code      TEXT NOT NULL,
+            ip        TEXT NOT NULL,
+            user_agent TEXT,
+            timestamp TEXT NOT NULL,
+            action    TEXT NOT NULL DEFAULT "activate"
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+_init_access_log_db()
+
+def _log_ip_access(code: str, ip: str, user_agent: str, action: str = 'activate'):
+    import datetime as _dt
+    try:
+        conn = sqlite3.connect(ACCESS_LOG_DB_PATH, timeout=5)
+        conn.execute('PRAGMA journal_mode=WAL')
+        conn.execute(
+            'INSERT INTO ip_access_log (code, ip, user_agent, timestamp, action) VALUES (?,?,?,?,?)',
+            (code.upper(), ip, user_agent or '', _dt.datetime.now().isoformat(timespec='seconds'), action)
+        )
+        conn.commit()
+        conn.close()
+    except Exception:
+        pass
 
 def _cipher_key():
     secret = _env.get('SECRET_KEY', 'ds3m-default-key')
@@ -132,6 +170,10 @@ _PUBLIC_PATHS = {'/login', '/logout', '/activate'}
 def _require_login():
     if request.path in _PUBLIC_PATHS:
         return
+    if request.path.startswith('/admin/') or request.path.startswith('/api/admin/'):
+        if not session.get('is_admin'):
+            return redirect(url_for('login'))
+        return
     if not session.get('logged_in'):
         return redirect(url_for('activate'))
 
@@ -189,6 +231,7 @@ def login():
                 username == creds['username'] and
                 check_password_hash(creds['password_hash'], password)):
             session['logged_in'] = True
+            session['is_admin']  = True
             session.permanent = False
             return redirect(url_for('index'))
         error = 'Invalid username or password.'
@@ -255,11 +298,245 @@ def activate():
         valid, message = validate_key(code)
         if valid:
             _save_key(code)
-            session['logged_in'] = True
+            ip = request.headers.get('X-Forwarded-For', request.remote_addr or '').split(',')[0].strip()
+            _log_ip_access(code, ip, request.user_agent.string, 'activate')
+            session['logged_in']   = True
+            session['is_admin']    = False
+            session['license_key'] = code.upper()
             session.permanent = False
             return redirect(url_for('index'))
         error = message
     return render_template_string(_ACTIVATION_HTML, error=error)
+
+# ── admin: IP access log ───────────────────────────────────────────────────────
+
+_IP_LOG_HTML = """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IP Access Log — Admin</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --border:#334155; --text:#e2e8f0;
+          --muted:#94a3b8; --accent:#3b82f6; --red:#ef4444; --green:#22c55e;
+          --yellow:#f59e0b; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif;
+         min-height:100vh; padding:32px 24px; }
+  h1 { font-size:18px; font-weight:700; margin-bottom:4px; }
+  .sub { font-size:12px; color:var(--muted); margin-bottom:24px; }
+  .toolbar { display:flex; gap:12px; align-items:center; margin-bottom:18px; flex-wrap:wrap; }
+  .toolbar input { background:#1e293b; border:1px solid var(--border); border-radius:6px;
+                   color:var(--text); font-size:13px; padding:7px 12px; outline:none; width:260px; }
+  .toolbar input:focus { border-color:var(--accent); }
+  .btn { background:var(--accent); color:#fff; border:none; border-radius:6px;
+         font-size:12px; font-weight:600; padding:7px 14px; cursor:pointer; text-decoration:none;
+         display:inline-block; }
+  .btn-sm { padding:4px 10px; font-size:11px; }
+  .btn:hover { background:#2563eb; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th { text-align:left; font-size:11px; color:var(--muted); text-transform:uppercase;
+       letter-spacing:.06em; padding:8px 12px; border-bottom:1px solid var(--border); }
+  td { padding:9px 12px; border-bottom:1px solid #1e293b; vertical-align:top; }
+  tr:hover td { background:#1e293b44; }
+  .badge { display:inline-block; border-radius:4px; font-size:11px; font-weight:600;
+           padding:2px 8px; }
+  .ok   { background:rgba(34,197,94,.15); color:var(--green); }
+  .warn { background:rgba(245,158,11,.15); color:var(--yellow); }
+  .flag { background:rgba(239,68,68,.15); color:var(--red); }
+  .code { font-family:monospace; font-size:12px; letter-spacing:.04em; }
+  .ip   { font-family:monospace; font-size:12px; color:#93c5fd; }
+  .ua   { font-size:11px; color:var(--muted); max-width:300px; overflow:hidden;
+          text-overflow:ellipsis; white-space:nowrap; }
+  .ts   { font-size:11px; color:var(--muted); white-space:nowrap; }
+  details summary { cursor:pointer; list-style:none; }
+  details summary::marker { display:none; }
+  .toggle { font-size:11px; color:var(--accent); cursor:pointer; }
+  .detail-row td { background:#131f35; }
+  .detail-table { width:100%; border-collapse:collapse; font-size:12px; }
+  .detail-table td { padding:5px 10px; border-bottom:1px solid #1e293b22; }
+  .empty { color:var(--muted); font-size:13px; padding:40px; text-align:center; }
+  .summary-bar { display:flex; gap:24px; margin-bottom:20px; flex-wrap:wrap; }
+  .stat { background:var(--card); border:1px solid var(--border); border-radius:8px;
+          padding:12px 20px; min-width:120px; }
+  .stat-val { font-size:22px; font-weight:700; }
+  .stat-lbl { font-size:11px; color:var(--muted); margin-top:2px; }
+</style>
+</head>
+<body>
+<h1>IP Access Log</h1>
+<div class="sub">Activation events — detect shared activation codes</div>
+
+<div class="summary-bar">
+  <div class="stat"><div class="stat-val" id="s-total">—</div><div class="stat-lbl">Total Events</div></div>
+  <div class="stat"><div class="stat-val" id="s-codes">—</div><div class="stat-lbl">Unique Codes</div></div>
+  <div class="stat"><div class="stat-val" id="s-ips">—</div><div class="stat-lbl">Unique IPs</div></div>
+  <div class="stat"><div class="stat-val" style="color:var(--red)" id="s-flag">—</div><div class="stat-lbl">Flagged Codes</div></div>
+</div>
+
+<div class="toolbar">
+  <input type="text" id="filter" placeholder="Filter by code or IP…" oninput="applyFilter()">
+  <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;">
+    <input type="checkbox" id="only-flag" onchange="applyFilter()"> Show flagged only
+  </label>
+  <a href="/" class="btn btn-sm">← Dashboard</a>
+</div>
+
+<table id="log-table">
+  <thead>
+    <tr>
+      <th>Activation Code</th>
+      <th>Unique IPs</th>
+      <th>Total Hits</th>
+      <th>Last Seen</th>
+      <th>Status</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody id="log-body">
+    <tr><td class="empty" colspan="6">Loading…</td></tr>
+  </tbody>
+</table>
+
+<script>
+let _data = [];
+
+async function load() {
+  const r = await fetch('/api/admin/ip-log');
+  if (!r.ok) { document.getElementById('log-body').innerHTML = '<tr><td class="empty" colspan="6">Access denied or error.</td></tr>'; return; }
+  const d = await r.json();
+  _data = d.codes || [];
+  document.getElementById('s-total').textContent = d.total_events ?? '—';
+  document.getElementById('s-codes').textContent = d.total_codes ?? '—';
+  document.getElementById('s-ips').textContent   = d.total_ips   ?? '—';
+  document.getElementById('s-flag').textContent  = d.flagged     ?? '—';
+  applyFilter();
+}
+
+function applyFilter() {
+  const q    = document.getElementById('filter').value.toLowerCase();
+  const flag = document.getElementById('only-flag').checked;
+  const rows = _data.filter(c => {
+    if (flag && c.unique_ips <= 1) return false;
+    if (q && !c.code.toLowerCase().includes(q) && !c.ips.some(i => i.ip.includes(q))) return false;
+    return true;
+  });
+  renderRows(rows);
+}
+
+function renderRows(rows) {
+  const tb = document.getElementById('log-body');
+  if (!rows.length) { tb.innerHTML = '<tr><td class="empty" colspan="6">No records match.</td></tr>'; return; }
+  tb.innerHTML = rows.map((c, idx) => {
+    const badge = c.unique_ips >= 3 ? '<span class="badge flag">SHARED</span>'
+                : c.unique_ips === 2 ? '<span class="badge warn">SUSPICIOUS</span>'
+                : '<span class="badge ok">OK</span>';
+    const detail = c.ips.map(e =>
+      `<tr><td class="ip">${e.ip}</td><td class="ua" title="${e.ua}">${e.ua||'—'}</td><td class="ts">${e.last}</td><td style="color:var(--muted)">${e.count} hit${e.count!==1?'s':''}</td></tr>`
+    ).join('');
+    return `
+    <tr data-idx="${idx}">
+      <td class="code">${c.code}</td>
+      <td>${c.unique_ips}</td>
+      <td>${c.total_hits}</td>
+      <td class="ts">${c.last_seen}</td>
+      <td>${badge}</td>
+      <td><span class="toggle" onclick="toggleDetail(${idx})">▶ Details</span></td>
+    </tr>
+    <tr id="detail-${idx}" class="detail-row" style="display:none">
+      <td colspan="6">
+        <table class="detail-table">
+          <tr><th style="padding:5px 10px;color:var(--muted);font-size:11px">IP</th>
+              <th style="padding:5px 10px;color:var(--muted);font-size:11px">User Agent</th>
+              <th style="padding:5px 10px;color:var(--muted);font-size:11px">Last Seen</th>
+              <th style="padding:5px 10px;color:var(--muted);font-size:11px">Hits</th></tr>
+          ${detail}
+        </table>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function toggleDetail(idx) {
+  const row = document.getElementById('detail-' + idx);
+  const tog = row.previousElementSibling.querySelector('.toggle');
+  if (row.style.display === 'none') {
+    row.style.display = '';
+    tog.textContent = '▼ Details';
+  } else {
+    row.style.display = 'none';
+    tog.textContent = '▶ Details';
+  }
+}
+
+load();
+</script>
+</body>
+</html>"""
+
+@app.route('/admin/ip-log')
+def admin_ip_log():
+    if not session.get('is_admin'):
+        return redirect(url_for('login'))
+    return render_template_string(_IP_LOG_HTML)
+
+@app.route('/api/admin/ip-log')
+def api_admin_ip_log():
+    if not session.get('is_admin'):
+        return jsonify({'error': 'Admin access required'}), 403
+    try:
+        conn = sqlite3.connect(ACCESS_LOG_DB_PATH, timeout=5)
+        conn.execute('PRAGMA journal_mode=WAL')
+        rows = conn.execute(
+            'SELECT code, ip, user_agent, timestamp FROM ip_access_log ORDER BY timestamp DESC'
+        ).fetchall()
+        conn.close()
+    except Exception:
+        rows = []
+
+    # Group by code
+    from collections import defaultdict
+    code_map = defaultdict(list)
+    for code, ip, ua, ts in rows:
+        code_map[code].append({'ip': ip, 'ua': ua, 'ts': ts})
+
+    codes = []
+    all_ips = set()
+    flagged = 0
+    for code, entries in sorted(code_map.items()):
+        ip_map = defaultdict(lambda: {'count': 0, 'last': ''})
+        for e in entries:
+            ip_map[e['ip']]['count'] += 1
+            if e['ts'] > ip_map[e['ip']]['last']:
+                ip_map[e['ip']]['last'] = e['ts']
+                ip_map[e['ip']]['ua']   = e['ua']
+        ips_detail = sorted(
+            [{'ip': ip, 'count': v['count'], 'last': v['last'], 'ua': v['ua']}
+             for ip, v in ip_map.items()],
+            key=lambda x: x['last'], reverse=True
+        )
+        all_ips.update(ip_map.keys())
+        unique = len(ip_map)
+        if unique >= 2:
+            flagged += 1
+        codes.append({
+            'code':       code,
+            'unique_ips': unique,
+            'total_hits': len(entries),
+            'last_seen':  entries[0]['ts'] if entries else '',
+            'ips':        ips_detail,
+        })
+
+    codes.sort(key=lambda x: (-x['unique_ips'], x['last_seen']), reverse=False)
+    codes.sort(key=lambda x: x['unique_ips'], reverse=True)
+
+    return _no_cache(jsonify({
+        'total_events': len(rows),
+        'total_codes':  len(codes),
+        'total_ips':    len(all_ips),
+        'flagged':      flagged,
+        'codes':        codes,
+    }))
 
 # ── routes ─────────────────────────────────────────────────────────────────────
 
@@ -349,13 +626,18 @@ def api_status():
     snap_fst1m = _load_json(SNAP_FST1M_PATH)
     if snap_fst1m:
         last_id_fst1m = snap_fst1m.get('last_id', 0) or 0
+    last_id_blk3m = 0
+    snap_blk3m = _load_json(SNAP_BLK3M_PATH)
+    if snap_blk3m:
+        last_id_blk3m = snap_blk3m.get('last_id', 0) or 0
     return _no_cache(jsonify({
-        'mtime':         mtime,
-        'mtime_new':     mtime_new,
-        'last_id_new':   last_id_new,
-        'mtime_cg':      mtime_cg,
-        'last_id_ds1m':  last_id_ds1m,
-        'last_id_fst1m': last_id_fst1m,
+        'mtime':          mtime,
+        'mtime_new':      mtime_new,
+        'last_id_new':    last_id_new,
+        'mtime_cg':       mtime_cg,
+        'last_id_ds1m':   last_id_ds1m,
+        'last_id_fst1m':  last_id_fst1m,
+        'last_id_blk3m':  last_id_blk3m,
     }))
 
 @app.route('/api/data')
@@ -687,6 +969,194 @@ def api_ds1m_stats():
         'last200': {'win': w200, 'n': n200, 'wr': round(w200 / n200, 4) if n200 else None},
     }))
 
+# ── DS1M gap analysis ──────────────────────────────────────────────────────────
+
+@app.route('/api/ds1m/gap-analysis')
+def api_ds1m_gap_analysis():
+    if not os.path.exists(DB_DS1M_PATH):
+        return _no_cache(jsonify({}))
+    try:
+        conn = sqlite3.connect(DB_DS1M_PATH, timeout=5)
+        conn.execute('PRAGMA journal_mode=WAL')
+        rows = conn.execute(
+            'SELECT id, disc1||disc2||disc3||disc4 FROM rounds ORDER BY id'
+        ).fetchall()
+        conn.close()
+    except Exception as e:
+        return _no_cache(jsonify({'error': str(e)})), 500
+
+    if not rows:
+        return _no_cache(jsonify({}))
+
+    total   = len(rows)
+    last_id = rows[-1][0]
+
+    def _analyze(target):
+        import statistics as _s
+        positions  = [i for i, (_, pat) in enumerate(rows) if pat == target]
+        round_ids  = [rows[i][0] for i in positions]
+
+        gaps = [positions[k+1] - positions[k] - 1 for k in range(len(positions) - 1)]
+        last10_gaps = gaps[-10:]
+        last10_ids  = round_ids[-11:]   # 11 ids → 10 gaps
+
+        mean_gap = round(sum(last10_gaps) / len(last10_gaps), 1) if last10_gaps else None
+        std_gap  = round(_s.stdev(last10_gaps), 1) if len(last10_gaps) >= 2 else 0.0
+        min_gap  = min(last10_gaps) if last10_gaps else None
+        max_gap  = max(last10_gaps) if last10_gaps else None
+
+        current_gap  = (total - 1 - positions[-1]) if positions else None
+        last_occ_id  = round_ids[-1] if round_ids else None
+
+        p_round  = len(positions) / total if total > 0 else 0.0625
+        p_next5  = round((1 - (1 - p_round) ** 5)  * 100, 1)
+        p_next10 = round((1 - (1 - p_round) ** 10) * 100, 1)
+
+        # Gap trend: compare first-half vs second-half of last10
+        trend = None
+        if len(last10_gaps) >= 4:
+            mid  = len(last10_gaps) // 2
+            avg1 = sum(last10_gaps[:mid]) / mid
+            avg2 = sum(last10_gaps[mid:]) / (len(last10_gaps) - mid)
+            if avg2 < avg1 * 0.85:
+                trend = 'shortening'
+            elif avg2 > avg1 * 1.15:
+                trend = 'lengthening'
+            else:
+                trend = 'stable'
+
+        overdue  = (current_gap is not None and mean_gap is not None and current_gap >= mean_gap)
+        due_ratio = round(current_gap / mean_gap, 2) if (current_gap is not None and mean_gap) else None
+
+        return {
+            'total_occurrences': len(positions),
+            'last10_gaps':       last10_gaps,
+            'last10_ids':        last10_ids,
+            'mean_gap':          mean_gap,
+            'std_gap':           std_gap,
+            'min_gap':           min_gap,
+            'max_gap':           max_gap,
+            'current_gap':       current_gap,
+            'last_occ_id':       last_occ_id,
+            'p_per_round_pct':   round(p_round * 100, 2),
+            'p_next5':           p_next5,
+            'p_next10':          p_next10,
+            'overdue':           overdue,
+            'due_ratio':         due_ratio,
+            'trend':             trend,
+        }
+
+    # Combined WWWW + RRRR analysis (both treated as one bet)
+    def _analyze_combined():
+        import statistics as _s
+        combined = sorted(
+            [(i, pat) for i, (_, pat) in enumerate(rows) if pat in ('WWWW', 'RRRR')],
+            key=lambda x: x[0]
+        )
+        positions = [x[0] for x in combined]
+        labels    = [x[1] for x in combined]   # 'WWWW' or 'RRRR'
+        round_ids = [rows[i][0] for i in positions]
+
+        gaps = [positions[k+1] - positions[k] - 1 for k in range(len(positions) - 1)]
+        gap_labels = [labels[k+1] for k in range(len(labels) - 1)]  # which pattern ended each gap
+        last10_gaps   = gaps[-10:]
+        last10_labels = gap_labels[-10:]
+        last10_ids    = round_ids[-11:]
+
+        mean_gap = round(sum(last10_gaps) / len(last10_gaps), 1) if last10_gaps else None
+        std_gap  = round(_s.stdev(last10_gaps), 1) if len(last10_gaps) >= 2 else 0.0
+        min_gap  = min(last10_gaps) if last10_gaps else None
+        max_gap  = max(last10_gaps) if last10_gaps else None
+
+        current_gap = (total - 1 - positions[-1]) if positions else None
+        last_occ_id = round_ids[-1] if round_ids else None
+        last_pat    = labels[-1] if labels else None
+
+        p_round  = len(positions) / total if total > 0 else 0.125
+
+        trend = None
+        if len(last10_gaps) >= 4:
+            mid  = len(last10_gaps) // 2
+            avg1 = sum(last10_gaps[:mid]) / mid
+            avg2 = sum(last10_gaps[mid:]) / (len(last10_gaps) - mid)
+            if avg2 < avg1 * 0.85:   trend = 'shortening'
+            elif avg2 > avg1 * 1.15: trend = 'lengthening'
+            else:                    trend = 'stable'
+
+        overdue   = (current_gap is not None and mean_gap is not None and current_gap >= mean_gap)
+        due_ratio = round(current_gap / mean_gap, 2) if (current_gap is not None and mean_gap) else None
+
+        # ── Pattern-based probability ─────────────────────────────────────────
+        # Use the last 5 WWWW/RRRR occurrences as a fingerprint pattern,
+        # then scan full history for the same pattern and measure how often
+        # the NEXT event appeared within 5 / 10 rounds.
+        LOOKBACK = 5
+        last5_seq   = ['W' if l == 'WWWW' else 'R' for l in labels[-LOOKBACK:]]
+        last5_gaps  = gaps[-(LOOKBACK - 1):] if len(gaps) >= LOOKBACK - 1 else gaps
+
+        p_next5 = p_next10 = None
+        pattern_matches = 0
+
+        if len(labels) >= LOOKBACK + 1 and current_gap is not None:
+            matched_next_gaps = []
+            for i in range(len(labels) - LOOKBACK):
+                window = ['W' if l == 'WWWW' else 'R' for l in labels[i:i + LOOKBACK]]
+                if window == last5_seq:
+                    next_gap_idx = i + LOOKBACK - 1   # gap between labels[i+4] and labels[i+5]
+                    if next_gap_idx < len(gaps):
+                        matched_next_gaps.append(gaps[next_gap_idx])
+
+            pattern_matches = len(matched_next_gaps)
+
+            if matched_next_gaps:
+                # Keep only historical gaps >= current_gap (event hasn't appeared yet)
+                still_open = [g for g in matched_next_gaps if g >= current_gap]
+                if still_open:
+                    p_next5  = round(sum(1 for g in still_open if g <= current_gap + 5)  / len(still_open) * 100, 1)
+                    p_next10 = round(sum(1 for g in still_open if g <= current_gap + 10) / len(still_open) * 100, 1)
+                else:
+                    # All historical gaps were shorter — currently overdue beyond every match
+                    # Use unconditional distribution from matched gaps
+                    p_next5  = round(sum(1 for g in matched_next_gaps if g <= 5)  / len(matched_next_gaps) * 100, 1)
+                    p_next10 = round(sum(1 for g in matched_next_gaps if g <= 10) / len(matched_next_gaps) * 100, 1)
+
+        # Fallback to simple binomial if not enough pattern history
+        if p_next5 is None:
+            p_next5  = round((1 - (1 - p_round) ** 5)  * 100, 1)
+            p_next10 = round((1 - (1 - p_round) ** 10) * 100, 1)
+
+        return {
+            'total_occurrences': len(positions),
+            'last10_gaps':       last10_gaps,
+            'last10_labels':     last10_labels,
+            'last10_ids':        last10_ids,
+            'mean_gap':          mean_gap,
+            'std_gap':           std_gap,
+            'min_gap':           min_gap,
+            'max_gap':           max_gap,
+            'current_gap':       current_gap,
+            'last_occ_id':       last_occ_id,
+            'last_pat':          last_pat,
+            'p_per_round_pct':   round(p_round * 100, 2),
+            'p_next5':           p_next5,
+            'p_next10':          p_next10,
+            'overdue':           overdue,
+            'due_ratio':         due_ratio,
+            'trend':             trend,
+            'last5_pattern':     last5_seq,
+            'last5_gaps':        last5_gaps,
+            'pattern_matches':   pattern_matches,
+        }
+
+    return _no_cache(jsonify({
+        'total_rounds': total,
+        'last_id':      last_id,
+        'WWWW':         _analyze('WWWW'),
+        'RRRR':         _analyze('RRRR'),
+        'COMBINED':     _analyze_combined(),
+    }))
+
+
 # ── Color Game API ─────────────────────────────────────────────────────────────
 
 @app.route('/api/cg/prediction')
@@ -919,6 +1389,7 @@ def api_fst1m_data():
 def api_fst1m_stats():
     if not os.path.exists(DB_FST1M_PATH):
         return _no_cache(jsonify({}))
+    import json as _json
     try:
         conn = sqlite3.connect(DB_FST1M_PATH, timeout=5)
         conn.execute('PRAGMA journal_mode=WAL')
@@ -950,16 +1421,167 @@ def api_fst1m_stats():
             "SELECT result_oe FROM rounds WHERE bet_oe=1 AND result_oe IN ('WIN','LOSS')"
         ).fetchall()
         oe_wb = sum(1 for r in bet_oe_rows if r[0] == 'WIN'); oe_nb = len(bet_oe_rows)
+
+        # HOT SUM hit rate — actual total in pred_hot_sums list
+        hot_rows = conn.execute(
+            "SELECT id, total, pred_hot_sums FROM rounds "
+            "WHERE total IS NOT NULL AND pred_hot_sums IS NOT NULL AND pred_hot_sums != '[]' "
+            "ORDER BY id DESC LIMIT 200"
+        ).fetchall()
+        conn.close()
+
+        # HD SUM hit rate — actual total in pred_sum_nums_filtered (from pred log)
+        log_fst1m = _load_json(LOG_FST1M_PATH) or {}
+
+        hot_hits, hd_hits = [], []
+        for rid, total, hot_json in hot_rows:
+            entry = log_fst1m.get(str(rid), {})
+            sigs  = entry.get('signals', {})
+
+            # HOT SUM — use pred_hot_sums_filtered from log (what is displayed to user)
+            hot_filtered = sigs.get('pred_hot_sums_filtered')
+            if hot_filtered:
+                hot_list = hot_filtered
+            else:
+                try:
+                    hot_list = _json.loads(hot_json or '[]')
+                except Exception:
+                    hot_list = []
+            if hot_list:
+                hot_hits.append(1 if (total in hot_list) else 0)
+
+            # HD SUM
+            hd_raw = sigs.get('pred_sum_nums_filtered') or sigs.get('pred_sum_nums') or []
+            if hd_raw:
+                hd_vals = [v for v, _ in hd_raw] if isinstance(hd_raw[0], (list, tuple)) else hd_raw
+                hd_hits.append(1 if (total in hd_vals) else 0)
+
+        def _wr(hits, n):
+            w = hits[:n]
+            if not w:
+                return {'win': 0, 'n': 0, 'wr': None}
+            s = sum(w)
+            return {'win': s, 'n': len(w), 'wr': round(s / len(w), 4)}
+
+    except Exception as e:
+        return _no_cache(jsonify({'error': str(e)})), 500
+
+    return _no_cache(jsonify({
+        'total_predicted': total_pred,
+        'last100':         {'win': w100,    'n': n100,    'wr': round(w100/n100,       4) if n100    else None},
+        'last200':         {'win': w200,    'n': n200,    'wr': round(w200/n200,       4) if n200    else None},
+        'bet_only':        {'win': wb,      'n': nb,      'wr': round(wb/nb,           4) if nb      else None},
+        'oe_last100':      {'win': oe_w100, 'n': oe_n100, 'wr': round(oe_w100/oe_n100,4) if oe_n100 else None},
+        'oe_bet':          {'win': oe_wb,   'n': oe_nb,   'wr': round(oe_wb/oe_nb,    4) if oe_nb   else None},
+        'hot_sum_last50':  _wr(hot_hits, 50),
+        'hot_sum_last100': _wr(hot_hits, 100),
+        'hot_sum_last200': _wr(hot_hits, 200),
+        'hd_sum_last50':   _wr(hd_hits, 50),
+        'hd_sum_last100':  _wr(hd_hits, 100),
+        'hd_sum_last200':  _wr(hd_hits, 200),
+    }))
+
+
+# ── BLK3M API ──────────────────────────────────────────────────────────────────
+
+@app.route('/api/blk3m/prediction')
+def api_blk3m_prediction():
+    snap = _load_json(SNAP_BLK3M_PATH)
+    if snap is None:
+        return _no_cache(jsonify({'error': 'No prediction yet'})), 404
+    return _no_cache(jsonify(snap))
+
+
+@app.route('/api/blk3m/data')
+def api_blk3m_data():
+    page   = max(1, int(request.args.get('page', 1)))
+    size   = max(1, min(200, int(request.args.get('size', 50))))
+    search = request.args.get('search', '').strip()
+    if not os.path.exists(DB_BLK3M_PATH):
+        return _no_cache(jsonify({'total': 0, 'page': 1, 'pages': 1, 'rows': []}))
+    try:
+        conn = sqlite3.connect(DB_BLK3M_PATH, timeout=5)
+        conn.execute('PRAGMA journal_mode=WAL')
+        where  = ''
+        params = []
+        if search:
+            where  = 'WHERE CAST(id AS TEXT) LIKE ?'
+            params = [f'%{search}%']
+        total  = conn.execute(f'SELECT COUNT(*) FROM rounds {where}', params).fetchone()[0]
+        offset = (page - 1) * size
+        rows   = conn.execute(
+            f'SELECT id,value,total,big_small,odd_even,result,pred_bs,confidence,bet,'
+            f'pred_oe,conf_oe,result_oe,bet_oe FROM rounds {where} ORDER BY id DESC LIMIT ? OFFSET ?',
+            params + [size, offset]
+        ).fetchall()
         conn.close()
     except Exception as e:
         return _no_cache(jsonify({'error': str(e)})), 500
+
+    entries = []
+    log = _load_json(LOG_BLK3M_PATH) or {}
+    for r in rows:
+        rid = r[0]
+        entry = log.get(str(rid), {})
+        sigs  = entry.get('signals', {})
+        entries.append({
+            'id': rid, 'value': r[1], 'total': r[2],
+            'big_small': r[3], 'odd_even': r[4],
+            'result': r[5], 'pred_bs': r[6], 'confidence': r[7], 'bet': r[8],
+            'pred_oe': r[9], 'conf_oe': r[10], 'result_oe': r[11], 'bet_oe': r[12],
+            'signals': sigs,
+        })
+    pages = max(1, (total + size - 1) // size)
+    return _no_cache(jsonify({'total': total, 'page': page, 'pages': pages, 'rows': entries}))
+
+
+@app.route('/api/blk3m/stats')
+def api_blk3m_stats():
+    if not os.path.exists(DB_BLK3M_PATH):
+        return _no_cache(jsonify({}))
+    try:
+        conn = sqlite3.connect(DB_BLK3M_PATH, timeout=5)
+        conn.execute('PRAGMA journal_mode=WAL')
+        total_pred = conn.execute(
+            "SELECT COUNT(*) FROM rounds WHERE pred_bs != '' AND result IN ('WIN','LOSS')"
+        ).fetchone()[0]
+        last100 = conn.execute(
+            "SELECT result FROM rounds WHERE pred_bs != '' AND result IN ('WIN','LOSS') "
+            "ORDER BY id DESC LIMIT 100"
+        ).fetchall()
+        w100 = sum(1 for r in last100 if r[0] == 'WIN'); n100 = len(last100)
+        last200 = conn.execute(
+            "SELECT result FROM rounds WHERE pred_bs != '' AND result IN ('WIN','LOSS') "
+            "ORDER BY id DESC LIMIT 200"
+        ).fetchall()
+        w200 = sum(1 for r in last200 if r[0] == 'WIN'); n200 = len(last200)
+        bet_rows = conn.execute(
+            "SELECT result FROM rounds WHERE bet=1 AND result IN ('WIN','LOSS')"
+        ).fetchall()
+        wb = sum(1 for r in bet_rows if r[0] == 'WIN'); nb = len(bet_rows)
+        oe100 = conn.execute(
+            "SELECT result_oe FROM rounds WHERE pred_oe != '' AND result_oe IN ('WIN','LOSS') "
+            "ORDER BY id DESC LIMIT 100"
+        ).fetchall()
+        oe_w100 = sum(1 for r in oe100 if r[0] == 'WIN'); oe_n100 = len(oe100)
+        bet_oe = conn.execute(
+            "SELECT result_oe FROM rounds WHERE bet_oe=1 AND result_oe IN ('WIN','LOSS')"
+        ).fetchall()
+        oe_wb = sum(1 for r in bet_oe if r[0] == 'WIN'); oe_nb = len(bet_oe)
+        conn.close()
+    except Exception as e:
+        return _no_cache(jsonify({'error': str(e)})), 500
+
+    def _wr(w, n):
+        return {'win': w, 'n': n, 'wr': round(w / n, 4) if n else None}
+
     return _no_cache(jsonify({
         'total_predicted': total_pred,
-        'last100':   {'win': w100,    'n': n100,    'wr': round(w100/n100,    4) if n100    else None},
-        'last200':   {'win': w200,    'n': n200,    'wr': round(w200/n200,    4) if n200    else None},
-        'bet_only':  {'win': wb,      'n': nb,      'wr': round(wb/nb,        4) if nb      else None},
-        'oe_last100':{'win': oe_w100, 'n': oe_n100, 'wr': round(oe_w100/oe_n100, 4) if oe_n100 else None},
-        'oe_bet':    {'win': oe_wb,   'n': oe_nb,   'wr': round(oe_wb/oe_nb,  4) if oe_nb  else None},
+        'last100':    _wr(w100,    n100),
+        'last200':    _wr(w200,    n200),
+        'bet_only':   _wr(wb,      nb),
+        'oe_last100': _wr(oe_w100, oe_n100),
+        'oe_bet':     _wr(oe_wb,   oe_nb),
     }))
 
 
