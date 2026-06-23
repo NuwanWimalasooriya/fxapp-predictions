@@ -139,10 +139,10 @@
 
 <div class="tabs">
   <div class="tab active" id="tab-new"    onclick="switchTab('new')">3MDiscs-Hot</div>
-  <div class="tab" id="tab-ds1m"   onclick="switchTab('ds1m')">1MDiscs-Hot</div>
   <div class="tab" id="tab-cg"     onclick="switchTab('cg')">3MRedGreen</div>
-  <div class="tab" id="tab-fst1m"  onclick="switchTab('fst1m')">1M-4Star</div>
   <div class="tab" id="tab-blk3m"  onclick="switchTab('blk3m')">3M-Blocks</div>
+  <div class="tab" id="tab-ds1m"   onclick="switchTab('ds1m')">1MDiscs-Hot</div>
+  <div class="tab" id="tab-fst1m"  onclick="switchTab('fst1m')">1M-4Star</div>
 </div>
 
 <div id="root" style="display:none"></div>
@@ -2437,17 +2437,17 @@ function renderBlk3m(p, paged, stats) {
       </div>
       <table>
         <colgroup>
-          <col style="width:20%"><col style="width:10%"><col style="width:10%">
-          <col style="width:10%"><col style="width:10%"><col style="width:10%">
+          <col style="width:20%"><col style="width:10%">
+          <col style="width:14%"><col style="width:14%"><col style="width:10%">
           <col style="width:10%"><col style="width:10%"><col style="width:10%">
         </colgroup>
         <thead><tr>
-          <th>Round</th><th>Raw Value</th><th>Hex</th>
+          <th>Round</th><th>Hex</th>
           <th>Big/Small</th><th>Odd/Even</th>
           <th>Pred BS</th><th>Result BS</th>
           <th>Pred OE</th><th>Result OE</th>
         </tr></thead>
-        <tbody id="blk3m-hist-body"><tr><td colspan="9" style="color:var(--muted);padding:12px">Loading…</td></tr></tbody>
+        <tbody id="blk3m-hist-body"><tr><td colspan="8" style="color:var(--muted);padding:12px">Loading…</td></tr></tbody>
       </table>
       <div class="pagination" id="blk3m-hist-pager"></div>
     </div>
@@ -2480,7 +2480,7 @@ function renderBlk3mData(paged) {
   const pager = document.getElementById('blk3m-hist-pager');
   const info  = document.getElementById('blk3m-hist-info');
   if (!body) return;
-  if (!paged || !paged.rows) { body.innerHTML = '<tr><td colspan="9" style="color:var(--muted)">No data.</td></tr>'; return; }
+  if (!paged || !paged.rows) { body.innerHTML = '<tr><td colspan="8" style="color:var(--muted)">No data.</td></tr>'; return; }
   if (info) info.textContent = `${paged.total} rounds`;
   body.innerHTML = paged.rows.map(r => {
     const resClr  = r.result    === 'WIN' ? 'win' : r.result    === 'LOSS' ? 'loss' : 'np';
@@ -2490,13 +2490,12 @@ function renderBlk3mData(paged) {
     const hexChar = r.value ? r.value.trim().slice(-1) : '—';
     return `<tr>
       <td>${r.id}</td>
-      <td style="font-size:10px;color:var(--muted)">${r.value ?? '—'}</td>
       <td style="font-weight:800;font-size:15px;color:${r.big_small==='BIG'?'#f97316':'#60a5fa'}">${hexChar}</td>
       <td style="color:${bsClr};font-weight:600">${r.big_small}</td>
       <td style="color:${oeClr};font-weight:600">${r.odd_even}</td>
-      <td>${r.pred_bs ? `<span style="color:${r.pred_bs==='BIG'?'#f97316':'#60a5fa'}">${r.pred_bs}</span>${r.bet?'<span class="bet-chip">BET</span>':''}` : '<span class="muted">—</span>'}</td>
+      <td>${r.pred_bs ? `<span style="color:${r.pred_bs==='BIG'?'#f97316':'#60a5fa'}">${r.pred_bs}</span>${r.bet?' <span style="color:var(--green);font-size:10px;font-weight:700">(BET)</span>':''}` : '<span class="muted">—</span>'}</td>
       <td class="${resClr}">${r.result === 'Not Predicted' ? '—' : r.result || '—'}</td>
-      <td>${r.pred_oe ? `<span style="color:${r.pred_oe==='ODD'?'#a78bfa':'#60a5fa'}">${r.pred_oe}</span>${r.bet_oe?'<span class="bet-chip">BET</span>':''}` : '<span class="muted">—</span>'}</td>
+      <td>${r.pred_oe ? `<span style="color:${r.pred_oe==='ODD'?'#a78bfa':'#60a5fa'}">${r.pred_oe}</span>${r.bet_oe?' <span style="color:var(--green);font-size:10px;font-weight:700">(BET)</span>':''}` : '<span class="muted">—</span>'}</td>
       <td class="${resOeClr}">${r.result_oe === 'Not Predicted' ? '—' : r.result_oe || '—'}</td>
     </tr>`;
   }).join('');

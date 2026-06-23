@@ -49,6 +49,19 @@ DB_FST1M_PATH   = os.path.join(_DATA_DIR, _env.get('DB_FILE_FST1M', 'fst1m.db'))
 SNAP_BLK3M_PATH = os.path.join(_DATA_DIR, 'latest_prediction_blk3m.json')
 LOG_BLK3M_PATH  = os.path.join(_DATA_DIR, 'pred_log_blk3m.json')
 DB_BLK3M_PATH   = os.path.join(_DATA_DIR, _env.get('DB_FILE_BLK3M', 'blk3m.db'))
+
+_BLK3M_BIG_HEX = set('89abcdef')
+_BLK3M_ODD_HEX = set('13579bdf')
+
+def _blk3m_classify(value_str):
+    """Recompute big_small/odd_even from the stored hash — always authoritative."""
+    s = str(value_str).strip().lower()
+    for c in reversed(s):
+        if c in '0123456789abcdef':
+            bs = 'BIG'  if c in _BLK3M_BIG_HEX else 'SMALL'
+            oe = 'ODD'  if c in _BLK3M_ODD_HEX else 'EVEN'
+            return bs, oe
+    return None, None
 # Access log
 ACCESS_LOG_DB_PATH = os.path.join(_DATA_DIR, 'access_log.db')
 
@@ -1524,11 +1537,19 @@ def api_blk3m_data():
         rid = r[0]
         entry = log.get(str(rid), {})
         sigs  = entry.get('signals', {})
+        # Always recompute from the stored hash — guards against stale DB values
+        bs, oe = _blk3m_classify(r[1])
+        if bs is None:
+            bs, oe = r[3], r[4]
+        pred_bs = r[6]
+        pred_oe = r[9]
+        result    = ('WIN' if pred_bs == bs else 'LOSS') if pred_bs else r[5]
+        result_oe = ('WIN' if pred_oe == oe else 'LOSS') if pred_oe else r[11]
         entries.append({
             'id': rid, 'value': r[1], 'total': r[2],
-            'big_small': r[3], 'odd_even': r[4],
-            'result': r[5], 'pred_bs': r[6], 'confidence': r[7], 'bet': r[8],
-            'pred_oe': r[9], 'conf_oe': r[10], 'result_oe': r[11], 'bet_oe': r[12],
+            'big_small': bs, 'odd_even': oe,
+            'result': result, 'pred_bs': pred_bs, 'confidence': r[7], 'bet': r[8],
+            'pred_oe': pred_oe, 'conf_oe': r[10], 'result_oe': result_oe, 'bet_oe': r[12],
             'signals': sigs,
         })
     pages = max(1, (total + size - 1) // size)

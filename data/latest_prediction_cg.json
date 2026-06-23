@@ -1,58 +1,58 @@
 {
-  "next_id": 2062700395,
+  "next_id": 2062700413,
   "prediction": {
-    "pred_color": "red",
-    "pred_number": 0,
-    "pred_purple": true,
-    "p_red": 0.78,
+    "pred_color": "green",
+    "pred_number": 3,
+    "pred_purple": false,
+    "p_red": 0.22,
     "color_conf": 0.78,
-    "number_conf": 0.285,
-    "purple_conf": 0.33,
+    "number_conf": 0.304,
+    "purple_conf": 0.2,
     "is_bet": true,
     "ranked_numbers": [
       [
-        0,
-        0.285
+        3,
+        0.304
       ],
       [
-        2,
-        0.201
+        1,
+        0.174
       ],
       [
-        4,
-        0.171
+        5,
+        0.174
       ],
       [
-        6,
-        0.171
+        7,
+        0.174
       ],
       [
-        8,
-        0.171
+        9,
+        0.174
       ]
     ],
     "num_probs": {
-      "0": 0.285,
-      "2": 0.201,
-      "4": 0.171,
-      "6": 0.171,
-      "8": 0.171
+      "1": 0.174,
+      "3": 0.304,
+      "5": 0.174,
+      "7": 0.174,
+      "9": 0.174
     }
   },
   "signals": {
-    "cur_val": "red",
-    "cur_run": 6,
-    "prev_val": "green",
-    "prev_run": 3,
+    "cur_val": "green",
+    "cur_run": 4,
+    "prev_val": "red",
+    "prev_run": 1,
     "alt_run": 0,
-    "dom_r8": 0.75,
+    "dom_r8": 0.375,
     "rule": "rule1_long_streak",
     "loss_streak": 0,
     "low_streak_regime": false,
     "alt_chaos_regime": false,
-    "maj6": "red",
+    "maj6": "green",
     "mirror_info": {
-      "pred_val": "green",
+      "pred_val": "red",
       "conf": 0.69,
       "tile_size": 6,
       "cycles": 2,
@@ -60,363 +60,75 @@
     },
     "sym_block_info": null,
     "alt_blk_info": null,
-    "seq_pred": null,
-    "seq_conf": 0.5
+    "seq_pred": "red",
+    "seq_conf": 0.588
   },
   "number_signals": {
-    "hot_num": 2,
+    "hot_num": 3,
     "hot_cnt": 3,
-    "seq_num": 8,
-    "seq_conf": 0.211,
-    "wc_num": 0,
-    "wc_conf": 0.667,
+    "seq_num": 3,
+    "seq_conf": 0.1,
+    "wc_num": 3,
+    "wc_conf": 0.571,
     "run_num": null,
     "run_conf": 0.0,
     "ranked": [
       [
-        0,
-        0.285
+        3,
+        0.304
       ],
       [
-        2,
-        0.201
+        1,
+        0.174
       ],
       [
-        4,
-        0.171
+        5,
+        0.174
       ],
       [
-        6,
-        0.171
+        7,
+        0.174
       ],
       [
-        8,
-        0.171
+        9,
+        0.174
       ]
     ],
     "probs": {
-      "0": 0.285,
-      "2": 0.201,
-      "4": 0.171,
-      "6": 0.171,
-      "8": 0.171
+      "1": 0.174,
+      "3": 0.304,
+      "5": 0.174,
+      "7": 0.174,
+      "9": 0.174
     }
   },
   "purple_signals": {
-    "gap_since_last": 19,
-    "recent30_freq": 0.133,
+    "gap_since_last": 8,
+    "recent30_freq": 0.1,
     "seq_p": null,
-    "p_purple": 0.33
+    "p_purple": 0.2
   },
   "stats": {
     "last100": {
-      "wr": 0.53,
+      "wr": 0.52,
       "n": 100,
       "nr": 0.1,
-      "pr": 0.55
+      "pr": 0.58
     },
     "last200": {
-      "wr": 0.525,
+      "wr": 0.535,
       "n": 200,
       "nr": 0.11,
-      "pr": 0.59
+      "pr": 0.605
     },
     "bet_only": {
-      "wr": 0.4958,
-      "n": 9791,
+      "wr": 0.4956,
+      "n": 9802,
       "nr": 0.1025,
-      "pr": 0.7126
+      "pr": 0.7125
     }
   },
   "recent": [
-    {
-      "id": 2062700365,
-      "number": 0,
-      "color": "red",
-      "is_purple": 1,
-      "pred_color": "red",
-      "pred_number": 4,
-      "pred_purple": false,
-      "purple_conf": 0.2,
-      "number_conf": 0.273,
-      "confidence": 0.5857,
-      "bet": false,
-      "result": "WIN",
-      "number_hit": false,
-      "purple_hit": false
-    },
-    {
-      "id": 2062700366,
-      "number": 7,
-      "color": "green",
-      "is_purple": 0,
-      "pred_color": "green",
-      "pred_number": 7,
-      "pred_purple": false,
-      "purple_conf": 0.116,
-      "number_conf": 0.294,
-      "confidence": 0.65,
-      "bet": true,
-      "result": "WIN",
-      "number_hit": true,
-      "purple_hit": true
-    },
-    {
-      "id": 2062700367,
-      "number": 4,
-      "color": "red",
-      "is_purple": 0,
-      "pred_color": "red",
-      "pred_number": 0,
-      "pred_purple": true,
-      "purple_conf": 0.227,
-      "number_conf": 0.227,
-      "confidence": 0.675,
-      "bet": true,
-      "result": "WIN",
-      "number_hit": false,
-      "purple_hit": false
-    },
-    {
-      "id": 2062700368,
-      "number": 2,
-      "color": "red",
-      "is_purple": 0,
-      "pred_color": "green",
-      "pred_number": 3,
-      "pred_purple": false,
-      "purple_conf": 0.21,
-      "number_conf": 0.243,
-      "confidence": 0.65,
-      "bet": true,
-      "result": "LOSS",
-      "number_hit": false,
-      "purple_hit": true
-    },
-    {
-      "id": 2062700369,
-      "number": 1,
-      "color": "green",
-      "is_purple": 0,
-      "pred_color": "red",
-      "pred_number": 0,
-      "pred_purple": true,
-      "purple_conf": 0.227,
-      "number_conf": 0.227,
-      "confidence": 0.58,
-      "bet": false,
-      "result": "LOSS",
-      "number_hit": false,
-      "purple_hit": false
-    },
-    {
-      "id": 2062700370,
-      "number": 0,
-      "color": "red",
-      "is_purple": 1,
-      "pred_color": "green",
-      "pred_number": 3,
-      "pred_purple": false,
-      "purple_conf": 0.2,
-      "number_conf": 0.273,
-      "confidence": 0.65,
-      "bet": true,
-      "result": "LOSS",
-      "number_hit": false,
-      "purple_hit": false
-    },
-    {
-      "id": 2062700371,
-      "number": 9,
-      "color": "green",
-      "is_purple": 0,
-      "pred_color": "green",
-      "pred_number": 3,
-      "pred_purple": false,
-      "purple_conf": 0.13,
-      "number_conf": 0.273,
-      "confidence": 0.5,
-      "bet": false,
-      "result": "WIN",
-      "number_hit": false,
-      "purple_hit": true
-    },
-    {
-      "id": 2062700372,
-      "number": 5,
-      "color": "green",
-      "is_purple": 1,
-      "pred_color": "green",
-      "pred_number": 9,
-      "pred_purple": false,
-      "purple_conf": 0.21,
-      "number_conf": 0.259,
-      "confidence": 0.65,
-      "bet": true,
-      "result": "WIN",
-      "number_hit": false,
-      "purple_hit": false
-    },
-    {
-      "id": 2062700373,
-      "number": 2,
-      "color": "red",
-      "is_purple": 0,
-      "pred_color": "green",
-      "pred_number": 3,
-      "pred_purple": false,
-      "purple_conf": 0.14,
-      "number_conf": 0.273,
-      "confidence": 0.58,
-      "bet": false,
-      "result": "LOSS",
-      "number_hit": false,
-      "purple_hit": true
-    },
-    {
-      "id": 2062700374,
-      "number": 3,
-      "color": "green",
-      "is_purple": 0,
-      "pred_color": "red",
-      "pred_number": 2,
-      "pred_purple": false,
-      "purple_conf": 0.21,
-      "number_conf": 0.273,
-      "confidence": 0.64,
-      "bet": false,
-      "result": "LOSS",
-      "number_hit": false,
-      "purple_hit": true
-    },
-    {
-      "id": 2062700375,
-      "number": 0,
-      "color": "red",
-      "is_purple": 1,
-      "pred_color": "green",
-      "pred_number": 7,
-      "pred_purple": false,
-      "purple_conf": 0.21,
-      "number_conf": 0.273,
-      "confidence": 0.65,
-      "bet": true,
-      "result": "LOSS",
-      "number_hit": false,
-      "purple_hit": false
-    },
-    {
-      "id": 2062700376,
-      "number": 4,
-      "color": "red",
-      "is_purple": 0,
-      "pred_color": "green",
-      "pred_number": 9,
-      "pred_purple": false,
-      "purple_conf": 0.14,
-      "number_conf": 0.28,
-      "confidence": 0.5,
-      "bet": false,
-      "result": "LOSS",
-      "number_hit": false,
-      "purple_hit": true
-    },
-    {
-      "id": 2062700377,
-      "number": 1,
-      "color": "green",
-      "is_purple": 0,
-      "pred_color": "red",
-      "pred_number": 8,
-      "pred_purple": false,
-      "purple_conf": 0.22,
-      "number_conf": 0.273,
-      "confidence": 0.65,
-      "bet": true,
-      "result": "LOSS",
-      "number_hit": false,
-      "purple_hit": true
-    },
-    {
-      "id": 2062700378,
-      "number": 1,
-      "color": "green",
-      "is_purple": 0,
-      "pred_color": "green",
-      "pred_number": 7,
-      "pred_purple": false,
-      "purple_conf": 0.21,
-      "number_conf": 0.273,
-      "confidence": 0.5,
-      "bet": false,
-      "result": "WIN",
-      "number_hit": false,
-      "purple_hit": true
-    },
-    {
-      "id": 2062700379,
-      "number": 3,
-      "color": "green",
-      "is_purple": 0,
-      "pred_color": "green",
-      "pred_number": 7,
-      "pred_purple": false,
-      "purple_conf": 0.2,
-      "number_conf": 0.267,
-      "confidence": 0.5,
-      "bet": false,
-      "result": "WIN",
-      "number_hit": false,
-      "purple_hit": true
-    },
-    {
-      "id": 2062700380,
-      "number": 1,
-      "color": "green",
-      "is_purple": 0,
-      "pred_color": "green",
-      "pred_number": 1,
-      "pred_purple": false,
-      "purple_conf": 0.2,
-      "number_conf": 0.349,
-      "confidence": 0.65,
-      "bet": true,
-      "result": "WIN",
-      "number_hit": true,
-      "purple_hit": true
-    },
-    {
-      "id": 2062700381,
-      "number": 4,
-      "color": "red",
-      "is_purple": 0,
-      "pred_color": "green",
-      "pred_number": 5,
-      "pred_purple": true,
-      "purple_conf": 0.367,
-      "number_conf": 0.367,
-      "confidence": 0.78,
-      "bet": true,
-      "result": "LOSS",
-      "number_hit": false,
-      "purple_hit": false
-    },
-    {
-      "id": 2062700382,
-      "number": 8,
-      "color": "red",
-      "is_purple": 0,
-      "pred_color": "green",
-      "pred_number": 1,
-      "pred_purple": false,
-      "purple_conf": 0.2,
-      "number_conf": 0.318,
-      "confidence": 0.7,
-      "bet": true,
-      "result": "LOSS",
-      "number_hit": false,
-      "purple_hit": true
-    },
     {
       "id": 2062700383,
       "number": 8,
@@ -608,6 +320,294 @@
       "result": "WIN",
       "number_hit": false,
       "purple_hit": false
+    },
+    {
+      "id": 2062700395,
+      "number": 4,
+      "color": "red",
+      "is_purple": 0,
+      "pred_color": "red",
+      "pred_number": 0,
+      "pred_purple": true,
+      "purple_conf": 0.33,
+      "number_conf": 0.285,
+      "confidence": 0.78,
+      "bet": true,
+      "result": "WIN",
+      "number_hit": false,
+      "purple_hit": false
+    },
+    {
+      "id": 2062700396,
+      "number": 0,
+      "color": "red",
+      "is_purple": 1,
+      "pred_color": "red",
+      "pred_number": 0,
+      "pred_purple": true,
+      "purple_conf": 0.32,
+      "number_conf": 0.242,
+      "confidence": 0.78,
+      "bet": true,
+      "result": "WIN",
+      "number_hit": true,
+      "purple_hit": true
+    },
+    {
+      "id": 2062700397,
+      "number": 5,
+      "color": "green",
+      "is_purple": 1,
+      "pred_color": "red",
+      "pred_number": 4,
+      "pred_purple": false,
+      "purple_conf": 0.1,
+      "number_conf": 0.227,
+      "confidence": 0.78,
+      "bet": true,
+      "result": "LOSS",
+      "number_hit": false,
+      "purple_hit": false
+    },
+    {
+      "id": 2062700398,
+      "number": 7,
+      "color": "green",
+      "is_purple": 0,
+      "pred_color": "red",
+      "pred_number": 4,
+      "pred_purple": false,
+      "purple_conf": 0.11,
+      "number_conf": 0.227,
+      "confidence": 0.75,
+      "bet": true,
+      "result": "LOSS",
+      "number_hit": false,
+      "purple_hit": true
+    },
+    {
+      "id": 2062700399,
+      "number": 6,
+      "color": "red",
+      "is_purple": 0,
+      "pred_color": "red",
+      "pred_number": 8,
+      "pred_purple": false,
+      "purple_conf": 0.19,
+      "number_conf": 0.264,
+      "confidence": 0.75,
+      "bet": true,
+      "result": "WIN",
+      "number_hit": false,
+      "purple_hit": true
+    },
+    {
+      "id": 2062700400,
+      "number": 2,
+      "color": "red",
+      "is_purple": 0,
+      "pred_color": "red",
+      "pred_number": 6,
+      "pred_purple": false,
+      "purple_conf": 0.19,
+      "number_conf": 0.242,
+      "confidence": 0.64,
+      "bet": false,
+      "result": "WIN",
+      "number_hit": false,
+      "purple_hit": true
+    },
+    {
+      "id": 2062700401,
+      "number": 1,
+      "color": "green",
+      "is_purple": 0,
+      "pred_color": "red",
+      "pred_number": 2,
+      "pred_purple": false,
+      "purple_conf": 0.18,
+      "number_conf": 0.283,
+      "confidence": 0.62,
+      "bet": false,
+      "result": "LOSS",
+      "number_hit": false,
+      "purple_hit": true
+    },
+    {
+      "id": 2062700402,
+      "number": 9,
+      "color": "green",
+      "is_purple": 0,
+      "pred_color": "green",
+      "pred_number": 7,
+      "pred_purple": false,
+      "purple_conf": 0.18,
+      "number_conf": 0.294,
+      "confidence": 0.64,
+      "bet": false,
+      "result": "WIN",
+      "number_hit": false,
+      "purple_hit": true
+    },
+    {
+      "id": 2062700403,
+      "number": 3,
+      "color": "green",
+      "is_purple": 0,
+      "pred_color": "green",
+      "pred_number": 5,
+      "pred_purple": true,
+      "purple_conf": 0.333,
+      "number_conf": 0.333,
+      "confidence": 0.62,
+      "bet": false,
+      "result": "WIN",
+      "number_hit": false,
+      "purple_hit": false
+    },
+    {
+      "id": 2062700404,
+      "number": 0,
+      "color": "red",
+      "is_purple": 1,
+      "pred_color": "green",
+      "pred_number": 3,
+      "pred_purple": false,
+      "purple_conf": 0.17,
+      "number_conf": 0.36,
+      "confidence": 0.65,
+      "bet": true,
+      "result": "LOSS",
+      "number_hit": false,
+      "purple_hit": false
+    },
+    {
+      "id": 2062700405,
+      "number": 2,
+      "color": "red",
+      "is_purple": 0,
+      "pred_color": "green",
+      "pred_number": 3,
+      "pred_purple": false,
+      "purple_conf": 0.1,
+      "number_conf": 0.273,
+      "confidence": 0.65,
+      "bet": true,
+      "result": "LOSS",
+      "number_hit": false,
+      "purple_hit": true
+    },
+    {
+      "id": 2062700406,
+      "number": 6,
+      "color": "red",
+      "is_purple": 0,
+      "pred_color": "green",
+      "pred_number": 3,
+      "pred_purple": false,
+      "purple_conf": 0.17,
+      "number_conf": 0.273,
+      "confidence": 0.65,
+      "bet": true,
+      "result": "LOSS",
+      "number_hit": false,
+      "purple_hit": true
+    },
+    {
+      "id": 2062700407,
+      "number": 3,
+      "color": "green",
+      "is_purple": 0,
+      "pred_color": "red",
+      "pred_number": 4,
+      "pred_purple": false,
+      "purple_conf": 0.17,
+      "number_conf": 0.25,
+      "confidence": 0.65,
+      "bet": true,
+      "result": "LOSS",
+      "number_hit": false,
+      "purple_hit": true
+    },
+    {
+      "id": 2062700408,
+      "number": 2,
+      "color": "red",
+      "is_purple": 0,
+      "pred_color": "red",
+      "pred_number": 4,
+      "pred_purple": false,
+      "purple_conf": 0.17,
+      "number_conf": 0.25,
+      "confidence": 0.6,
+      "bet": false,
+      "result": "WIN",
+      "number_hit": false,
+      "purple_hit": true
+    },
+    {
+      "id": 2062700409,
+      "number": 7,
+      "color": "green",
+      "is_purple": 0,
+      "pred_color": "green",
+      "pred_number": 3,
+      "pred_purple": false,
+      "purple_conf": 0.17,
+      "number_conf": 0.294,
+      "confidence": 0.5316,
+      "bet": false,
+      "result": "WIN",
+      "number_hit": false,
+      "purple_hit": true
+    },
+    {
+      "id": 2062700410,
+      "number": 1,
+      "color": "green",
+      "is_purple": 0,
+      "pred_color": "red",
+      "pred_number": 8,
+      "pred_purple": false,
+      "purple_conf": 0.17,
+      "number_conf": 0.324,
+      "confidence": 0.65,
+      "bet": true,
+      "result": "LOSS",
+      "number_hit": false,
+      "purple_hit": true
+    },
+    {
+      "id": 2062700411,
+      "number": 9,
+      "color": "green",
+      "is_purple": 0,
+      "pred_color": "green",
+      "pred_number": 9,
+      "pred_purple": false,
+      "purple_conf": 0.17,
+      "number_conf": 0.273,
+      "confidence": 0.58,
+      "bet": false,
+      "result": "WIN",
+      "number_hit": true,
+      "purple_hit": true
+    },
+    {
+      "id": 2062700412,
+      "number": 3,
+      "color": "green",
+      "is_purple": 0,
+      "pred_color": "green",
+      "pred_number": 5,
+      "pred_purple": true,
+      "purple_conf": 0.294,
+      "number_conf": 0.294,
+      "confidence": 0.65,
+      "bet": true,
+      "result": "WIN",
+      "number_hit": false,
+      "purple_hit": false
     }
   ],
   "cold_50": [
@@ -618,15 +618,15 @@
       "is_purple": true
     },
     {
-      "number": 9,
+      "number": 6,
       "count": 3,
-      "color": "green",
+      "color": "red",
       "is_purple": false
     },
     {
-      "number": 6,
-      "count": 4,
-      "color": "red",
+      "number": 9,
+      "count": 3,
+      "color": "green",
       "is_purple": false
     }
   ],
@@ -639,7 +639,7 @@
     },
     {
       "number": 2,
-      "count": 7,
+      "count": 8,
       "color": "red",
       "is_purple": false
     },
@@ -650,56 +650,50 @@
       "is_purple": true
     },
     {
-      "number": 4,
+      "number": 3,
       "count": 6,
-      "color": "red",
+      "color": "green",
       "is_purple": false
     },
     {
-      "number": 3,
-      "count": 5,
-      "color": "green",
+      "number": 4,
+      "count": 6,
+      "color": "red",
       "is_purple": false
     }
   ],
   "cold_100": [
     {
-      "number": 3,
-      "count": 7,
+      "number": 5,
+      "count": 6,
       "color": "green",
-      "is_purple": false
+      "is_purple": true
     },
     {
-      "number": 4,
-      "count": 8,
+      "number": 8,
+      "count": 7,
       "color": "red",
       "is_purple": false
     },
     {
-      "number": 7,
-      "count": 8,
-      "color": "green",
+      "number": 4,
+      "count": 9,
+      "color": "red",
       "is_purple": false
     }
   ],
   "hot_100": [
     {
-      "number": 1,
+      "number": 2,
       "count": 15,
+      "color": "red",
+      "is_purple": false
+    },
+    {
+      "number": 1,
+      "count": 13,
       "color": "green",
       "is_purple": false
-    },
-    {
-      "number": 2,
-      "count": 13,
-      "color": "red",
-      "is_purple": false
-    },
-    {
-      "number": 0,
-      "count": 11,
-      "color": "red",
-      "is_purple": true
     },
     {
       "number": 9,
@@ -708,11 +702,17 @@
       "is_purple": false
     },
     {
-      "number": 5,
-      "count": 9,
-      "color": "green",
+      "number": 0,
+      "count": 10,
+      "color": "red",
       "is_purple": true
+    },
+    {
+      "number": 3,
+      "count": 10,
+      "color": "green",
+      "is_purple": false
     }
   ],
-  "timestamp": "2026-06-24T01:12:14.473549"
+  "timestamp": "2026-06-24T02:06:15.694336"
 }

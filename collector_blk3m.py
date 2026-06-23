@@ -377,6 +377,13 @@ def save_records(new_items):
             'VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)',
             rows
         )
+        # Fix any stale wrong classifications (preserves prediction columns)
+        conn.executemany(
+            'UPDATE rounds SET big_small=?, odd_even=?, total=? WHERE id=? '
+            'AND (big_small != ? OR odd_even != ? OR total != ?)',
+            [(bs, oe, num, iss, bs, oe, num)
+             for iss, raw, num, bs, oe, *_ in rows]
+        )
         conn.commit()
     finally:
         conn.close()
