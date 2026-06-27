@@ -427,6 +427,26 @@ def run_prediction():
     backfill_results()
 
 
+def _push_to_remote(first_id):
+    try:
+        from remote_push import push_game
+        conn = get_conn()
+        rows = conn.execute(
+            'SELECT id,value,total,big_small,odd_even,result,pred_bs,confidence,bet,'
+            'pred_oe,conf_oe,result_oe,bet_oe FROM rounds WHERE id >= ?', (first_id,)
+        ).fetchall()
+        conn.close()
+        records = [
+            {'id': r[0], 'value': r[1], 'total': r[2], 'big_small': r[3], 'odd_even': r[4],
+             'result': r[5], 'pred_bs': r[6], 'confidence': r[7], 'bet': r[8],
+             'pred_oe': r[9], 'conf_oe': r[10], 'result_oe': r[11], 'bet_oe': r[12]}
+            for r in rows
+        ]
+        push_game('blk3m', records, os.path.join(_DATA_DIR, 'latest_prediction_blk3m.json'), LOG_PATH)
+    except Exception as e:
+        print(f'  [PUSH] {e}')
+
+
 # ── Main loop ──────────────────────────────────────────────────────────────────
 
 def main():
@@ -477,6 +497,7 @@ def main():
                         print(f"  {iss}  hex={hex_char}  {bs}/{oe}  (catch-up)")
 
                 run_prediction()
+                _push_to_remote(new_items[0][0])
             else:
                 print("  No new records. Skipping prediction.")
 

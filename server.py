@@ -177,12 +177,22 @@ def _run_predict_fst1m():
 
 # ── auth guard ─────────────────────────────────────────────────────────────────
 
-_PUBLIC_PATHS = {'/login', '/logout', '/activate'}
+_PUBLIC_PATHS = {'/login', '/logout', '/activate', '/setup'}
+
+def _push_token_valid():
+    auth  = request.headers.get('Authorization', '')
+    token = auth[7:] if auth.startswith('Bearer ') else ''
+    if not token:
+        return False
+    valid, _ = validate_key(token)
+    return valid
 
 @app.before_request
 def _require_login():
     if request.path in _PUBLIC_PATHS:
         return
+    if request.path.startswith('/api/push/'):
+        return  # token-authenticated in the endpoint itself
     if request.path.startswith('/admin/') or request.path.startswith('/api/admin/'):
         if not session.get('is_admin'):
             return redirect(url_for('login'))
@@ -254,6 +264,89 @@ def login():
 def logout():
     session.clear()
     return redirect(url_for('activate'))
+
+_SETUP_HTML = """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DS3M — Admin Setup</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --border:#334155; --text:#e2e8f0;
+          --muted:#94a3b8; --accent:#3b82f6; --red:#ef4444; --green:#22c55e; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif;
+         min-height:100vh; display:flex; align-items:center; justify-content:center; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:12px;
+          padding:36px 40px; width:100%; max-width:400px; }
+  h1 { font-size:20px; font-weight:700; margin-bottom:6px; }
+  .sub { font-size:12px; color:var(--muted); margin-bottom:28px; }
+  label { display:block; font-size:12px; color:var(--muted); margin-bottom:6px;
+          text-transform:uppercase; letter-spacing:.06em; }
+  input { width:100%; background:#0f172a; border:1px solid var(--border); border-radius:6px;
+          color:var(--text); font-size:14px; padding:10px 12px; outline:none; margin-bottom:16px; }
+  input:focus { border-color:var(--accent); }
+  button { width:100%; background:var(--accent); color:#fff; border:none; border-radius:6px;
+           font-size:14px; font-weight:600; padding:11px; cursor:pointer; margin-top:4px; }
+  button:hover { background:#2563eb; }
+  .error { background:rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.3); border-radius:6px;
+           color:var(--red); font-size:13px; padding:10px 14px; margin-bottom:18px; }
+  .done  { background:rgba(34,197,94,.1); border:1px solid rgba(34,197,94,.3); border-radius:6px;
+           color:var(--green); font-size:13px; padding:10px 14px; margin-bottom:18px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Admin Setup</h1>
+  <div class="sub">Create the admin login credentials. This page is only available once.</div>
+  {% if error %}<div class="error">{{ error }}</div>{% endif %}
+  {% if done %}<div class="done">Credentials saved. <a href="/login" style="color:inherit;font-weight:600">Sign in →</a></div>
+  {% else %}
+  <form method="post" action="/setup">
+    <label>Username</label>
+    <input type="text" name="username" autocomplete="off" autofocus required>
+    <label>Password</label>
+    <input type="password" name="password" required>
+    <label>Confirm Password</label>
+    <input type="password" name="confirm" required>
+    <button type="submit">Create Admin Account</button>
+  </form>
+  {% endif %}
+</div>
+</body>
+</html>"""
+
+@app.route('/setup', methods=['GET', 'POST'])
+def setup():
+    if os.path.exists(CREDS_PATH):
+        return redirect(url_for('login'))
+    error = None
+    done  = False
+    if request.method == 'POST':
+        from werkzeug.security import generate_password_hash
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+        confirm  = request.form.get('confirm', '')
+        if not username:
+            error = 'Username cannot be empty.'
+        elif not password:
+            error = 'Password cannot be empty.'
+        elif password != confirm:
+            error = 'Passwords do not match.'
+        else:
+            key = _cipher_key()
+            def _encrypt(text):
+                data = text.encode('utf-8')
+                ks   = (key * (len(data) // len(key) + 1))[:len(data)]
+                return bytes(a ^ b for a, b in zip(data, ks)).hex()
+            import json as _json
+            with open(CREDS_PATH, 'w') as f:
+                _json.dump({
+                    'username':      _encrypt(username),
+                    'password_hash': generate_password_hash(password, method='pbkdf2:sha256:600000'),
+                }, f, indent=2)
+            done = True
+    return render_template_string(_SETUP_HTML, error=error, done=done)
 
 _ACTIVATION_HTML = """<!DOCTYPE html>
 <html lang="en">
@@ -1604,6 +1697,209 @@ def api_blk3m_stats():
         'oe_last100': _wr(oe_w100, oe_n100),
         'oe_bet':     _wr(oe_wb,   oe_nb),
     }))
+
+
+# ── Push API (local collectors → PythonAnywhere) ──────────────────────────────
+
+def _ensure_blk3m_table():
+    conn = sqlite3.connect(DB_BLK3M_PATH, timeout=10)
+    conn.execute('PRAGMA journal_mode=WAL')
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS rounds (
+            id INTEGER PRIMARY KEY, value TEXT NOT NULL, total INTEGER NOT NULL,
+            big_small TEXT NOT NULL, odd_even TEXT NOT NULL,
+            result TEXT DEFAULT "Not Predicted", pred_bs TEXT DEFAULT "",
+            confidence REAL DEFAULT 0, bet INTEGER DEFAULT 0,
+            pred_oe TEXT DEFAULT "", conf_oe REAL DEFAULT 0,
+            result_oe TEXT DEFAULT "Not Predicted", bet_oe INTEGER DEFAULT 0
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+def _ensure_cg_table():
+    conn = sqlite3.connect(DB_CG_PATH, timeout=10)
+    conn.execute('PRAGMA journal_mode=WAL')
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS rounds (
+            id INTEGER PRIMARY KEY, number INTEGER NOT NULL,
+            color TEXT NOT NULL, is_purple INTEGER NOT NULL DEFAULT 0,
+            result TEXT DEFAULT "Not Predicted", pred_color TEXT DEFAULT "",
+            confidence REAL DEFAULT 0, bet INTEGER DEFAULT 0,
+            pred_number INTEGER DEFAULT -1, pred_purple INTEGER DEFAULT -1,
+            number_result TEXT DEFAULT ""
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+def _ensure_ds1m_table():
+    conn = sqlite3.connect(DB_DS1M_PATH, timeout=10)
+    conn.execute('PRAGMA journal_mode=WAL')
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS rounds (
+            id INTEGER PRIMARY KEY,
+            disc1 TEXT NOT NULL, disc2 TEXT NOT NULL,
+            disc3 TEXT NOT NULL, disc4 TEXT NOT NULL,
+            oe TEXT NOT NULL,
+            result TEXT DEFAULT "Not Predicted",
+            pred_oe TEXT DEFAULT "", confidence REAL DEFAULT 0
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+def _ensure_fst1m_table():
+    conn = sqlite3.connect(DB_FST1M_PATH, timeout=10)
+    conn.execute('PRAGMA journal_mode=WAL')
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS rounds (
+            id INTEGER PRIMARY KEY,
+            n1 INTEGER NOT NULL, n2 INTEGER NOT NULL,
+            n3 INTEGER NOT NULL, n4 INTEGER NOT NULL,
+            total INTEGER NOT NULL, big_small TEXT NOT NULL, odd_even TEXT NOT NULL,
+            result TEXT DEFAULT "Not Predicted", pred_bs TEXT DEFAULT "",
+            confidence REAL DEFAULT 0, bet INTEGER DEFAULT 0,
+            pred_oe TEXT DEFAULT "", conf_oe REAL DEFAULT 0,
+            result_oe TEXT DEFAULT "Not Predicted", bet_oe INTEGER DEFAULT 0,
+            pred_sum_val INTEGER DEFAULT 0, pred_sum_zone TEXT DEFAULT "",
+            pred_hot_sums TEXT DEFAULT "[]"
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+def _write_json_atomic(path, data):
+    tmp = path + '.tmp'
+    with open(tmp, 'w', encoding='utf-8') as f:
+        json.dump(data, f)
+    os.replace(tmp, path)
+
+@app.route('/api/push/<game>', methods=['POST'])
+def api_push(game):
+    if not _push_token_valid():
+        return jsonify({'error': 'Unauthorized'}), 401
+    if game not in ('blk3m', 'cg', 'ds1m', 'fst1m'):
+        return jsonify({'error': f'Unknown game: {game}'}), 400
+
+    body     = request.get_json(silent=True) or {}
+    records  = body.get('records', [])
+    snapshot = body.get('snapshot')
+    log_upd  = body.get('pred_log', {})
+    inserted = 0
+
+    if game == 'blk3m':
+        _ensure_blk3m_table()
+        if records:
+            conn = sqlite3.connect(DB_BLK3M_PATH, timeout=10)
+            conn.execute('PRAGMA journal_mode=WAL')
+            try:
+                conn.executemany(
+                    'INSERT OR IGNORE INTO rounds'
+                    '(id,value,total,big_small,odd_even,result,pred_bs,confidence,bet,'
+                    'pred_oe,conf_oe,result_oe,bet_oe) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)',
+                    [(r['id'], r.get('value',''), r.get('total',0),
+                      r.get('big_small',''), r.get('odd_even',''),
+                      r.get('result','Not Predicted'), r.get('pred_bs',''),
+                      r.get('confidence',0), r.get('bet',0),
+                      r.get('pred_oe',''), r.get('conf_oe',0),
+                      r.get('result_oe','Not Predicted'), r.get('bet_oe',0))
+                     for r in records]
+                )
+                inserted = conn.execute('SELECT changes()').fetchone()[0]
+                conn.commit()
+            finally:
+                conn.close()
+        if snapshot:
+            _write_json_atomic(SNAP_BLK3M_PATH, snapshot)
+        if log_upd:
+            existing = _load_json(LOG_BLK3M_PATH) or {}
+            existing.update(log_upd)
+            _write_json_atomic(LOG_BLK3M_PATH, existing)
+
+    elif game == 'cg':
+        _ensure_cg_table()
+        if records:
+            conn = sqlite3.connect(DB_CG_PATH, timeout=10)
+            conn.execute('PRAGMA journal_mode=WAL')
+            try:
+                conn.executemany(
+                    'INSERT OR IGNORE INTO rounds'
+                    '(id,number,color,is_purple,result,pred_color,confidence,bet) VALUES(?,?,?,?,?,?,?,?)',
+                    [(r['id'], r.get('number',0), r.get('color',''),
+                      r.get('is_purple',0), r.get('result','Not Predicted'),
+                      r.get('pred_color',''), r.get('confidence',0), r.get('bet',0))
+                     for r in records]
+                )
+                inserted = conn.execute('SELECT changes()').fetchone()[0]
+                conn.commit()
+            finally:
+                conn.close()
+        if snapshot:
+            _write_json_atomic(SNAP_CG_PATH, snapshot)
+        if log_upd:
+            existing = _load_json(LOG_CG_PATH) or {}
+            existing.update(log_upd)
+            _write_json_atomic(LOG_CG_PATH, existing)
+
+    elif game == 'ds1m':
+        _ensure_ds1m_table()
+        if records:
+            conn = sqlite3.connect(DB_DS1M_PATH, timeout=10)
+            conn.execute('PRAGMA journal_mode=WAL')
+            try:
+                conn.executemany(
+                    'INSERT OR IGNORE INTO rounds'
+                    '(id,disc1,disc2,disc3,disc4,oe,result,pred_oe,confidence) VALUES(?,?,?,?,?,?,?,?,?)',
+                    [(r['id'], r.get('disc1',''), r.get('disc2',''),
+                      r.get('disc3',''), r.get('disc4',''), r.get('oe',''),
+                      r.get('result','Not Predicted'), r.get('pred_oe',''), r.get('confidence',0))
+                     for r in records]
+                )
+                inserted = conn.execute('SELECT changes()').fetchone()[0]
+                conn.commit()
+            finally:
+                conn.close()
+        if snapshot:
+            _write_json_atomic(SNAP_DS1M_PATH, snapshot)
+        if log_upd:
+            existing = _load_json(LOG_DS1M_PATH) or {}
+            existing.update(log_upd)
+            _write_json_atomic(LOG_DS1M_PATH, existing)
+
+    elif game == 'fst1m':
+        _ensure_fst1m_table()
+        if records:
+            conn = sqlite3.connect(DB_FST1M_PATH, timeout=10)
+            conn.execute('PRAGMA journal_mode=WAL')
+            try:
+                conn.executemany(
+                    'INSERT OR IGNORE INTO rounds'
+                    '(id,n1,n2,n3,n4,total,big_small,odd_even,result,pred_bs,confidence,bet,'
+                    'pred_oe,conf_oe,result_oe,bet_oe,pred_sum_val,pred_sum_zone,pred_hot_sums)'
+                    ' VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+                    [(r['id'], r.get('n1',0), r.get('n2',0), r.get('n3',0), r.get('n4',0),
+                      r.get('total',0), r.get('big_small',''), r.get('odd_even',''),
+                      r.get('result','Not Predicted'), r.get('pred_bs',''),
+                      r.get('confidence',0), r.get('bet',0),
+                      r.get('pred_oe',''), r.get('conf_oe',0),
+                      r.get('result_oe','Not Predicted'), r.get('bet_oe',0),
+                      r.get('pred_sum_val',0), r.get('pred_sum_zone',''),
+                      r.get('pred_hot_sums','[]'))
+                     for r in records]
+                )
+                inserted = conn.execute('SELECT changes()').fetchone()[0]
+                conn.commit()
+            finally:
+                conn.close()
+        if snapshot:
+            _write_json_atomic(SNAP_FST1M_PATH, snapshot)
+        if log_upd:
+            existing = _load_json(LOG_FST1M_PATH) or {}
+            existing.update(log_upd)
+            _write_json_atomic(LOG_FST1M_PATH, existing)
+
+    return jsonify({'ok': True, 'inserted': inserted})
 
 
 def _ensure_config():

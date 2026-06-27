@@ -460,6 +460,30 @@ def run_prediction():
     backfill_results()
 
 
+def _push_to_remote(first_id):
+    try:
+        from remote_push import push_game
+        conn = get_conn()
+        rows = conn.execute(
+            'SELECT id,n1,n2,n3,n4,total,big_small,odd_even,result,pred_bs,confidence,bet,'
+            'pred_oe,conf_oe,result_oe,bet_oe,pred_sum_val,pred_sum_zone,pred_hot_sums '
+            'FROM rounds WHERE id >= ?', (first_id,)
+        ).fetchall()
+        conn.close()
+        records = [
+            {'id': r[0], 'n1': r[1], 'n2': r[2], 'n3': r[3], 'n4': r[4],
+             'total': r[5], 'big_small': r[6], 'odd_even': r[7],
+             'result': r[8], 'pred_bs': r[9], 'confidence': r[10], 'bet': r[11],
+             'pred_oe': r[12], 'conf_oe': r[13], 'result_oe': r[14], 'bet_oe': r[15],
+             'pred_sum_val': r[16], 'pred_sum_zone': r[17], 'pred_hot_sums': r[18]}
+            for r in rows
+        ]
+        snap_path = os.path.join(_DATA_DIR, 'latest_prediction_fst1m.json')
+        push_game('fst1m', records, snap_path, LOG_PATH)
+    except Exception as e:
+        print(f'  [PUSH] {e}')
+
+
 # ── Main loop ──────────────────────────────────────────────────────────────────
 
 def main():
@@ -515,6 +539,7 @@ def main():
                         print(f"  {issue}  sum={total}  {bs}/{oe}  (catch-up)")
 
                 run_prediction()
+                _push_to_remote(new_items[0][0])
             else:
                 print("  No new records. Skipping prediction.")
 

@@ -9,7 +9,8 @@ Predicts three things per round:
 
 Purple numbers: 0 (red+purple), 5 (green+purple).
 """
-import os, sys, json, sqlite3, datetime
+import os, sys, json, sqlite3, datetime, pickle, warnings
+warnings.filterwarnings('ignore')
 sys.stdout.reconfigure(encoding='utf-8')
 
 _BASE     = os.path.dirname(os.path.abspath(__file__))
@@ -30,7 +31,10 @@ def _load_env():
 _env      = _load_env()
 DB_PATH   = os.path.join(_DATA_DIR, _env.get('DB_FILE2', 'rg3m.db'))
 LOG_PATH  = os.path.join(_DATA_DIR, 'pred_log_cg.json')
-SNAP_PATH = os.path.join(_DATA_DIR, 'latest_prediction_cg.json')
+SNAP_PATH      = os.path.join(_DATA_DIR, 'latest_prediction_cg.json')
+XGB_MODEL_PATH = os.path.join(_DATA_DIR, 'xgb_model_cg.pkl')
+XGB_META_PATH  = os.path.join(_DATA_DIR, 'xgb_meta_cg.json')
+RETRAIN_EVERY  = 50
 
 RED_NUMS    = [0, 2, 4, 6, 8]
 GREEN_NUMS  = [1, 3, 5, 7, 9]
@@ -116,23 +120,6 @@ def alt_run_length(arr):
             break
     return alt
 
-def detect_low_streak_regime(arr, window=20):
-    """
-    Returns True when the game is in a low-streak regime:
-    max consecutive same-color run in the last `window` rounds is <= 2.
-    In this regime, no color ever repeats 3+ times, so after streak=2
-    the opposite color is near-certain.
-    """
-    if len(arr) < window:
-        return False
-    recent = arr[-window:]
-    max_s = cur_s = 1
-    for i in range(1, len(recent)):
-        cur_s = cur_s + 1 if recent[i] == recent[i-1] else 1
-        if cur_s > max_s:
-            max_s = cur_s
-    return max_s <= 2
-
 def majority_color(arr, window=6):
     """Return the majority color in the last `window` rounds, or None if tied."""
     recent = arr[-window:] if len(arr) >= window else arr
@@ -200,27 +187,6 @@ def detect_mirror_tile_inprogress(arr, tile_sizes=(6, 8)):
                     'tile_size': ts, 'cycles': pair_count + 1, 'tile_pos': offset}
     return None
 
-def color_sequence_signal(arr, min_matches=3, min_win=4):
-    n = len(arr)
-    for wlen in range(min(10, n - 1), 1, -1):
-        pat = arr[n - wlen:]
-        ra = ga = 0
-        for i in range(n - wlen - 1):
-            if arr[i: i + wlen] == pat:
-                if arr[i + wlen] == 'red': ra += 1
-                else:                      ga += 1
-        total = ra + ga
-        if total < min_matches:
-            continue
-        mx = max(ra, ga)
-        if mx < min_win:
-            continue
-        conf = mx / total
-        if conf >= 0.55:
-            return ('red' if ra >= ga else 'green'), conf
-        break
-    return None, 0.5
-
 def _loss_streak():
     streak = 0
     for r in reversed([r for r in results if r in ('WIN', 'LOSS')]):
@@ -229,6 +195,20 @@ def _loss_streak():
     return streak
 
 _cur_loss_streak = _loss_streak()
+
+
+def _get_sticky_cg(log):
+    """Return (pred_color, confidence) to reuse if last scored round was WIN, else (None, None)."""
+    scored = sorted(
+        [(int(k), v) for k, v in log.items() if v.get('actual') and v.get('pred_color')],
+        key=lambda x: x[0], reverse=True
+    )
+    if not scored:
+        return None, None
+    _, last = scored[0]
+    if last['pred_color'] == last['actual']:
+        return last['pred_color'], last.get('confidence', 0.65)
+    return None, None
 
 # ── Alternating block pattern (GGGRRR / RRRGGG — exactly 3+ of each) ─────────
 
@@ -287,237 +267,160 @@ def detect_alternating_block_pattern(arr, min_block=3):
     }
 
 
-# ── Symmetric block detection (GGGRRR / GGRRRR patterns) ─────────────────────
+# ── XGBoost features ──────────────────────────────────────────────────────────
 
-def detect_sym_block_inprogress(arr, min_prev=2):
-    """
-    Detect when we're INSIDE the second half of a symmetric-ish color block.
-    Pattern: [prev_color × prev_run] then [cur_color × cur_run]
-    where prev_run >= min_prev and cur_run >= 1.
-
-    Behaviour:
-    - While cur_run < prev_run  → continue current color (building to match prev)
-    - While cur_run == prev_run → predict flip to prev_color (symmetric complete)
-    - While cur_run > prev_run  → continue current color (second half longer)
-
-    Returns dict or None.
-    """
-    if len(arr) < min_prev + 1:
+def make_features(arr):
+    """Feature vector for predicting the next color after arr."""
+    n = len(arr)
+    if n < 11:
         return None
-
     runs = build_runs(arr)
-    if len(runs) < 2:
+    cv, cr = runs[-1]
+    pv, pr = (runs[-2][0], runs[-2][1]) if len(runs) >= 2 else (cv, 0)
+
+    recent8  = arr[-8:]
+    dom_r8   = recent8.count('red') / len(recent8) if recent8 else 0.5
+    recent20 = arr[-20:] if n >= 20 else arr
+    dom_r20  = recent20.count('red') / len(recent20) if recent20 else 0.5
+
+    alt = alt_run_length(arr)
+
+    bl = [(r[1], 1 if r[0] == 'red' else 0) for r in runs[-5:][::-1]]
+    while len(bl) < 5:
+        bl.append((0, 0))
+    avg_bl = sum(r[1] for r in runs[-min(5, len(runs)):]) / min(5, len(runs))
+
+    return [
+        cr,
+        1 if cv == 'red' else 0,
+        pr,
+        1 if pv == 'red' else 0,
+        alt,
+        dom_r8,
+        dom_r20,
+        bl[0][0], bl[0][1],
+        bl[1][0], bl[1][1],
+        bl[2][0], bl[2][1],
+        bl[3][0], bl[3][1],
+        bl[4][0], bl[4][1],
+        avg_bl,
+        1 if cr >= 4 else 0,
+        1 if pr >= 4 else 0,
+        1 if alt >= 3 else 0,
+    ]
+
+
+def train_xgb_color(colors_list, meta):
+    from sklearn.ensemble import GradientBoostingClassifier
+    X, y = [], []
+    for i in range(11, len(colors_list)):
+        f = make_features(colors_list[:i])
+        if f is None:
+            continue
+        X.append(f)
+        y.append(1 if colors_list[i] == 'red' else 0)
+    if len(X) < 200:
         return None
-
-    cur_val,  cur_run  = runs[-1]
-    prev_val, prev_run = runs[-2]
-
-    if prev_run < min_prev:
-        return None
-
-    if cur_run >= prev_run * 2:
-        return None   # far exceeded prev — not a symmetric block
-
-    if cur_run < prev_run:
-        # Still building — predict continuation of current color
-        ratio = cur_run / prev_run
-        conf  = round(0.60 + 0.08 * ratio, 3)   # 0.60 early, ~0.68 near end
-        return {
-            'pred_val':  cur_val,
-            'conf':      conf,
-            'phase':     'building',
-            'cur_run':   cur_run,
-            'prev_run':  prev_run,
-            'prev_val':  prev_val,
-        }
-    elif cur_run == prev_run:
-        # Symmetric complete — predict flip to prev color
-        return {
-            'pred_val':  prev_val,
-            'conf':      0.68,
-            'phase':     'complete',
-            'cur_run':   cur_run,
-            'prev_run':  prev_run,
-            'prev_val':  prev_val,
-        }
-    else:
-        # cur_run > prev_run — second half longer than first, still lean to continue
-        return {
-            'pred_val':  cur_val,
-            'conf':      0.62,
-            'phase':     'extended',
-            'cur_run':   cur_run,
-            'prev_run':  prev_run,
-            'prev_val':  prev_val,
-        }
+    clf = GradientBoostingClassifier(
+        n_estimators=200, learning_rate=0.05, max_depth=3,
+        subsample=0.8, random_state=42
+    )
+    clf.fit(X, y)
+    n_eval = min(500, len(X))
+    preds  = clf.predict(X[-n_eval:])
+    acc    = sum(p == t for p, t in zip(preds, y[-n_eval:])) / n_eval
+    meta.update({'n_samples': len(X), 'n_features': len(X[0]),
+                 'accuracy': round(acc, 4),
+                 'trained_at': datetime.datetime.now().isoformat()})
+    return clf
 
 
 # ── COLOR prediction ───────────────────────────────────────────────────────────
 
 def predict_color(idx):
-    if idx < 2:
+    if idx < 11:
         return None, 0.5, {}
     arr = colors[:idx]
     cv, cr, pv, pr = current_run_info(arr)
     recent8 = arr[-8:]
     r8, g8  = recent8.count('red'), recent8.count('green')
     alt     = alt_run_length(arr)
-
-    low_streak_regime = detect_low_streak_regime(arr)
-    maj6 = majority_color(arr, window=6)
-
-    # Short-window alternating chaos: flip_rate ≥65% AND max_run ≤2 in last 8 rounds.
-    # Detects rapid oscillation regime that the 20-round low_streak_regime misses when
-    # a long earlier streak is still inside its window.
-    _rc8 = arr[-8:] if len(arr) >= 8 else arr
-    if len(_rc8) >= 6:
-        _fl8 = sum(1 for i in range(1, len(_rc8)) if _rc8[i] != _rc8[i-1])
-        _fr8 = _fl8 / (len(_rc8) - 1)
-        _mr8 = 1; _cr8 = 1
-        for i in range(1, len(_rc8)):
-            _cr8 = _cr8 + 1 if _rc8[i] == _rc8[i-1] else 1
-            _mr8 = max(_mr8, _cr8)
-        alt_chaos_regime = _fr8 >= 0.75 and _mr8 <= 2
-    else:
-        alt_chaos_regime = False
+    maj6    = majority_color(arr, window=6)
 
     mirror_info    = detect_mirror_tile(arr)
     mirror_in_info = detect_mirror_tile_inprogress(arr) if mirror_info is None else None
-    sym_block_info = detect_sym_block_inprogress(arr)
-    seq_pred, seq_conf = color_sequence_signal(arr)
     alt_blk_det, alt_blk_pred, alt_blk_conf, alt_blk_info = detect_alternating_block_pattern(arr)
 
-    applied_rule = 'default'
-    p_red = 0.5
+    # XGBoost baseline probability (red)
+    p_xgb = 0.50
+    feats = make_features(arr)
+    if feats is not None and _xgb_model is not None:
+        p_xgb = float(_xgb_model.predict_proba([feats])[0][1])
 
-    # Rule 0c: Alternating chaos (flip_rate ≥ 0.75, max_run ≤ 2 in last 8) — highest priority.
-    # In oscillating regime, commit to the majority direction of last 20 rounds rather
-    # than flipping every round — stays on the dominant trend.
-    if alt_chaos_regime:
-        _r20  = arr[-20:] if len(arr) >= 20 else arr
-        _rc20 = _r20.count('red')
-        _p_maj = _rc20 / len(_r20)
-        if _p_maj >= 0.55:
-            p_red = 0.65
-        elif _p_maj <= 0.45:
-            p_red = 0.35
-        else:
-            p_red = 0.5
-        applied_rule = 'rule0c_alt_chaos'
+    applied_rule = 'xgb'
+    p_red = p_xgb
 
-    # Rule 0: Low-streak regime (max run ≤ 2 in last 20) — predict majority of last 20 rounds.
-    # In oscillating patterns (RGRG, RRGG, RRGGRR...) with no streak of 3, follow
-    # whichever color has appeared more in the last 20 rounds.
-    elif low_streak_regime:
-        _r20  = arr[-20:] if len(arr) >= 20 else arr
-        _rc20 = _r20.count('red')
-        _p_maj = _rc20 / len(_r20)
-        if _p_maj >= 0.55:
-            p_red = 0.65
-        elif _p_maj <= 0.45:
-            p_red = 0.35
-        else:
-            p_red = 0.5
-        applied_rule = 'rule0_low_regime_maj20'
+    # Rule 4: Mirror tile — highest priority structural pattern (56.5% historical)
+    if mirror_info is not None:
+        p_red = mirror_info['conf'] if mirror_info['pred_val'] == 'red' else 1.0 - mirror_info['conf']
+        applied_rule = 'rule4_mirror_tile'
 
-    # Rule 1: Long streak (4+) → continue strongly
+    # Rule 1: Long streak (4+) — XGBoost-dominant blend
     elif cr >= 4:
-        p_red = 0.78 if cv == 'red' else 0.22
+        block_p = 0.75 if cv == 'red' else 0.25
+        p_red = 0.35 * block_p + 0.65 * p_xgb
         applied_rule = 'rule1_long_streak'
 
-    # Rule 1_alt_block: Alternating block pattern (GGGRRR / RRRGGG).
-    # Both the current run and previous run are >= 3 — the alternating cycle
-    # has completed and the previous color is expected to resume.
-    # Checked BEFORE Rule 1b so cr==3 does not blindly continue the streak.
+    # Rule 1_alt_block: Alternating block (A×n B×m A pattern) — blend with XGBoost
     elif alt_blk_det:
-        p_red = alt_blk_conf if alt_blk_pred == 'red' else 1.0 - alt_blk_conf
+        alt_p = alt_blk_conf if alt_blk_pred == 'red' else 1.0 - alt_blk_conf
+        p_red = 0.40 * alt_p + 0.60 * p_xgb
         applied_rule = f'rule1_alt_block_{alt_blk_info["pattern"]}'
 
-    # Rule 1b: Medium streak (3) with no alternating block pattern → continue
+    # Rule 1b: Medium streak (3) — checked before rule2 so cr==3 doesn't trigger trend persist
     elif cr == 3:
-        p_red = 0.65 if cv == 'red' else 0.35
+        streak_p = 0.62 if cv == 'red' else 0.38
+        p_red = 0.30 * streak_p + 0.70 * p_xgb
         applied_rule = 'rule1_medium_streak'
 
-    # Rule 2: After dominant run (3+), stay on previous trend until counter reaches 3.
-    # 1 or 2 counter-rounds are NOT a confirmed reversal — hold previous direction.
-    # EXCEPTION: skip when the run 2 steps back is the same colour as current AND at
-    # least as long as prev — this means the current colour was already dominant before
-    # the prev detour (e.g. R×5→G×3→R×2: the R×2 is resuming the earlier R×5 trend,
-    # not reverting to G×3).
+    # Rule 2: After dominant run (3+), hold previous direction for 1-2 counter rounds
     elif pr >= 3 and cr <= 2:
         _runs_full = build_runs(arr)
         _ppv = _runs_full[-3][0] if len(_runs_full) >= 3 else None
         _ppr = _runs_full[-3][1] if len(_runs_full) >= 3 else 0
         if _ppv == cv and _ppr >= pr:
-            pass  # current colour was dominant 2 steps back — don't hold previous
+            pass  # current color was dominant 2 steps back — let XGBoost decide
         else:
-            conf = 0.75 if pr >= 6 else (0.70 if pr >= 4 else 0.65)
-            p_red = conf if pv == 'red' else (1.0 - conf)
+            conf_t = 0.68 if pr >= 6 else (0.65 if pr >= 4 else 0.62)
+            trend_p = conf_t if pv == 'red' else (1.0 - conf_t)
+            p_red = 0.35 * trend_p + 0.65 * p_xgb
             applied_rule = 'rule2_trend_persist'
 
-    # Rule 2b: Symmetric block in progress (GGGRRR / RRRGGG pattern).
-    # Only reached when prev_run < 3 (small symmetric cycles, not dominant trends).
-    elif sym_block_info is not None:
-        pred = sym_block_info['pred_val']
-        c    = sym_block_info['conf']
-        if sym_block_info['phase'] == 'complete' and maj6 == cv:
-            pred = cv
-            c    = 0.62
-            applied_rule = 'rule2b_dominant_stay'
-        else:
-            applied_rule = f'rule2b_sym_{sym_block_info["phase"]}'
-        p_red = c if pred == 'red' else (1.0 - c)
-
-    # Rule 1a: Short streak (2) with no dominant previous run (pr < 3)
+    # Rule 1a: Short streak (2) with no dominant previous run
     elif cr == 2:
-        p_red = 0.58 if cv == 'red' else 0.42
+        streak_p = 0.56 if cv == 'red' else 0.44
+        p_red = 0.30 * streak_p + 0.70 * p_xgb
         applied_rule = 'rule1a_short_streak'
 
-    # Rule 3: Confirmed alternating (3+ unbroken) → predict flip to opposite color
+    # Rule 3: Confirmed alternating (3+ unbroken) — blend with XGBoost
     elif cr == 1 and pr == 1 and alt >= 3:
         conf_alt = round(0.65 + min(0.10, (alt - 3) * 0.025), 3)
-        p_red = (1.0 - conf_alt) if cv == 'red' else conf_alt
+        alt_p = (1.0 - conf_alt) if cv == 'red' else conf_alt
+        p_red = 0.35 * alt_p + 0.65 * p_xgb
         applied_rule = 'rule3_alternating'
 
-    # Rules 4-7 only if rules 0-3 didn't fire
-    if applied_rule == 'default':
-        if mirror_info is not None:
-            p_red = mirror_info['conf'] if mirror_info['pred_val'] == 'red' else 1.0 - mirror_info['conf']
-            applied_rule = 'rule4_mirror_tile'
-
-        elif mirror_in_info is not None and mirror_in_info.get('cycles', 0) >= 3:
-            p_red = mirror_in_info['conf'] if mirror_in_info['pred_val'] == 'red' else 1.0 - mirror_in_info['conf']
-            applied_rule = 'rule5_mirror_in'
-
-        elif seq_pred is not None:
-            dom_p = 0.65 if r8 > g8 else (0.35 if g8 > r8 else 0.5)
-            seq_p = seq_conf if seq_pred == 'red' else 1.0 - seq_conf
-            p_red = 0.4 * seq_p + 0.6 * dom_p
-            applied_rule = 'rule6_seq_dom'
-
-        elif r8 != g8:
-            p_red = 0.65 if r8 > g8 else 0.35
-            applied_rule = 'rule7_dominant'
-
-        # Rule 8: trend-20 fallback when last-8 is tied — follow dominant in last 20
-        else:
-            _r20 = arr[-20:] if len(arr) >= 20 else arr
-            _rc20 = _r20.count('red'); _gc20 = _r20.count('green')
-            if _rc20 / len(_r20) >= 0.60:
-                p_red = 0.60
-                applied_rule = 'rule8_trend20'
-            elif _gc20 / len(_r20) >= 0.60:
-                p_red = 0.40
-                applied_rule = 'rule8_trend20'
+    # Rule 5: Mirror tile in progress (high-cycle only)
+    elif mirror_in_info is not None and mirror_in_info.get('cycles', 0) >= 3:
+        p_red = mirror_in_info['conf'] if mirror_in_info['pred_val'] == 'red' else 1.0 - mirror_in_info['conf']
+        applied_rule = 'rule5_mirror_in'
 
     p_red = max(0.05, min(0.95, p_red))
-    # Streak flip only applies when NOT in low-streak regime and no strong directional evidence:
-    # - cr >= 3: color repeating 3+ times — trust the streak, don't invert
-    # - alt >= 3: confirmed alternating pattern — follow it, don't invert
-    # - maj6 == cv: majority of last 6 rounds confirms current direction — don't invert
-    if not low_streak_regime and not alt_chaos_regime and _cur_loss_streak >= 5 and cr < 3 and alt < 3 and maj6 is not None and maj6 != cv:
+
+    # Streak flip: only when XGBoost is indeterminate and loss streak is clear
+    if _cur_loss_streak >= 5 and cr < 3 and alt < 3 and abs(p_xgb - 0.5) < 0.10 and maj6 is not None and maj6 != cv:
         p_red = 1.0 - p_red
         applied_rule += '+streak_flip'
+
     p_red = max(0.05, min(0.95, p_red))
 
     pred_color = 'red' if p_red > 0.5 else 'green'
@@ -526,12 +429,9 @@ def predict_color(idx):
         'cur_val': cv, 'cur_run': cr, 'prev_val': pv, 'prev_run': pr,
         'alt_run': alt, 'dom_r8': round(r8/len(recent8), 3) if recent8 else 0.5,
         'rule': applied_rule, 'loss_streak': _cur_loss_streak,
-        'low_streak_regime': low_streak_regime, 'alt_chaos_regime': alt_chaos_regime,
-        'maj6': maj6,
-        'mirror_info':    mirror_info or mirror_in_info,
-        'sym_block_info': sym_block_info,
-        'alt_blk_info':   alt_blk_info if alt_blk_det else None,
-        'seq_pred': seq_pred, 'seq_conf': round(seq_conf, 3),
+        'p_xgb': round(p_xgb, 4), 'maj6': maj6,
+        'mirror_info':  mirror_info or mirror_in_info,
+        'alt_blk_info': alt_blk_info if alt_blk_det else None,
     }
 
 # ── NUMBER prediction ──────────────────────────────────────────────────────────
@@ -687,6 +587,42 @@ def predict_purple(idx):
         'p_purple':       round(p_purple, 3),
     }
 
+# ── XGBoost model load / train ────────────────────────────────────────────────
+
+_xgb_model = None
+_xgb_meta  = {}
+
+if os.path.exists(XGB_META_PATH):
+    try:
+        with open(XGB_META_PATH) as f:
+            _xgb_meta = json.load(f)
+    except Exception:
+        pass
+
+_need_train = not os.path.exists(XGB_MODEL_PATH)
+if not _need_train:
+    _need_train = (n_rows - 11 - _xgb_meta.get('n_samples', 0)) >= RETRAIN_EVERY
+
+if _need_train and n_rows >= 211:
+    print('  Training XGBoost color model...', flush=True)
+    _clf = train_xgb_color(colors, _xgb_meta)
+    if _clf is not None:
+        with open(XGB_MODEL_PATH, 'wb') as f:
+            pickle.dump(_clf, f)
+        with open(XGB_META_PATH, 'w') as f:
+            json.dump(_xgb_meta, f, indent=2)
+        _xgb_model = _clf
+        print(f'  XGBoost trained: {_xgb_meta["n_samples"]} samples, acc={_xgb_meta["accuracy"]*100:.1f}%', flush=True)
+
+if _xgb_model is None and os.path.exists(XGB_MODEL_PATH):
+    try:
+        with open(XGB_MODEL_PATH, 'rb') as f:
+            _xgb_model = pickle.load(f)
+        print(f'  XGBoost loaded: {_xgb_meta.get("n_samples","?")} samples, acc={_xgb_meta.get("accuracy",0)*100:.1f}%', flush=True)
+    except Exception as e:
+        print(f'  XGBoost load failed: {e}', flush=True)
+
+
 # ── Gap-fill ───────────────────────────────────────────────────────────────────
 
 # Fill ALL rows that don't have predictions yet (covers post-backfill scenario).
@@ -716,7 +652,7 @@ if _missing:
         e['pred_color']    = _pc
         e['p_red']         = round(_pp if _pc == 'red' else 1.0 - _pp, 4)
         e['confidence']    = round(max(_pp, 1.0 - _pp), 4)
-        e['bet']           = max(_pp, 1.0 - _pp) >= 0.65
+        e['bet']           = max(_pp, 1.0 - _pp) >= 0.60
         e['pred_number']   = _pn
         e['number_conf']   = _pnc
         e['number_signals']= _pns
@@ -757,14 +693,26 @@ for i, rid_int in enumerate(ids):
 
 # ── Next prediction ────────────────────────────────────────────────────────────
 
-pred_color,  color_conf,  color_sinfo  = predict_color(n_rows)
-if pred_color is None:
-    print("Not enough data to predict.")
-    sys.exit(0)
-
-p_red      = color_conf if pred_color == 'red' else 1.0 - color_conf
-color_conf = max(p_red, 1.0 - p_red)
-is_bet     = color_conf >= 0.65
+_sticky_color, _sticky_color_conf = _get_sticky_cg(log)
+if _sticky_color is not None:
+    pred_color  = _sticky_color
+    p_red       = _sticky_color_conf if _sticky_color == 'red' else (1.0 - _sticky_color_conf)
+    color_conf  = _sticky_color_conf
+    is_bet      = color_conf >= 0.60
+    color_sinfo = {
+        'cur_val': '', 'cur_run': 0, 'prev_val': '', 'prev_run': 0,
+        'alt_run': 0, 'dom_r8': 0.5, 'rule': 'sticky_win',
+        'loss_streak': _cur_loss_streak, 'p_xgb': 0.5,
+        'maj6': None, 'mirror_info': None, 'alt_blk_info': None,
+    }
+else:
+    pred_color, color_conf, color_sinfo = predict_color(n_rows)
+    if pred_color is None:
+        print("Not enough data to predict.")
+        sys.exit(0)
+    p_red      = color_conf if pred_color == 'red' else 1.0 - color_conf
+    color_conf = max(p_red, 1.0 - p_red)
+    is_bet     = color_conf >= 0.60
 
 pred_number, number_conf, number_sinfo = predict_number(n_rows, pred_color)
 pred_purple, purple_conf, purple_sinfo = predict_purple(n_rows)

@@ -447,6 +447,76 @@ def detect_uniform_block(all_blocks, min_len=2, max_len=6):
     return None
 
 
+# ── 3-by-3 block pattern ────────────────────────────────────────────────────────
+def detect_3x3_pattern(oe_arr, idx, block_len=3):
+    """
+    Detect a 3-by-3 alternating block pattern: EEEOOOEEE / OOOEEEOO...
+
+    Fires when the previous block is EXACTLY block_len of the opposite value and
+    the current run is 1..block_len.  Requires 2+ completed same-length pairs for
+    the 'has_confirmed_pair' flag (higher confidence); works with just 1 pair.
+
+    Returns:
+      phase='in_progress'  (cur_run < block_len): predict CONTINUE current value
+      phase='at_boundary'  (cur_run == block_len): predict SWITCH to opposite
+    """
+    arr = list(oe_arr[:idx + 1])
+    n   = len(arr)
+    cur_val = arr[idx]
+
+    cur_run = 0
+    for i in range(idx, max(-1, idx - 10), -1):
+        if arr[i] == cur_val: cur_run += 1
+        else: break
+
+    if cur_run > block_len or n < cur_run + block_len:
+        return None
+
+    prev_val    = _FLIP[cur_val]
+    prev_start  = n - cur_run - block_len
+    if prev_start < 0:
+        return None
+
+    prev_block = arr[prev_start : n - cur_run]
+    if prev_block != [prev_val] * block_len:
+        return None
+
+    # Ensure the previous block is EXACTLY block_len (not a longer run)
+    if prev_start > 0 and arr[prev_start - 1] == prev_val:
+        return None
+
+    # Check whether the block before prev is also block_len of cur_val (confirmed pair)
+    has_confirmed_pair = False
+    pre_start = prev_start - block_len
+    if pre_start >= 0:
+        pre_block = arr[pre_start : prev_start]
+        if pre_block == [cur_val] * block_len:
+            if pre_start == 0 or arr[pre_start - 1] != cur_val:
+                has_confirmed_pair = True
+
+    if cur_run < block_len:
+        base = 0.67 if has_confirmed_pair else 0.63
+        conf = round(base + min(0.05, (cur_run - 1) * 0.025), 3)
+        return {
+            'pred_val':          cur_val,
+            'conf':              conf,
+            'pattern_name':      '3x3_in',
+            'phase':             'in_progress',
+            'cur_run':           cur_run,
+            'has_confirmed_pair': has_confirmed_pair,
+        }
+    else:  # cur_run == block_len → at boundary
+        conf = 0.68 if has_confirmed_pair else 0.65
+        return {
+            'pred_val':          _FLIP[cur_val],
+            'conf':              conf,
+            'pattern_name':      '3x3_boundary',
+            'phase':             'at_boundary',
+            'cur_run':           cur_run,
+            'has_confirmed_pair': has_confirmed_pair,
+        }
+
+
 # ── Cycle detection ─────────────────────────────────────────────────────────────
 def detect_cycle(blocks_with_meta):
     """
@@ -730,6 +800,21 @@ def _loss_streak(log):
     return streak
 
 
+def _get_sticky_oe(log):
+    """Return (pred_oe, confidence) to reuse if last scored round was WIN, else (None, None)."""
+    scored = sorted(
+        [(int(k), v) for k, v in log.items() if v.get('actual') and v.get('pred_oe')],
+        key=lambda x: x[0], reverse=True
+    )
+    if not scored:
+        return None, None
+    _, last = scored[0]
+    actual_oe = 'ODD' if last['actual'].count('R') % 2 else 'EVEN'
+    if last['pred_oe'] == actual_oe:
+        return last['pred_oe'], last.get('confidence', 0.65)
+    return None, None
+
+
 # ── Load log ────────────────────────────────────────────────────────────────────
 log_new = {}
 if os.path.exists(LOG_NEW_PATH):
@@ -840,11 +925,17 @@ def predict_ds1m(oe_arr, idx):
     mirror_info    = detect_mirror_tile(oe_arr, idx)
     mirror_in_info = detect_mirror_tile_inprogress(oe_arr, idx) if mirror_info is None else None
 
-    # Symmetric tile in-progress (used by Rule 6b) — inside OOO phase of EEEOOO
+    # 3-by-3 block pattern (EEEOOOEEE / OOOEEEOO...)
+    pattern_3x3 = detect_3x3_pattern(oe_arr, idx)
+
+    # Symmetric tile in-progress — inside OOO phase of EEEOOO
     sym_in_info = detect_sym_tile_inprogress(oe_arr, idx)
 
     # Symmetric tile precursor (used by Rule 10)
-    sym_info = detect_sym_tile(oe_arr, idx) if (mirror_info is None and mirror_in_info is None and sym_in_info is None) else None
+    sym_info = detect_sym_tile(oe_arr, idx) if (
+        mirror_info is None and mirror_in_info is None
+        and sym_in_info is None and pattern_3x3 is None
+    ) else None
 
     # Post-symmetric tile in-progress — rounds 2-6 of OOEEOE after EEEOOO/OOOEEE (Rule 10b)
     post_sym_info = detect_post_sym_tile_inprogress(oe_arr, idx) if (
@@ -877,6 +968,17 @@ def predict_ds1m(oe_arr, idx):
         ub_conf     = uniform_block_info['conf']
         p_odd       = ub_conf if pred_odd_ub else (1.0 - ub_conf)
         applied_rule = f'rule_ub_{uniform_block_info["pattern_name"]}_{uniform_block_info["phase"]}'
+
+    # Rule 3x3: Three-by-three block pattern (EEEOOOEEE / OOOEEEOO...)
+    # Fires when:
+    #   in_progress → cur_run 1-2 inside a new block whose predecessor was exactly L3
+    #   at_boundary → cur_run == 3 and predecessor was exactly L3 → switch direction
+    # Placed before Rule 1b/Rule 6 so the 3x3 structural signal beats generic trend rules.
+    elif pattern_3x3 is not None:
+        pred_odd_3x3 = (pattern_3x3['pred_val'] == 'ODD')
+        conf_3x3     = pattern_3x3['conf']
+        p_odd        = conf_3x3 if pred_odd_3x3 else (1.0 - conf_3x3)
+        applied_rule = f'rule_3x3_{pattern_3x3["phase"]}'
 
     # Rule 1: Inside long block (run >= 4)
     # Data (15985 rounds): run=4→52% stay, run=5→52% stay, run=6+→53% switch.
@@ -1003,7 +1105,7 @@ def predict_ds1m(oe_arr, idx):
     # Only applies when no structural rule detected a clear pattern — flipping Rule 1/1b/6
     # signals inverts correct predictions and extends the loss streak instead of breaking it.
     _structural_prefixes = ('rule1_', 'rule1b_', 'rule3_', 'rule6_', 'rule6b_', 'rule7_',
-                            'rule8_', 'rule10_', 'rule10b_', 'rule11_')
+                            'rule8_', 'rule10_', 'rule10b_', 'rule11_', 'rule_ub_', 'rule_3x3')
     if _cur_loss_streak >= 5 and not any(applied_rule.startswith(p) for p in _structural_prefixes):
         p_odd = 1.0 - p_odd
         applied_rule += '+streak_flip'
@@ -1036,6 +1138,7 @@ def predict_ds1m(oe_arr, idx):
         'post_sym_info':      post_sym_info,
         'known_tile_info':    known_tile_info,
         'uniform_block_info': uniform_block_info,
+        'pattern_3x3':        pattern_3x3,
     }
     return pred_oe, p_odd, sinfo
 
@@ -1081,7 +1184,24 @@ _cur_loss_streak = _loss_streak(log_new)
 
 # ── Run prediction ──────────────────────────────────────────────────────────────
 sig_idx  = len(oe_list) - 1
-pred_oe, p_odd, sinfo = predict_ds1m(oe_list, sig_idx)
+
+_sticky_oe, _sticky_conf = _get_sticky_oe(log_new)
+if _sticky_oe is not None:
+    pred_oe = _sticky_oe
+    p_odd   = _sticky_conf if _sticky_oe == 'ODD' else (1.0 - _sticky_conf)
+    sinfo   = {
+        'rule': 'sticky_win', 'loss_streak': _cur_loss_streak,
+        'xgb': 0.5, 'cur_run': 0, 'cur_val': '', 'prev_run': 0,
+        'alt_run': 0, 'alt_confirmed': False, 'dom_o8': 0.5,
+        'cycle_detected': False, 'cycle_pattern': None, 'cycle_period': None,
+        'cycle_cycles': None, 'cycle_pred_val': None, 'cycle_conf': None,
+        'cycle_transition': None, 'cycle_exp_len': None,
+        'mirror_info': None, 'sym_info': None, 'post_sym_info': None,
+        'known_tile_info': None, 'uniform_block_info': None,
+    }
+else:
+    pred_oe, p_odd, sinfo = predict_ds1m(oe_list, sig_idx)
+
 conf     = max(p_odd, 1.0 - p_odd)
 next_rid = last_id + 1
 

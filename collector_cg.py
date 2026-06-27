@@ -392,6 +392,25 @@ def run_prediction():
     backfill_results()
 
 
+def _push_to_remote(first_id):
+    try:
+        from remote_push import push_game
+        conn = get_conn()
+        rows = conn.execute(
+            'SELECT id,number,color,is_purple,result,pred_color,confidence,bet '
+            'FROM rounds WHERE id >= ?', (first_id,)
+        ).fetchall()
+        conn.close()
+        records = [
+            {'id': r[0], 'number': r[1], 'color': r[2], 'is_purple': r[3],
+             'result': r[4], 'pred_color': r[5], 'confidence': r[6], 'bet': r[7]}
+            for r in rows
+        ]
+        push_game('cg', records, os.path.join(_DATA_DIR, 'latest_prediction_cg.json'), LOG_PATH)
+    except Exception as e:
+        print(f'  [PUSH] {e}')
+
+
 # ── Main loop ──────────────────────────────────────────────────────────────────
 
 def main():
@@ -447,6 +466,7 @@ def main():
                         print(f"  {issue}  {number}  [{color}{'+purple' if is_purple else ''}]")
 
                 run_prediction()
+                _push_to_remote(new_items[0][0])
             else:
                 print("  No new records. Skipping prediction.")
 

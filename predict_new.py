@@ -33,7 +33,7 @@ SNAP_NEW_PATH  = os.path.join(_DATA_DIR, 'latest_prediction_new.json')
 XGB_MODEL_PATH = os.path.join(_DATA_DIR, 'xgb_model_new.pkl')
 XGB_META_PATH  = os.path.join(_DATA_DIR, 'xgb_meta_new.json')
 
-RETRAIN_EVERY = 50
+RETRAIN_EVERY = 25
 
 # ── Load historical data ────────────────────────────────────────────────────────
 import sqlite3 as _sqlite3
@@ -491,7 +491,7 @@ def detect_cycle(blocks_with_meta):
         pred_val      = next_val if is_transition else current_val
 
         if set(lens) == {2}:
-            pname = 'double_alt'
+            continue  # double_alt: 35% accuracy — anti-predictive, disabled
         elif set(lens) <= {1, 2}:
             continue  # mixed_alt: too noisy, disabled
         elif set(lens) == {1}:
@@ -528,6 +528,14 @@ def detect_cycle(blocks_with_meta):
 
     return best
 
+
+# ── Pattern-index lookup (disc pattern → 0-15) ──────────────────────────────────
+_PAT_TO_IDX = {
+    'WWWW': 0,  'WWWR': 1,  'WWRW': 2,  'WWRR': 3,
+    'WRWW': 4,  'WRWR': 5,  'WRRW': 6,  'WRRR': 7,
+    'RWWW': 8,  'RWWR': 9,  'RWRW': 10, 'RWRR': 11,
+    'RRWW': 12, 'RRWR': 13, 'RRRW': 14, 'RRRR': 15,
+}
 
 # ── Feature engineering ─────────────────────────────────────────────────────────
 def make_features(oe_arr, idx):
@@ -575,6 +583,15 @@ def make_features(oe_arr, idx):
     is_alt = 1 if alt_run >= 3 else 0
     alt_start_odd = (1 if arr[idx - alt_run + 1] == 'ODD' else 0) if is_alt else 0
 
+    pat_idx = _PAT_TO_IDX.get(str(df.iloc[idx]['pattern']), 0)
+
+    # Recent OE lag values (explicit, helps XGBoost detect building streaks)
+    oe_m2 = 1 if idx >= 1 and arr[idx - 1] == 'ODD' else 0
+    oe_m3 = 1 if idx >= 2 and arr[idx - 2] == 'ODD' else 0
+    oe_m4 = 1 if idx >= 3 and arr[idx - 3] == 'ODD' else 0
+    _last5 = arr[max(0, idx - 4): idx + 1]
+    odd_last5 = sum(1 for x in _last5 if x == 'ODD') / len(_last5) if _last5 else 0.5
+
     return [
         cur_run,                              # 0
         1 if cur_val == 'ODD' else 0,         # 1
@@ -590,6 +607,11 @@ def make_features(oe_arr, idx):
         1 if (prev_len >= 4 and cur_run < 4) else 0,  # 19  is_after_long
         is_alt,                               # 20
         alt_start_odd,                        # 21
+        pat_idx,                              # 22  disc pattern (0-15)
+        oe_m2,                                # 23  OE 2 rounds ago
+        oe_m3,                                # 24  OE 3 rounds ago
+        oe_m4,                                # 25  OE 4 rounds ago
+        odd_last5,                            # 26  ODD fraction in last 5 rounds
     ]
 
 
@@ -700,6 +722,21 @@ def _loss_streak(log):
         else:
             break
     return streak
+
+
+def _get_sticky_oe(log):
+    """Return (pred_oe, confidence) to reuse if last scored round was WIN, else (None, None)."""
+    scored = sorted(
+        [(int(k), v) for k, v in log.items() if v.get('actual') and v.get('pred_oe')],
+        key=lambda x: x[0], reverse=True
+    )
+    if not scored:
+        return None, None
+    _, last = scored[0]
+    actual_oe = 'ODD' if last['actual'].count('R') % 2 else 'EVEN'
+    if last['pred_oe'] == actual_oe:
+        return last['pred_oe'], last.get('confidence', 0.65)
+    return None, None
 
 
 # ── Load log ────────────────────────────────────────────────────────────────────
@@ -841,22 +878,19 @@ def predict_new(oe_arr, idx):
         p_odd       = mi_conf if pred_odd_mi else (1.0 - mi_conf)
         applied_rule = f'rule9_{mirror_in_info["pattern_name"]}'
 
-    # Rule 1: Inside long block (run >= 4)
-    # Data (15985 rounds): run=4→52% stay, run=5→52% stay, run=6+→53% switch.
-    # Old code used 0.82 confidence which is far too aggressive for a ~52% signal.
-    # Now blend with XGBoost; slightly lean stay for run=4-5, lean switch for run=6+.
+    # Rule 1: Inside long block (run >= 4) — only 52.8% accuracy, so lean on XGBoost.
     elif cur_run >= 4:
         if cur_run <= 5:
-            block_p = 0.60 if cur_val == 'ODD' else 0.40  # weak stay lean
+            block_p = 0.58 if cur_val == 'ODD' else 0.42  # weak stay lean
         else:
             block_p = 0.44 if cur_val == 'ODD' else 0.56  # run>=6: lean switch
-        p_odd = 0.55 * block_p + 0.45 * p_xgb
+        p_odd = 0.35 * block_p + 0.65 * p_xgb  # XGBoost-dominant blend
         applied_rule = 'rule1_long_block'
 
-    # Rule 1b: Medium streak (run == 3) — after 3 consecutive same, continue the streak.
+    # Rule 1b: Medium streak (run == 3). XGBoost-dominant blend.
     elif cur_run == 3:
-        stay_p = 0.60 if cur_val == 'ODD' else 0.40  # lean stay: continue current streak
-        p_odd = 0.55 * stay_p + 0.45 * p_xgb
+        stay_p = 0.58 if cur_val == 'ODD' else 0.42
+        p_odd = 0.35 * stay_p + 0.65 * p_xgb
         applied_rule = 'rule1b_stay'
 
     # Rule 3: Confirmed alternating (3+ unbroken single-round runs) → predict flip
@@ -876,28 +910,25 @@ def predict_new(oe_arr, idx):
     # Rule 6a: Exact 3+3 block pattern — EEEOOO / OOOEEE.
     # Previous block was EXACTLY 3 rounds; we are 1 or 2 rounds into the second block.
     # Predicts: continue current direction (the second block will also reach 3).
-    # Takes priority over Rule 6 (trend_persist) for this specific case only.
-    elif exact3_det:
-        p_odd        = exact3_conf if exact3_pred == 'ODD' else (1.0 - exact3_conf)
+    # O2 (cur_run=2, cur_val=ODD) disabled — empirical WR 45.7% (below random).
+    # All variants blended with XGBoost to prevent hard-overriding a correct XGB signal.
+    elif exact3_det and not (cur_run == 2 and cur_val == 'ODD'):
+        _e3_conf = min(exact3_conf, 0.58)  # cap to ~empirical accuracy range
+        _p_e3    = _e3_conf if exact3_pred == 'ODD' else (1.0 - _e3_conf)
+        p_odd    = 0.35 * _p_e3 + 0.65 * p_xgb
         applied_rule = f'rule6a_exact3block_{cur_val[:1]}{cur_run}'
 
-    # Rule 6: Trend persist — after a dominant run (3+), stay on previous direction
-    # until the counter reaches 3 consecutive. 1 or 2 counter-rounds are not a reversal.
-    elif cur_run <= 2 and prev_run >= 3:
-        if prev_run >= 5:
-            eoe_conf = 0.65
-        elif prev_run == 4:
-            eoe_conf = 0.62
-        else:  # prev_run == 3
-            eoe_conf = 0.58
-        p_odd = eoe_conf if prev_val == 'ODD' else (1.0 - eoe_conf)
-        applied_rule = 'rule6_trend_persist'
+    # Rule 6 (trend_persist) REMOVED — had 46.1% accuracy (worse than random).
+    # These cases now fall through to Rule 7 / XGBoost / maj20.
 
-    # Rule 7: Cyclic block pattern (period 2/4/6)
+    # Rule 7: Cyclic block pattern (period 2/4/6).
+    # Blended with XGBoost — empirical WR ~56%, so rule alone barely beats XGB.
+    # Cap confidence to 0.58 to prevent over-weighting low-accuracy cycle signals.
     elif cycle_info is not None:
         pred_odd_cy = (cycle_info['pred_val'] == 'ODD')
-        cy_conf     = cycle_info['conf']
-        p_odd       = cy_conf if pred_odd_cy else (1.0 - cy_conf)
+        cy_conf     = min(cycle_info['conf'], 0.58)
+        _p_cy       = cy_conf if pred_odd_cy else (1.0 - cy_conf)
+        p_odd       = 0.35 * _p_cy + 0.65 * p_xgb
         applied_rule = f'rule7_{cycle_info["pattern_name"]}'
 
     # Rule 9 (weak / single-pair) intentionally disabled — fires 37% of rounds at 50-56% loss
@@ -906,31 +937,37 @@ def predict_new(oe_arr, idx):
     elif sym_info is not None:
         pred_odd_s = (sym_info['pred_val'] == 'ODD')
         s_conf     = sym_info['conf']
-        p_odd      = s_conf if pred_odd_s else (1.0 - s_conf)
+        _p_s       = s_conf if pred_odd_s else (1.0 - s_conf)
+        p_odd      = 0.50 * _p_s + 0.50 * p_xgb
         applied_rule = f'rule10_{sym_info["pattern_name"]}'
 
     # Rule 10b: Inside OOEEOE tile that follows a symmetric tile (rounds 2-6)
     elif post_sym_info is not None:
         pred_odd_ps = (post_sym_info['pred_val'] == 'ODD')
         ps_conf     = post_sym_info['conf']
-        p_odd       = ps_conf if pred_odd_ps else (1.0 - ps_conf)
+        _p_ps       = ps_conf if pred_odd_ps else (1.0 - ps_conf)
+        p_odd       = 0.50 * _p_ps + 0.50 * p_xgb
         applied_rule = f'rule10b_{post_sym_info["pattern_name"]}'
 
     # Rule 11: Known 8-round tile in progress (EEOEOOEO / OOEOEEOE)
     elif known_tile_info is not None:
         pred_odd_kt = (known_tile_info['pred_val'] == 'ODD')
         kt_conf     = known_tile_info['conf']
-        p_odd       = kt_conf if pred_odd_kt else (1.0 - kt_conf)
+        _p_kt       = kt_conf if pred_odd_kt else (1.0 - kt_conf)
+        p_odd       = 0.50 * _p_kt + 0.50 * p_xgb
         applied_rule = f'rule11_{known_tile_info["pattern_name"]}'
 
     # Rule Maj20: Oscillating regime (cur_run ≤ 2, no structural pattern detected).
-    # When no streak of 3 is developing, predict the majority of the last 20 rounds.
+    # Blend last-20 majority (slow, stable) with last-8 majority (fast, responsive)
+    # so the model adapts within 2-3 rounds when a new trend starts.
     elif cur_run <= 2:
-        _r20  = arr[max(0, idx - 19): idx + 1]
+        _r20   = arr[max(0, idx - 19): idx + 1]
         _odd20 = _r20.count('ODD')
         _n20   = len(_r20)
-        _p_maj = _odd20 / _n20
-        p_odd  = 0.60 * _p_maj + 0.40 * p_xgb
+        _p_maj20 = _odd20 / _n20
+        _p_maj8  = o8 / len(recent8) if recent8 else _p_maj20
+        _p_maj   = 0.35 * _p_maj20 + 0.65 * _p_maj8
+        p_odd    = 0.35 * _p_maj + 0.65 * p_xgb
         applied_rule = 'rule_maj20'
 
     # Rule 4: No confirmed pattern → pure XGBoost.
@@ -967,6 +1004,31 @@ def predict_new(oe_arr, idx):
 
     p_odd = max(0.05, min(0.95, p_odd))
 
+    # Rule 5: Hard streak breaker — after 6+ consecutive losses where ALL losses predicted
+    # the SAME direction, flip. Mixed-loss streaks mean the model is oscillating, not biased.
+    _structural_prefixes_new = (
+        'rule1_', 'rule1b_', 'rule3_', 'rule6a_', 'rule7_',
+        'rule8_', 'rule9_', 'rule10_', 'rule10b_', 'rule11_',
+    )
+    if _cur_loss_streak >= 6 and not any(applied_rule.startswith(p) for p in _structural_prefixes_new):
+        _recent_loss_preds = []
+        for _rk, _rv in sorted(
+            [(int(k), v) for k, v in log_new.items() if v.get('actual') and v.get('pred_oe')],
+            key=lambda x: x[0], reverse=True
+        ):
+            _rae = 'ODD' if _rv['actual'].count('R') % 2 else 'EVEN'
+            if _rv['pred_oe'] != _rae:
+                _recent_loss_preds.append(_rv['pred_oe'])
+                if len(_recent_loss_preds) >= 6:
+                    break
+            else:
+                break
+        if len(_recent_loss_preds) >= 6 and len(set(_recent_loss_preds)) == 1:
+            p_odd = 1.0 - p_odd
+            applied_rule += '+streak_flip'
+
+    p_odd = max(0.05, min(0.95, p_odd))
+
     pred_oe = 'ODD' if p_odd > 0.5 else 'EVEN'
     conf    = max(p_odd, 1.0 - p_odd)
 
@@ -999,7 +1061,7 @@ def predict_new(oe_arr, idx):
 # ── Gap-fill: ensure every round in the last 300 has a prediction ───────────────
 # Range includes n_rows-1 (last record) so the most recent round always gets pred_oe.
 # Uses context up to _bi-1 (predict_new(oe_list, _bi-1)) to predict round _bi — no future leak.
-_GF_WINDOW = 300
+_GF_WINDOW = 500
 _gf_start  = max(11, n_rows - _GF_WINDOW)
 _missing   = [
     i for i in range(_gf_start, n_rows)
@@ -1037,7 +1099,9 @@ _cur_loss_streak = _loss_streak(log_new)
 
 # ── Run prediction ──────────────────────────────────────────────────────────────
 sig_idx  = len(oe_list) - 1
+
 pred_oe, p_odd, sinfo = predict_new(oe_list, sig_idx)
+
 conf     = max(p_odd, 1.0 - p_odd)
 next_rid = last_id + 1
 

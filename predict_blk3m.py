@@ -195,6 +195,21 @@ def predict_oe(hist):
     return maj20, round(conf, 3), 'oe_maj20', signals
 
 
+# ── Sticky prediction helpers ──────────────────────────────────────────────────
+
+def _get_sticky(hist, pred_log, pred_key, actual_key, conf_key, default_conf=0.60):
+    """Return (pred_val, conf) if last completed round's prediction was WIN, else (None, None)."""
+    if not hist or not pred_log:
+        return None, None
+    last_round = hist[-1]
+    entry = pred_log.get(str(last_round['id']))
+    if not entry or not entry.get(pred_key):
+        return None, None
+    if entry[pred_key] == last_round[actual_key]:
+        return entry[pred_key], entry.get(conf_key, default_conf)
+    return None, None
+
+
 # ── Main ───────────────────────────────────────────────────────────────────────
 
 def main():
@@ -208,8 +223,21 @@ def main():
     next_id    = last_id + 1
     pred_log   = load_pred_log()
 
-    pred_bs,  conf_bs,  rule_bs,  sigs_bs  = predict_bs(hist)
-    pred_oe,  conf_oe,  rule_oe,  sigs_oe  = predict_oe(hist)
+    _st_bs, _st_bs_conf = _get_sticky(hist, pred_log, 'pred_bs', 'big_small', 'confidence')
+    if _st_bs is not None:
+        pred_bs, conf_bs, rule_bs = _st_bs, _st_bs_conf, 'sticky_win'
+        sigs_bs = {'cur_val': '', 'cur_run': 0, 'prev_val': '', 'prev_run': 0,
+                   'maj20': '', 'maj20_frac': 0.0, 'rule': 'sticky_win'}
+    else:
+        pred_bs, conf_bs, rule_bs, sigs_bs = predict_bs(hist)
+
+    _st_oe, _st_oe_conf = _get_sticky(hist, pred_log, 'pred_oe', 'odd_even', 'conf_oe', 0.58)
+    if _st_oe is not None:
+        pred_oe, conf_oe, rule_oe = _st_oe, _st_oe_conf, 'sticky_win'
+        sigs_oe = {'cur_val': '', 'cur_run': 0, 'prev_val': '', 'prev_run': 0,
+                   'odd_frac20': 0.0, 'alt_run': 0, 'alt_confirmed': False, 'rule_oe': 'sticky_win'}
+    else:
+        pred_oe, conf_oe, rule_oe, sigs_oe  = predict_oe(hist)
 
     is_bet    = conf_bs  >= 0.58
     is_bet_oe = conf_oe  >= 0.58

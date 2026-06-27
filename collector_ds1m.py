@@ -371,6 +371,26 @@ def run_prediction():
     subprocess.run([sys.executable, PREDICT_PY])
     backfill_results()
 
+
+def _push_to_remote(first_id):
+    try:
+        from remote_push import push_game
+        conn = get_conn()
+        rows = conn.execute(
+            'SELECT id,disc1,disc2,disc3,disc4,oe,result,pred_oe,confidence '
+            'FROM rounds WHERE id >= ?', (first_id,)
+        ).fetchall()
+        conn.close()
+        records = [
+            {'id': r[0], 'disc1': r[1], 'disc2': r[2], 'disc3': r[3], 'disc4': r[4],
+             'oe': r[5], 'result': r[6], 'pred_oe': r[7], 'confidence': r[8]}
+            for r in rows
+        ]
+        snap_path = os.path.join(_DATA_DIR, 'latest_prediction_ds1m.json')
+        push_game('ds1m', records, snap_path, LOG_PATH)
+    except Exception as e:
+        print(f'  [PUSH] {e}')
+
 # ── Main loop ──────────────────────────────────────────────────────────────────
 
 def main():
@@ -425,6 +445,7 @@ def main():
                         print(f"  {issue}  {pattern}  [{oe}]")
 
                 run_prediction()
+                _push_to_remote(new_items[0][0])
             else:
                 print("  No new records. Skipping prediction.")
 

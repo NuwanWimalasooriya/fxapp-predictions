@@ -726,6 +726,21 @@ def predict_fst1m(hist):
     return pred_bs, p_big, confidence, signal_info
 
 
+# ── Sticky prediction helpers ──────────────────────────────────────────────────
+
+def _get_sticky_fst(hist, pred_log, pred_key, actual_key, conf_key, default_conf=0.60):
+    """Return (pred_val, conf) if last completed round's prediction was WIN, else (None, None)."""
+    if not hist or not pred_log:
+        return None, None
+    last_round = hist[-1]
+    entry = pred_log.get(str(last_round['id']))
+    if not entry or not entry.get(pred_key):
+        return None, None
+    if entry[pred_key] == last_round[actual_key]:
+        return entry[pred_key], entry.get(conf_key, default_conf)
+    return None, None
+
+
 # ── Entry point ────────────────────────────────────────────────────────────────
 
 def main():
@@ -745,6 +760,22 @@ def main():
         print("Not enough history to predict.")
         save_snap({'error': 'insufficient_history'})
         return
+
+    # Sticky prediction: hold BS and OE until next loss
+    _st_bs, _st_bs_conf = _get_sticky_fst(hist, pred_log, 'pred_bs', 'big_small', 'confidence')
+    if _st_bs is not None:
+        pred_bs    = _st_bs
+        confidence = _st_bs_conf
+        p_big      = _st_bs_conf if _st_bs == 'BIG' else (1.0 - _st_bs_conf)
+        sinfo['rule']   = 'sticky_win'
+        sinfo['is_bet'] = confidence >= 0.60
+
+    _st_oe, _st_oe_conf = _get_sticky_fst(hist, pred_log, 'pred_oe', 'odd_even', 'conf_oe', 0.58)
+    if _st_oe is not None:
+        sinfo['pred_oe']   = _st_oe
+        sinfo['conf_oe']   = _st_oe_conf
+        sinfo['rule_oe']   = 'sticky_win'
+        sinfo['is_bet_oe'] = _st_oe_conf >= 0.58
 
     ls = loss_streak(hist, pred_log)
 
