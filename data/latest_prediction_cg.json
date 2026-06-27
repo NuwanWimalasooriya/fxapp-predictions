@@ -1,112 +1,118 @@
 {
-  "next_id": 2063100039,
+  "next_id": 2063100045,
   "prediction": {
-    "pred_color": "red",
-    "pred_number": 6,
-    "pred_purple": false,
-    "p_red": 0.5433,
-    "color_conf": 0.5433,
-    "number_conf": 0.3,
-    "purple_conf": 0.26,
+    "pred_color": "green",
+    "pred_number": 5,
+    "pred_purple": true,
+    "p_red": 0.4872,
+    "color_conf": 0.5128,
+    "number_conf": 0.25,
+    "purple_conf": 0.25,
     "is_bet": false,
     "ranked_numbers": [
       [
-        6,
-        0.3
+        5,
+        0.25
       ],
       [
-        8,
-        0.233
+        1,
+        0.188
       ],
       [
-        0,
-        0.156
+        3,
+        0.188
       ],
       [
-        2,
-        0.156
+        7,
+        0.188
       ],
       [
-        4,
-        0.156
+        9,
+        0.188
       ]
     ],
     "num_probs": {
-      "0": 0.156,
-      "2": 0.156,
-      "4": 0.156,
-      "6": 0.3,
-      "8": 0.233
+      "1": 0.188,
+      "3": 0.188,
+      "5": 0.25,
+      "7": 0.188,
+      "9": 0.188
     }
   },
   "signals": {
-    "cur_val": "",
-    "cur_run": 0,
-    "prev_val": "",
-    "prev_run": 0,
+    "cur_val": "green",
+    "cur_run": 2,
+    "prev_val": "red",
+    "prev_run": 1,
     "alt_run": 0,
-    "dom_r8": 0.5,
-    "rule": "sticky_win",
-    "loss_streak": 0,
-    "p_xgb": 0.5,
-    "maj6": null,
-    "mirror_info": null,
+    "dom_r8": 0.375,
+    "rule": "rule1a_short_streak",
+    "loss_streak": 2,
+    "p_xgb": 0.5075,
+    "maj6": "green",
+    "mirror_info": {
+      "pred_val": "red",
+      "conf": 0.69,
+      "tile_size": 6,
+      "cycles": 2,
+      "tile_pos": 1
+    },
     "alt_blk_info": null
   },
   "number_signals": {
-    "hot_num": 6,
-    "hot_cnt": 3,
-    "seq_num": 6,
-    "seq_conf": 0.5,
-    "wc_num": 8,
-    "wc_conf": 0.5,
+    "hot_num": 3,
+    "hot_cnt": 2,
+    "seq_num": 1,
+    "seq_conf": 0.188,
+    "wc_num": 5,
+    "wc_conf": 0.333,
     "run_num": null,
     "run_conf": 0.0,
     "ranked": [
       [
-        6,
-        0.3
+        5,
+        0.25
       ],
       [
-        8,
-        0.233
+        1,
+        0.188
       ],
       [
-        0,
-        0.156
+        3,
+        0.188
       ],
       [
-        2,
-        0.156
+        7,
+        0.188
       ],
       [
-        4,
-        0.156
+        9,
+        0.188
       ]
     ],
     "probs": {
-      "0": 0.156,
-      "2": 0.156,
-      "4": 0.156,
-      "6": 0.3,
-      "8": 0.233
+      "1": 0.188,
+      "3": 0.188,
+      "5": 0.25,
+      "7": 0.188,
+      "9": 0.188
     }
   },
   "purple_signals": {
-    "gap_since_last": 1,
-    "recent30_freq": 0.4,
+    "gap_since_last": 7,
+    "recent30_freq": 0.333,
     "seq_p": null,
-    "p_purple": 0.26
+    "p_purple": 0.24
   },
   "stats": {
     "last100": {
-      "wr": 0.62,
+      "wr": 0.63,
       "n": 100,
-      "nr": 0.18,
-      "pr": 0.72
+      "nr": 0.17,
+      "pr": 0.71
     },
     "last200": {
-      "wr": 0.585,
+      "wr": 0.58,
       "n": 200,
       "nr": 0.135,
       "pr": 0.68
@@ -119,102 +125,6 @@
     }
   },
   "recent": [
-    {
-      "id": 2063100009,
-      "number": 3,
-      "color": "green",
-      "is_purple": 0,
-      "pred_color": "green",
-      "pred_number": 9,
-      "pred_purple": false,
-      "purple_conf": 0.19,
-      "number_conf": 0.242,
-      "confidence": 0.5842,
-      "bet": false,
-      "result": "WIN",
-      "number_hit": false,
-      "purple_hit": true
-    },
-    {
-      "id": 2063100010,
-      "number": 2,
-      "color": "red",
-      "is_purple": 0,
-      "pred_color": "green",
-      "pred_number": 5,
-      "pred_purple": false,
-      "purple_conf": 0.19,
-      "number_conf": 0.277,
-      "confidence": 0.5655,
-      "bet": false,
-      "result": "LOSS",
-      "number_hit": false,
-      "purple_hit": true
-    },
-    {
-      "id": 2063100011,
-      "number": 2,
-      "color": "red",
-      "is_purple": 0,
-      "pred_color": "green",
-      "pred_number": 5,
-      "pred_purple": false,
-      "purple_conf": 0.22,
-      "number_conf": 0.277,
-      "confidence": 0.571,
-      "bet": false,
-      "result": "LOSS",
-      "number_hit": false,
-      "purple_hit": true
-    },
-    {
-      "id": 2063100012,
-      "number": 0,
-      "color": "red",
-      "is_purple": 1,
-      "pred_color": "green",
-      "pred_number": 3,
-      "pred_purple": false,
-      "purple_conf": 0.25,
-      "number_conf": 0.276,
-      "confidence": 0.5565,
-      "bet": false,
-      "result": "LOSS",
-      "number_hit": false,
-      "purple_hit": false
-    },
-    {
-      "id": 2063100013,
-      "number": 0,
-      "color": "red",
-      "is_purple": 1,
-      "pred_color": "red",
-      "pred_number": 6,
-      "pred_purple": false,
-      "purple_conf": 0.11,
-      "number_conf": 0.324,
-      "confidence": 0.531,
-      "bet": false,
-      "result": "WIN",
-      "number_hit": false,
-      "purple_hit": false
-    },
-    {
-      "id": 2063100014,
-      "number": 4,
-      "color": "red",
-      "is_purple": 0,
-      "pred_color": "red",
-      "pred_number": 4,
-      "pred_purple": false,
-      "purple_conf": 0.12,
-      "number_conf": 0.247,
-      "confidence": 0.5865,
-      "bet": false,
-      "result": "WIN",
-      "number_hit": true,
-      "purple_hit": true
-    },
     {
       "id": 2063100015,
       "number": 5,
@@ -598,19 +508,115 @@
       "result": "WIN",
       "number_hit": false,
       "purple_hit": true
+    },
+    {
+      "id": 2063100039,
+      "number": 3,
+      "color": "green",
+      "is_purple": 0,
+      "pred_color": "red",
+      "pred_number": 6,
+      "pred_purple": false,
+      "purple_conf": 0.26,
+      "number_conf": 0.3,
+      "confidence": 0.5433,
+      "bet": false,
+      "result": "LOSS",
+      "number_hit": false,
+      "purple_hit": true
+    },
+    {
+      "id": 2063100040,
+      "number": 2,
+      "color": "red",
+      "is_purple": 0,
+      "pred_color": "red",
+      "pred_number": 8,
+      "pred_purple": false,
+      "purple_conf": 0.26,
+      "number_conf": 0.273,
+      "confidence": 0.5056,
+      "bet": false,
+      "result": "WIN",
+      "number_hit": false,
+      "purple_hit": true
+    },
+    {
+      "id": 2063100041,
+      "number": 1,
+      "color": "green",
+      "is_purple": 0,
+      "pred_color": "red",
+      "pred_number": 6,
+      "pred_purple": false,
+      "purple_conf": 0.26,
+      "number_conf": 0.342,
+      "confidence": 0.5056,
+      "bet": false,
+      "result": "LOSS",
+      "number_hit": false,
+      "purple_hit": true
+    },
+    {
+      "id": 2063100042,
+      "number": 4,
+      "color": "red",
+      "is_purple": 0,
+      "pred_color": "red",
+      "pred_number": 8,
+      "pred_purple": false,
+      "purple_conf": 0.26,
+      "number_conf": 0.267,
+      "confidence": 0.5766,
+      "bet": false,
+      "result": "WIN",
+      "number_hit": false,
+      "purple_hit": true
+    },
+    {
+      "id": 2063100043,
+      "number": 7,
+      "color": "green",
+      "is_purple": 0,
+      "pred_color": "red",
+      "pred_number": 0,
+      "pred_purple": true,
+      "purple_conf": 0.25,
+      "number_conf": 0.2,
+      "confidence": 0.5766,
+      "bet": false,
+      "result": "LOSS",
+      "number_hit": false,
+      "purple_hit": false
+    },
+    {
+      "id": 2063100044,
+      "number": 3,
+      "color": "green",
+      "is_purple": 0,
+      "pred_color": "red",
+      "pred_number": 6,
+      "pred_purple": false,
+      "purple_conf": 0.24,
+      "number_conf": 0.304,
+      "confidence": 0.5953,
+      "bet": false,
+      "result": "LOSS",
+      "number_hit": false,
+      "purple_hit": true
     }
   ],
   "cold_50": [
     {
       "number": 1,
-      "count": 1,
+      "count": 2,
       "color": "green",
       "is_purple": false
     },
     {
-      "number": 3,
+      "number": 8,
       "count": 3,
-      "color": "green",
+      "color": "red",
       "is_purple": false
     },
     {
@@ -660,22 +666,22 @@
       "is_purple": false
     },
     {
+      "number": 9,
+      "count": 7,
+      "color": "green",
+      "is_purple": false
+    },
+    {
       "number": 0,
       "count": 8,
       "color": "red",
       "is_purple": true
-    },
-    {
-      "number": 8,
-      "count": 9,
-      "color": "red",
-      "is_purple": false
     }
   ],
   "hot_100": [
     {
       "number": 2,
-      "count": 14,
+      "count": 13,
       "color": "red",
       "is_purple": false
     },
@@ -687,22 +693,22 @@
     },
     {
       "number": 3,
-      "count": 11,
+      "count": 12,
       "color": "green",
       "is_purple": false
     },
     {
       "number": 4,
-      "count": 11,
+      "count": 12,
       "color": "red",
       "is_purple": false
     },
     {
-      "number": 6,
-      "count": 10,
-      "color": "red",
+      "number": 7,
+      "count": 11,
+      "color": "green",
       "is_purple": false
     }
   ],
-  "timestamp": "2026-06-27T07:24:16.732309"
+  "timestamp": "2026-06-27T07:42:15.801139"
 }

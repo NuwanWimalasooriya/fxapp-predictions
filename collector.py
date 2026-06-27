@@ -472,6 +472,47 @@ def run_prediction():
     subprocess.run([sys.executable, PREDICT_NEW_PY])
     backfill_results()
 
+
+def _push_to_remote(first_id):
+    try:
+        from remote_push import push_game
+        # Push ds3m records
+        conn = get_conn()
+        rows = conn.execute(
+            'SELECT id,disc1,disc2,disc3,disc4,pattern,flag,oe,result,pred_oe,confidence,bet '
+            'FROM rounds WHERE id >= ?', (first_id,)
+        ).fetchall()
+        conn.close()
+        ds3m_records = [
+            {'id': r[0], 'disc1': r[1], 'disc2': r[2], 'disc3': r[3], 'disc4': r[4],
+             'pattern': r[5], 'flag': r[6], 'oe': r[7], 'result': r[8],
+             'pred_oe': r[9], 'confidence': r[10], 'bet': r[11]}
+            for r in rows
+        ]
+        push_game('ds3m', ds3m_records,
+                  os.path.join(_DATA_DIR, 'latest_prediction.json'),
+                  LOG_PATH)
+
+        # Push new model records
+        if os.path.exists(_DB_NEW_PATH):
+            conn_new = sqlite3.connect(_DB_NEW_PATH, timeout=10)
+            conn_new.execute('PRAGMA journal_mode=WAL')
+            new_rows = conn_new.execute(
+                'SELECT id,disc1,disc2,disc3,disc4,pattern,oe,result,pred_oe,confidence '
+                'FROM rounds WHERE id >= ?', (first_id,)
+            ).fetchall()
+            conn_new.close()
+            new_records = [
+                {'id': r[0], 'disc1': r[1], 'disc2': r[2], 'disc3': r[3], 'disc4': r[4],
+                 'pattern': r[5], 'oe': r[6], 'result': r[7], 'pred_oe': r[8], 'confidence': r[9]}
+                for r in new_rows
+            ]
+            push_game('new', new_records,
+                      os.path.join(_DATA_DIR, 'latest_prediction_new.json'),
+                      os.path.join(_DATA_DIR, 'pred_log_new.json'))
+    except Exception as e:
+        print(f'  [PUSH] {e}')
+
 # ── Main loop ──────────────────────────────────────────────────────────────────
 
 def main():
@@ -532,6 +573,7 @@ def main():
                             print(f"  {issue}  {pattern}  [{oe}]")
 
                 run_prediction()
+                _push_to_remote(new_items[0][0])
             else:
                 print("  No new records. Skipping prediction.")
 

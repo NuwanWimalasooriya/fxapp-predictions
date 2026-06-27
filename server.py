@@ -1701,6 +1701,39 @@ def api_blk3m_stats():
 
 # ── Push API (local collectors → PythonAnywhere) ──────────────────────────────
 
+def _ensure_ds3m_table():
+    conn = sqlite3.connect(DB_PATH, timeout=10)
+    conn.execute('PRAGMA journal_mode=WAL')
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS rounds (
+            id INTEGER PRIMARY KEY,
+            disc1 TEXT NOT NULL, disc2 TEXT NOT NULL,
+            disc3 TEXT NOT NULL, disc4 TEXT NOT NULL,
+            pattern TEXT NOT NULL, flag TEXT DEFAULT "",
+            oe TEXT NOT NULL,
+            result TEXT DEFAULT "Not Predicted",
+            pred_oe TEXT DEFAULT "", confidence REAL DEFAULT 0, bet TEXT DEFAULT ""
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+def _ensure_ds3m_new_table():
+    conn = sqlite3.connect(DB_NEW_PATH, timeout=10)
+    conn.execute('PRAGMA journal_mode=WAL')
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS rounds (
+            id INTEGER PRIMARY KEY,
+            disc1 TEXT NOT NULL, disc2 TEXT NOT NULL,
+            disc3 TEXT NOT NULL, disc4 TEXT NOT NULL,
+            pattern TEXT DEFAULT "", oe TEXT NOT NULL,
+            result TEXT DEFAULT "Not Predicted",
+            pred_oe TEXT DEFAULT "", confidence REAL DEFAULT 0
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
 def _ensure_blk3m_table():
     conn = sqlite3.connect(DB_BLK3M_PATH, timeout=10)
     conn.execute('PRAGMA journal_mode=WAL')
@@ -1779,7 +1812,7 @@ def _write_json_atomic(path, data):
 def api_push(game):
     if not _push_token_valid():
         return jsonify({'error': 'Unauthorized'}), 401
-    if game not in ('blk3m', 'cg', 'ds1m', 'fst1m'):
+    if game not in ('blk3m', 'cg', 'ds1m', 'fst1m', 'ds3m', 'new'):
         return jsonify({'error': f'Unknown game: {game}'}), 400
 
     body     = request.get_json(silent=True) or {}
@@ -1898,6 +1931,62 @@ def api_push(game):
             existing = _load_json(LOG_FST1M_PATH) or {}
             existing.update(log_upd)
             _write_json_atomic(LOG_FST1M_PATH, existing)
+
+    elif game == 'ds3m':
+        _ensure_ds3m_table()
+        if records:
+            conn = sqlite3.connect(DB_PATH, timeout=10)
+            conn.execute('PRAGMA journal_mode=WAL')
+            try:
+                conn.executemany(
+                    'INSERT OR IGNORE INTO rounds'
+                    '(id,disc1,disc2,disc3,disc4,pattern,flag,oe,result,pred_oe,confidence,bet)'
+                    ' VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
+                    [(r['id'], r.get('disc1',''), r.get('disc2',''),
+                      r.get('disc3',''), r.get('disc4',''),
+                      r.get('pattern',''), r.get('flag',''), r.get('oe',''),
+                      r.get('result','Not Predicted'), r.get('pred_oe',''),
+                      r.get('confidence',0), r.get('bet',''))
+                     for r in records]
+                )
+                inserted = conn.execute('SELECT changes()').fetchone()[0]
+                conn.commit()
+            finally:
+                conn.close()
+        if snapshot:
+            _write_json_atomic(SNAP_PATH, snapshot)
+        if log_upd:
+            existing = _load_json(LOG_PATH) or {}
+            existing.update(log_upd)
+            _write_json_atomic(LOG_PATH, existing)
+
+    elif game == 'new':
+        _ensure_ds3m_new_table()
+        if records:
+            conn = sqlite3.connect(DB_NEW_PATH, timeout=10)
+            conn.execute('PRAGMA journal_mode=WAL')
+            try:
+                conn.executemany(
+                    'INSERT OR IGNORE INTO rounds'
+                    '(id,disc1,disc2,disc3,disc4,pattern,oe,result,pred_oe,confidence)'
+                    ' VALUES(?,?,?,?,?,?,?,?,?,?)',
+                    [(r['id'], r.get('disc1',''), r.get('disc2',''),
+                      r.get('disc3',''), r.get('disc4',''),
+                      r.get('pattern',''), r.get('oe',''),
+                      r.get('result','Not Predicted'), r.get('pred_oe',''),
+                      r.get('confidence',0))
+                     for r in records]
+                )
+                inserted = conn.execute('SELECT changes()').fetchone()[0]
+                conn.commit()
+            finally:
+                conn.close()
+        if snapshot:
+            _write_json_atomic(SNAP_NEW_PATH, snapshot)
+        if log_upd:
+            existing = _load_json(LOG_NEW_PATH) or {}
+            existing.update(log_upd)
+            _write_json_atomic(LOG_NEW_PATH, existing)
 
     return jsonify({'ok': True, 'inserted': inserted})
 

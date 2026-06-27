@@ -18143,3 +18143,9 @@ id,number,color,is_purple,result,pred_color,confidence,bet
 2063100036,7,green,0,LOSS,red,0.5584,0
 2063100037,5,green,1,LOSS,red,0.5643,0
 2063100038,2,red,0,WIN,red,0.5433,0
+2063100039,3,green,0,LOSS,red,0.5433,0
+2063100040,2,red,0,WIN,red,0.5056,0
+2063100041,1,green,0,LOSS,red,0.5056,0
+2063100042,4,red,0,WIN,red,0.5766,0
+2063100043,7,green,0,LOSS,red,0.5766,0
+2063100044,3,green,0,LOSS,red,0.5953,0
