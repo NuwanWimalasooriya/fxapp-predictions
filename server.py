@@ -1828,7 +1828,7 @@ def api_push(game):
             conn.execute('PRAGMA journal_mode=WAL')
             try:
                 conn.executemany(
-                    'INSERT OR IGNORE INTO rounds'
+                    'INSERT OR REPLACE INTO rounds'
                     '(id,value,total,big_small,odd_even,result,pred_bs,confidence,bet,'
                     'pred_oe,conf_oe,result_oe,bet_oe) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)',
                     [(r['id'], r.get('value',''), r.get('total',0),
@@ -1857,7 +1857,7 @@ def api_push(game):
             conn.execute('PRAGMA journal_mode=WAL')
             try:
                 conn.executemany(
-                    'INSERT OR IGNORE INTO rounds'
+                    'INSERT OR REPLACE INTO rounds'
                     '(id,number,color,is_purple,result,pred_color,confidence,bet) VALUES(?,?,?,?,?,?,?,?)',
                     [(r['id'], r.get('number',0), r.get('color',''),
                       r.get('is_purple',0), r.get('result','Not Predicted'),
@@ -1882,7 +1882,7 @@ def api_push(game):
             conn.execute('PRAGMA journal_mode=WAL')
             try:
                 conn.executemany(
-                    'INSERT OR IGNORE INTO rounds'
+                    'INSERT OR REPLACE INTO rounds'
                     '(id,disc1,disc2,disc3,disc4,oe,result,pred_oe,confidence) VALUES(?,?,?,?,?,?,?,?,?)',
                     [(r['id'], r.get('disc1',''), r.get('disc2',''),
                       r.get('disc3',''), r.get('disc4',''), r.get('oe',''),
@@ -1907,7 +1907,7 @@ def api_push(game):
             conn.execute('PRAGMA journal_mode=WAL')
             try:
                 conn.executemany(
-                    'INSERT OR IGNORE INTO rounds'
+                    'INSERT OR REPLACE INTO rounds'
                     '(id,n1,n2,n3,n4,total,big_small,odd_even,result,pred_bs,confidence,bet,'
                     'pred_oe,conf_oe,result_oe,bet_oe,pred_sum_val,pred_sum_zone,pred_hot_sums)'
                     ' VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
@@ -1939,7 +1939,7 @@ def api_push(game):
             conn.execute('PRAGMA journal_mode=WAL')
             try:
                 conn.executemany(
-                    'INSERT OR IGNORE INTO rounds'
+                    'INSERT OR REPLACE INTO rounds'
                     '(id,disc1,disc2,disc3,disc4,pattern,flag,oe,result,pred_oe,confidence,bet)'
                     ' VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
                     [(r['id'], r.get('disc1',''), r.get('disc2',''),
@@ -1967,7 +1967,7 @@ def api_push(game):
             conn.execute('PRAGMA journal_mode=WAL')
             try:
                 conn.executemany(
-                    'INSERT OR IGNORE INTO rounds'
+                    'INSERT OR REPLACE INTO rounds'
                     '(id,disc1,disc2,disc3,disc4,pattern,oe,result,pred_oe,confidence)'
                     ' VALUES(?,?,?,?,?,?,?,?,?,?)',
                     [(r['id'], r.get('disc1',''), r.get('disc2',''),
