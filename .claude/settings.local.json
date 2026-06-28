@@ -41,7 +41,11 @@
       "Bash(python backfill_blk3m.py)",
       "Bash(python predict_new.py)",
       "Bash(python -c \"import ast; ast.parse\\(open\\('predict_ds1m.py'\\).read\\(\\)\\); print\\('Syntax OK'\\)\")",
-      "Bash(python -c \"import py_compile; py_compile.compile\\('predict.py', doraise=True\\); print\\('OK'\\)\")"
+      "Bash(python -c \"import py_compile; py_compile.compile\\('predict.py', doraise=True\\); print\\('OK'\\)\")",
+      "Bash(python -c \"from remote_push import _load_license_key; print\\(repr\\(_load_license_key\\(\\)\\)\\)\")",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)"
     ]
   }
 }
