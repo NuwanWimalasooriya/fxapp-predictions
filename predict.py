@@ -1825,6 +1825,32 @@ def _consecutive_loss_streak(log):
     return streak
 
 
+def _sticky_win_trend_rule(log_data, oe_arr):
+    """
+    Rule: if the last scored round was a WIN, keep predicting that same direction.
+    Only release the lock when the opposite OE has appeared 2+ consecutive times
+    in the actual results (repeat opposite trend confirmed).
+    Returns (pred_oe_override, p_odd_override) or (None, None) when not applicable.
+    """
+    scored = sorted(
+        [e for e in log_data.values() if e.get('actual') and e.get('pred_oe')],
+        key=lambda e: int(e.get('round_id', 0))
+    )
+    if not scored:
+        return None, None
+    last = scored[-1]
+    actual_oe = 'ODD' if last['actual'].count('R') % 2 else 'EVEN'
+    if last['pred_oe'] != actual_oe:
+        return None, None  # last was a loss — use normal signals
+    locked_dir = last['pred_oe']
+    opposite_dir = 'EVEN' if locked_dir == 'ODD' else 'ODD'
+    # Release lock only when opposite appeared 2+ consecutive times in actual data
+    if len(oe_arr) >= 2 and all(v == opposite_dir for v in list(oe_arr)[-2:]):
+        return None, None
+    p_over = 0.65 if locked_dir == 'ODD' else 0.35
+    return locked_dir, p_over
+
+
 def _last_actual_fallback(log, streak_threshold=3):
     """
     After streak_threshold consecutive losses, fall back to last-actual strategy:
@@ -2331,6 +2357,19 @@ def predict_round(df_src, runs_src, full_oe_arr, full_pat_arr, lstm_src=None):
 
     p_odd = max(0.05, min(0.95, p_odd))
 
+    # Rule Maj20: when cur_run ≤ 2 (trend changing/oscillating), anchor to the
+    # dominant OE direction of the last 20 rounds. Reduces direction thrashing by
+    # staying with the sustained majority rather than reacting to noisy short-term
+    # signals. Not applied inside or immediately after long blocks (those rules are
+    # already locked to the block direction).
+    _in_long_block = _lb_run >= 4 or (_lb_run >= 2 and _prev_run >= 4)
+    if cur_run_len <= 2 and not _in_long_block:
+        _r20   = list(full_oe_arr[max(0, sig_idx - 19): sig_idx + 1])
+        _odd20 = sum(1 for x in _r20 if x == 'ODD')
+        _p_maj = _odd20 / len(_r20)
+        p_odd  = 0.60 * _p_maj + 0.40 * p_odd
+    p_odd = max(0.05, min(0.95, p_odd))
+
     # ── HARD STREAK BREAKER: force-flip at 5+ consecutive losses ─────────────────
     # Skip when global inversion is also active — both flips would cancel each other
     # and lock the model in a double-inversion loop that produces the wrong answer.
@@ -2652,6 +2691,13 @@ for r in results:
         continue
     p_odd   = r['by_oe'].get('ODD', 0)
     pred_oe = 'ODD' if p_odd > 0.5 else 'EVEN'
+
+    # Sticky-win rule: keep winning direction until opposite trend repeats 2+ consecutive
+    _sw_oe, _sw_p = _sticky_win_trend_rule(log, full_oe_arr)
+    if _sw_oe is not None:
+        pred_oe = _sw_oe
+        p_odd   = _sw_p
+
     conf_val = max(p_odd, 1.0 - p_odd)
     _bwr, _bn = _lookup_band_wr(conf_val)
     si = r['sinfo']

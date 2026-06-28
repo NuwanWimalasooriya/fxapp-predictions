@@ -1008,20 +1008,6 @@ def predict_ds1m(oe_arr, idx):
             p_odd = stay_p  # XGBoost disagrees with 3-streak — trust the streak
         applied_rule = 'rule1b_stay'
 
-    # Rule 3: Confirmed alternating (3+ unbroken single-round runs) → predict flip
-    # Only override when XGBoost confirms same direction; otherwise use XGBoost alone.
-    # Analysis showed 38% WR when XGBoost disagreed — rule3 was anti-predictive then.
-    elif alt_confirmed and cur_run == 1 and prev_run == 1:
-        conf_alt  = round(0.62 + min(0.08, (alt_run - 3) * 0.02), 3)
-        p_flip    = (1.0 - conf_alt) if cur_val == 'ODD' else conf_alt
-        flip_is_odd = (cur_val == 'EVEN')
-        xgb_agrees  = (p_xgb > 0.5) == flip_is_odd
-        if xgb_agrees:
-            p_odd = 0.65 * p_flip + 0.35 * p_xgb
-        else:
-            p_odd = p_xgb  # XGBoost disagrees: ignore rule3, use XGBoost directly
-        applied_rule = 'rule3_alternating'
-
     # Rule 6: Trend persist — after a dominant run (3+), stay on previous direction
     # until the counter reaches 3 consecutive. 1 or 2 counter-rounds are not a reversal.
     elif cur_run <= 2 and prev_run >= 3:
@@ -1033,6 +1019,18 @@ def predict_ds1m(oe_arr, idx):
             eoe_conf = 0.58
         p_odd = eoe_conf if prev_val == 'ODD' else (1.0 - eoe_conf)
         applied_rule = 'rule6_trend_persist'
+
+    # Rule Maj20: When cur_run ≤ 2 (trend is changing), anchor prediction to the dominant
+    # trend of the last 20 rounds. Replaces rule3_alternating and rule6b_short_lean —
+    # alternating-flip and short-streak lean both cause losses during trend changes because
+    # they react to the local direction rather than the sustained majority direction.
+    elif cur_run <= 2:
+        _r20   = arr[max(0, idx - 19): idx + 1]
+        _odd20 = _r20.count('ODD')
+        _n20   = len(_r20)
+        _p_maj = _odd20 / _n20
+        p_odd  = 0.60 * _p_maj + 0.40 * p_xgb
+        applied_rule = 'rule_maj20'
 
     # Rule 7: Cyclic block pattern (period 2/4/6)
     elif cycle_info is not None:
@@ -1064,29 +1062,6 @@ def predict_ds1m(oe_arr, idx):
         p_odd       = kt_conf if pred_odd_kt else (1.0 - kt_conf)
         applied_rule = f'rule11_{known_tile_info["pattern_name"]}'
 
-    # Rule 6b: Short counter lean — both current block and previous block are short (≤ 2 rounds).
-    # In a noisy oscillating regime with no dominant run, lean slightly toward the current
-    # 2-streak direction. A 2-streak with a short prior block is weakly predictive of
-    # continuation (~54%). XGBoost guard: if XGB disagrees, trust the lean (same policy as Rules 1/1b).
-    elif cur_run == 2 and 1 <= prev_run <= 2:
-        lean_p = 0.58 if cur_val == 'ODD' else 0.42
-        rule_is_odd = lean_p > 0.5
-        if (p_xgb > 0.5) == rule_is_odd:
-            p_odd = 0.55 * lean_p + 0.45 * p_xgb
-        else:
-            p_odd = lean_p  # XGBoost disagrees with 2-streak lean — trust the lean
-        applied_rule = 'rule6b_short_lean'
-
-    # Rule Maj20: Oscillating regime (cur_run ≤ 2, no structural pattern detected).
-    # When no streak of 3 is developing, predict the majority of the last 20 rounds.
-    elif cur_run <= 2:
-        _r20  = arr[max(0, idx - 19): idx + 1]
-        _odd20 = _r20.count('ODD')
-        _n20   = len(_r20)
-        _p_maj = _odd20 / _n20
-        p_odd  = 0.60 * _p_maj + 0.40 * p_xgb
-        applied_rule = 'rule_maj20'
-
     # Rule 4: No confirmed pattern → pure XGBoost.
     # Analysis of 15985 rounds: 8-round window majority gives exactly 50.0% accuracy.
     # Removed dom_p component — it adds noise, not signal.
@@ -1104,7 +1079,7 @@ def predict_ds1m(oe_arr, idx):
     # Rule 5: Hard streak breaker (5+ consecutive losses → flip).
     # Only applies when no structural rule detected a clear pattern — flipping Rule 1/1b/6
     # signals inverts correct predictions and extends the loss streak instead of breaking it.
-    _structural_prefixes = ('rule1_', 'rule1b_', 'rule3_', 'rule6_', 'rule6b_', 'rule7_',
+    _structural_prefixes = ('rule1_', 'rule1b_', 'rule6_', 'rule7_',
                             'rule8_', 'rule10_', 'rule10b_', 'rule11_', 'rule_ub_', 'rule_3x3')
     if _cur_loss_streak >= 5 and not any(applied_rule.startswith(p) for p in _structural_prefixes):
         p_odd = 1.0 - p_odd
