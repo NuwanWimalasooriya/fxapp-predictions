@@ -1896,6 +1896,9 @@ def api_push(game):
                 )
                 inserted = conn.execute('SELECT changes()').fetchone()[0]
                 conn.commit()
+            except Exception as _e:
+                conn.close()
+                return jsonify({'error': f'ds1m db: {_e}', 'db': DB_DS1M_PATH}), 500
             finally:
                 conn.close()
         if snapshot:
