@@ -377,13 +377,14 @@ def _push_to_remote(first_id):
         from remote_push import push_game
         conn = get_conn()
         rows = conn.execute(
-            'SELECT id,disc1,disc2,disc3,disc4,oe,result,pred_oe,confidence '
+            'SELECT id,disc1,disc2,disc3,disc4,pattern,flag,oe,result,pred_oe,confidence,bet '
             'FROM rounds WHERE id >= ?', (first_id,)
         ).fetchall()
         conn.close()
         records = [
             {'id': r[0], 'disc1': r[1], 'disc2': r[2], 'disc3': r[3], 'disc4': r[4],
-             'oe': r[5], 'result': r[6], 'pred_oe': r[7], 'confidence': r[8]}
+             'pattern': r[5], 'flag': r[6], 'oe': r[7], 'result': r[8],
+             'pred_oe': r[9], 'confidence': r[10], 'bet': r[11]}
             for r in rows
         ]
         snap_path = os.path.join(_DATA_DIR, 'latest_prediction_ds1m.json')
