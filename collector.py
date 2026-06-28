@@ -473,14 +473,14 @@ def run_prediction():
     backfill_results()
 
 
-def _push_to_remote(first_id):
+def _push_to_remote(_first_id=None):
     try:
         from remote_push import push_game
-        # Push ds3m records
+        # Push last 20 ds3m records (catches up if a previous push failed)
         conn = get_conn()
         rows = conn.execute(
             'SELECT id,disc1,disc2,disc3,disc4,pattern,flag,oe,result,pred_oe,confidence,bet '
-            'FROM rounds WHERE id >= ?', (first_id,)
+            'FROM rounds ORDER BY id DESC LIMIT 20'
         ).fetchall()
         conn.close()
         ds3m_records = [
@@ -493,13 +493,13 @@ def _push_to_remote(first_id):
                   os.path.join(_DATA_DIR, 'latest_prediction.json'),
                   LOG_PATH)
 
-        # Push new model records
+        # Push last 20 new model records
         if os.path.exists(_DB_NEW_PATH):
             conn_new = sqlite3.connect(_DB_NEW_PATH, timeout=10)
             conn_new.execute('PRAGMA journal_mode=WAL')
             new_rows = conn_new.execute(
                 'SELECT id,disc1,disc2,disc3,disc4,pattern,oe,result,pred_oe,confidence '
-                'FROM rounds WHERE id >= ?', (first_id,)
+                'FROM rounds ORDER BY id DESC LIMIT 20'
             ).fetchall()
             conn_new.close()
             new_records = [

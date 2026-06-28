@@ -427,13 +427,13 @@ def run_prediction():
     backfill_results()
 
 
-def _push_to_remote(first_id):
+def _push_to_remote(_first_id=None):
     try:
         from remote_push import push_game
         conn = get_conn()
         rows = conn.execute(
             'SELECT id,value,total,big_small,odd_even,result,pred_bs,confidence,bet,'
-            'pred_oe,conf_oe,result_oe,bet_oe FROM rounds WHERE id >= ?', (first_id,)
+            'pred_oe,conf_oe,result_oe,bet_oe FROM rounds ORDER BY id DESC LIMIT 20'
         ).fetchall()
         conn.close()
         records = [
