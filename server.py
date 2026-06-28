@@ -1774,9 +1774,11 @@ def _ensure_ds1m_table():
             id INTEGER PRIMARY KEY,
             disc1 TEXT NOT NULL, disc2 TEXT NOT NULL,
             disc3 TEXT NOT NULL, disc4 TEXT NOT NULL,
+            pattern TEXT DEFAULT "", flag TEXT DEFAULT "",
             oe TEXT NOT NULL,
             result TEXT DEFAULT "Not Predicted",
-            pred_oe TEXT DEFAULT "", confidence REAL DEFAULT 0
+            pred_oe TEXT DEFAULT "", confidence REAL DEFAULT 0,
+            bet INTEGER DEFAULT 0
         )
     ''')
     conn.commit()
@@ -1883,10 +1885,13 @@ def api_push(game):
             try:
                 conn.executemany(
                     'INSERT OR REPLACE INTO rounds'
-                    '(id,disc1,disc2,disc3,disc4,oe,result,pred_oe,confidence) VALUES(?,?,?,?,?,?,?,?,?)',
+                    '(id,disc1,disc2,disc3,disc4,pattern,flag,oe,result,pred_oe,confidence,bet)'
+                    ' VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
                     [(r['id'], r.get('disc1',''), r.get('disc2',''),
-                      r.get('disc3',''), r.get('disc4',''), r.get('oe',''),
-                      r.get('result','Not Predicted'), r.get('pred_oe',''), r.get('confidence',0))
+                      r.get('disc3',''), r.get('disc4',''),
+                      r.get('pattern',''), r.get('flag',''), r.get('oe',''),
+                      r.get('result','Not Predicted'), r.get('pred_oe',''), r.get('confidence',0),
+                      r.get('bet',0))
                      for r in records]
                 )
                 inserted = conn.execute('SELECT changes()').fetchone()[0]
