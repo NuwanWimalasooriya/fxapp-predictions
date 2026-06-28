@@ -1,9 +1,11 @@
 """
 Activation code system for FXPro Predictions.
 
-Key format: FXPRO-YYYYMMDD-XXXXXXXX
-  YYYYMMDD  = expiry date
-  XXXXXXXX  = 8-char HMAC-SHA256 checksum (uppercase hex)
+Key formats (both supported):
+  FXPRO-YYYYMMDD-XXXXXXXX    date-only key (valid until end of expiry day)
+  FXPRO-YYYYMMDDHH-XXXXXXXX  hourly key    (valid until expiry hour, e.g. 2026062115 = 21 Jun 15:xx)
+
+  XXXXXXXX = 8-char HMAC-SHA256 checksum (uppercase hex) of the date/datetime part
 
 Usage:
   from license_manager import check_license
@@ -29,9 +31,17 @@ def _checksum(expiry_str: str) -> str:
     return mac.hexdigest()[:8].upper()
 
 
-def generate_key(expiry_date: datetime.date) -> str:
-    """Generate a valid activation key that expires on expiry_date."""
-    expiry_str = expiry_date.strftime('%Y%m%d')
+def generate_key(expiry) -> str:
+    """
+    Generate a valid activation key.
+    expiry can be:
+      datetime.date     → FXPRO-YYYYMMDD-XXXXXXXX  (valid until end of that day)
+      datetime.datetime → FXPRO-YYYYMMDDHH-XXXXXXXX (valid until that hour)
+    """
+    if isinstance(expiry, datetime.datetime):
+        expiry_str = expiry.strftime('%Y%m%d%H')
+    else:
+        expiry_str = expiry.strftime('%Y%m%d')
     return f'FXPRO-{expiry_str}-{_checksum(expiry_str)}'
 
 
@@ -42,16 +52,27 @@ def validate_key(key: str) -> tuple:
         if len(parts) != 3 or parts[0] != 'FXPRO':
             return False, 'Invalid key format (expected FXPRO-YYYYMMDD-XXXXXXXX).'
         expiry_str, checksum = parts[1], parts[2]
-        if len(expiry_str) != 8 or not expiry_str.isdigit():
+        if not expiry_str.isdigit() or len(expiry_str) not in (8, 10):
             return False, 'Invalid key format (bad date part).'
         if _checksum(expiry_str) != checksum:
             return False, 'Activation code is invalid or tampered.'
-        expiry = datetime.datetime.strptime(expiry_str, '%Y%m%d').date()
-        today  = datetime.date.today()
-        if today > expiry:
-            return False, f'Activation code expired on {expiry}.'
-        days_left = (expiry - today).days
-        return True, f'Licensed until {expiry} ({days_left} day(s) remaining).'
+
+        if len(expiry_str) == 10:
+            # Hourly key: YYYYMMDDHH — compare against current datetime
+            expiry_dt = datetime.datetime.strptime(expiry_str, '%Y%m%d%H')
+            now = datetime.datetime.now()
+            if now >= expiry_dt + datetime.timedelta(hours=1):
+                return False, f'Activation code expired at {expiry_dt.strftime("%Y-%m-%d %H:00")}.'
+            mins_left = int((expiry_dt + datetime.timedelta(hours=1) - now).total_seconds() / 60)
+            return True, f'Licensed until {expiry_dt.strftime("%Y-%m-%d %H:00")} ({mins_left} min remaining).'
+        else:
+            # Date key: YYYYMMDD — compare against today
+            expiry_date = datetime.datetime.strptime(expiry_str, '%Y%m%d').date()
+            today = datetime.date.today()
+            if today > expiry_date:
+                return False, f'Activation code expired on {expiry_date}.'
+            days_left = (expiry_date - today).days
+            return True, f'Licensed until {expiry_date} ({days_left} day(s) remaining).'
     except ValueError:
         return False, 'Invalid key format (bad date).'
     except Exception as e:

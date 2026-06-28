@@ -1,186 +1,186 @@
 {
-  "next_round_id": 2063200217,
-  "last_id": 2063200216,
-  "pred_bs": "SMALL",
-  "p_big": 0.47,
+  "next_round_id": 2063200396,
+  "last_id": 2063200395,
+  "pred_bs": "BIG",
+  "p_big": 0.53,
   "confidence": 0.53,
   "is_bet": false,
   "pred_oe": "EVEN",
-  "conf_oe": 0.5,
-  "p_odd": 0.3,
-  "is_bet_oe": false,
-  "rule_oe": "sticky_win",
-  "pred_sum_val": 20,
+  "conf_oe": 0.58,
+  "p_odd": 0.42,
+  "is_bet_oe": true,
+  "rule_oe": "oe_trend_persist",
+  "pred_sum_val": 19,
   "pred_sum_zone": "MID",
-  "conf_sum": 0.4528,
+  "conf_sum": 0.5502,
   "pred_sum_nums": [
     [
-      16,
-      4.9
-    ],
-    [
-      17,
-      5.2
-    ],
-    [
       18,
-      5.0
+      7.2
     ],
     [
       19,
-      5.1
+      7.4
     ],
     [
       20,
-      5.0
+      7.9
     ],
     [
       21,
-      5.3
+      7.1
+    ],
+    [
+      22,
+      6.8
+    ],
+    [
+      23,
+      6.6
     ]
   ],
   "hot_digits": [
     [
       [
-        3,
+        9,
         9
+      ],
+      [
+        2,
+        7
+      ],
+      [
+        0,
+        7
+      ]
+    ],
+    [
+      [
+        9,
+        8
+      ],
+      [
+        7,
+        6
+      ],
+      [
+        6,
+        6
+      ]
+    ],
+    [
+      [
+        3,
+        8
+      ],
+      [
+        0,
+        8
       ],
       [
         1,
         8
-      ],
-      [
-        7,
-        7
       ]
     ],
     [
       [
-        0,
-        9
-      ],
-      [
-        4,
+        3,
         8
-      ],
-      [
-        7,
-        7
-      ]
-    ],
-    [
-      [
-        7,
-        7
       ],
       [
         5,
         7
       ],
       [
-        6,
+        7,
         7
-      ]
-    ],
-    [
-      [
-        2,
-        8
-      ],
-      [
-        9,
-        6
-      ],
-      [
-        1,
-        6
       ]
     ]
   ],
   "pred_hot_sums_filtered": [
-    16,
-    18,
-    12,
-    17,
-    15
+    20,
+    14,
+    25,
+    13,
+    17
   ],
   "pred_sum_nums_filtered": [
     [
-      16,
-      4.9
+      20,
+      7.9
+    ],
+    [
+      22,
+      6.8
     ],
     [
       18,
-      5.0
-    ],
-    [
-      20,
-      5.0
-    ],
-    [
-      17,
-      5.2
+      7.2
     ],
     [
       19,
-      5.1
+      7.4
+    ],
+    [
+      21,
+      7.1
     ]
   ],
   "hot_digits_filtered": [
     {
       "pos": "n1",
       "oe_trend": "ODD",
-      "odd_frac": 0.8,
+      "odd_frac": 0.7,
       "hot": [
         [
-          3,
+          9,
           9
         ],
         [
           1,
-          8
+          6
         ],
         [
-          7,
-          7
+          3,
+          4
         ]
       ]
     },
     {
       "pos": "n2",
-      "oe_trend": "EVEN",
-      "odd_frac": 0.4,
+      "oe_trend": "ODD",
+      "odd_frac": 0.6,
       "hot": [
         [
-          0,
-          9
-        ],
-        [
-          4,
+          9,
           8
         ],
         [
-          2,
+          7,
           6
+        ],
+        [
+          3,
+          5
         ]
       ]
     },
     {
       "pos": "n3",
       "oe_trend": "ODD",
-      "odd_frac": 0.6,
+      "odd_frac": 0.7,
       "hot": [
         [
-          7,
-          7
-        ],
-        [
-          5,
-          7
+          3,
+          8
         ],
         [
           1,
-          6
+          8
+        ],
+        [
+          5,
+          5
         ]
       ]
     },
@@ -190,218 +190,218 @@
       "odd_frac": 0.6,
       "hot": [
         [
-          9,
-          6
-        ],
-        [
-          1,
-          6
-        ],
-        [
-          7,
-          4
-        ]
-      ]
-    }
-  ],
-  "avg_sum_10": 18.6,
-  "last_sum": 14,
-  "signals": {
-    "cur_val": "SMALL",
-    "cur_run": 1,
-    "prev_val": "BIG",
-    "prev_run": 2,
-    "rule": "sticky_win",
-    "p_big": 0.47,
-    "p_xgb": 0.5,
-    "maj20": "SMALL",
-    "maj20_frac": 0.55,
-    "low_streak": true,
-    "is_bet": false,
-    "pred_oe": "EVEN",
-    "conf_oe": 0.5,
-    "p_odd": 0.3,
-    "is_bet_oe": false,
-    "rule_oe": "sticky_win",
-    "pred_sum_val": 20,
-    "pred_sum_zone": "MID",
-    "conf_sum": 0.4528,
-    "pred_sum_nums": [
-      [
-        16,
-        4.9
-      ],
-      [
-        17,
-        5.2
-      ],
-      [
-        18,
-        5.0
-      ],
-      [
-        19,
-        5.1
-      ],
-      [
-        20,
-        5.0
-      ],
-      [
-        21,
-        5.3
-      ]
-    ],
-    "hot_digits": [
-      [
-        [
           3,
-          9
-        ],
-        [
-          1,
           8
-        ],
-        [
-          7,
-          7
-        ]
-      ],
-      [
-        [
-          0,
-          9
-        ],
-        [
-          4,
-          8
-        ],
-        [
-          7,
-          7
-        ]
-      ],
-      [
-        [
-          7,
-          7
         ],
         [
           5,
           7
         ],
         [
-          6,
+          7,
+          7
+        ]
+      ]
+    }
+  ],
+  "avg_sum_10": 20.2,
+  "last_sum": 15,
+  "signals": {
+    "cur_val": "SMALL",
+    "cur_run": 1,
+    "prev_val": "BIG",
+    "prev_run": 1,
+    "rule": "rule_maj20",
+    "p_big": 0.53,
+    "p_xgb": 0.5,
+    "maj20": "BIG",
+    "maj20_frac": 0.55,
+    "low_streak": false,
+    "is_bet": false,
+    "pred_oe": "EVEN",
+    "conf_oe": 0.58,
+    "p_odd": 0.42,
+    "is_bet_oe": true,
+    "rule_oe": "oe_trend_persist",
+    "pred_sum_val": 19,
+    "pred_sum_zone": "MID",
+    "conf_sum": 0.5502,
+    "pred_sum_nums": [
+      [
+        18,
+        7.2
+      ],
+      [
+        19,
+        7.4
+      ],
+      [
+        20,
+        7.9
+      ],
+      [
+        21,
+        7.1
+      ],
+      [
+        22,
+        6.8
+      ],
+      [
+        23,
+        6.6
+      ]
+    ],
+    "hot_digits": [
+      [
+        [
+          9,
+          9
+        ],
+        [
+          2,
+          7
+        ],
+        [
+          0,
           7
         ]
       ],
       [
         [
-          2,
+          9,
           8
         ],
         [
-          9,
+          7,
           6
         ],
         [
-          1,
+          6,
           6
+        ]
+      ],
+      [
+        [
+          3,
+          8
+        ],
+        [
+          0,
+          8
+        ],
+        [
+          1,
+          8
+        ]
+      ],
+      [
+        [
+          3,
+          8
+        ],
+        [
+          5,
+          7
+        ],
+        [
+          7,
+          7
         ]
       ]
     ],
     "pred_hot_sums": [
+      20,
+      25,
+      13,
       17,
-      16,
       15,
-      18,
-      12,
-      19
+      14
     ],
     "pred_hot_sums_filtered": [
-      16,
-      18,
-      12,
-      17,
-      15
+      20,
+      14,
+      25,
+      13,
+      17
     ],
     "pred_sum_nums_filtered": [
       [
-        16,
-        4.9
+        20,
+        7.9
+      ],
+      [
+        22,
+        6.8
       ],
       [
         18,
-        5.0
-      ],
-      [
-        20,
-        5.0
-      ],
-      [
-        17,
-        5.2
+        7.2
       ],
       [
         19,
-        5.1
+        7.4
+      ],
+      [
+        21,
+        7.1
       ]
     ],
     "hot_digits_filtered": [
       {
         "pos": "n1",
         "oe_trend": "ODD",
-        "odd_frac": 0.8,
+        "odd_frac": 0.7,
         "hot": [
           [
-            3,
+            9,
             9
           ],
           [
             1,
-            8
+            6
           ],
           [
-            7,
-            7
+            3,
+            4
           ]
         ]
       },
       {
         "pos": "n2",
-        "oe_trend": "EVEN",
-        "odd_frac": 0.4,
+        "oe_trend": "ODD",
+        "odd_frac": 0.6,
         "hot": [
           [
-            0,
-            9
-          ],
-          [
-            4,
+            9,
             8
           ],
           [
-            2,
+            7,
             6
+          ],
+          [
+            3,
+            5
           ]
         ]
       },
       {
         "pos": "n3",
         "oe_trend": "ODD",
-        "odd_frac": 0.6,
+        "odd_frac": 0.7,
         "hot": [
           [
-            7,
-            7
-          ],
-          [
-            5,
-            7
+            3,
+            8
           ],
           [
             1,
-            6
+            8
+          ],
+          [
+            5,
+            5
           ]
         ]
       },
@@ -411,23 +411,23 @@
         "odd_frac": 0.6,
         "hot": [
           [
-            9,
-            6
+            3,
+            8
           ],
           [
-            1,
-            6
+            5,
+            7
           ],
           [
             7,
-            4
+            7
           ]
         ]
       }
     ],
-    "avg_sum_10": 18.6,
-    "last_sum": 14
+    "avg_sum_10": 20.2,
+    "last_sum": 15
   },
-  "loss_streak": 0,
-  "timestamp": "2026-06-28T09:06:10.966805"
+  "loss_streak": 1,
+  "timestamp": "2026-06-28T12:05:10.966901"
 }

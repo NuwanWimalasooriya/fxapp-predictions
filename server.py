@@ -385,7 +385,7 @@ _ACTIVATION_HTML = """<!DOCTYPE html>
   {% if error %}<div class="error">{{ error }}</div>{% endif %}
   <form method="post" action="/activate">
     <label>Activation Code</label>
-    <input type="text" name="code" placeholder="FXPRO-YYYYMMDD-XXXXXXXX"
+    <input type="text" name="code" placeholder="FXPRO-XXXXXXXXXX-XXXXXXXX"
            autocomplete="off" autofocus spellcheck="false" required>
     <button type="submit">Activate</button>
   </form>
